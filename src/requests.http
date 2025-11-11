@@ -28,4 +28,4 @@ Content-Type: application/json
 GET http://localhost:8080/
 
 ### Get one message
-GET http://localhost:8080/bea3f5fc-a1b1-42a0-a69d-b5f3f69bbe7c
+GET http://localhost:8080/3a5ba118-104e-4ac4-8c98-3e9d0dc8bb97
