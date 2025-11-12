@@ -1,5 +1,7 @@
-package co.bondspot.spbttest
+package co.bondspot.spbttest.application.service
 
+import co.bondspot.spbttest.domain.repository.MessageRepository
+import co.bondspot.spbttest.domain.entity.Message
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
