@@ -24,7 +24,7 @@ class MessageController(private val messageService: MessageService) {
     @PostMapping
     fun createMessage(@RequestBody message: Message): ResponseEntity<Message> {
         val savedMessage = messageService.save(message)
-        return ResponseEntity.created(URI("/${savedMessage.id}")).body(savedMessage)
+        return ResponseEntity.created(URI("/message/${savedMessage.id}")).body(savedMessage)
     }
 
     private fun Message?.toResponseEntity(): ResponseEntity<Message> {
