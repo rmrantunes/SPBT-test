@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.net.URI
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/message")
 class MessageController(private val messageService: MessageService) {
     @GetMapping("/")
     fun listMessages(): List<Message> = messageService.findMessages()
