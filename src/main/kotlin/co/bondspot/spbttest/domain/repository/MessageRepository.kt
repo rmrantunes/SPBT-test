@@ -1,6 +1,8 @@
 package co.bondspot.spbttest.domain.repository
 
 import co.bondspot.spbttest.domain.entity.Message
-import org.springframework.data.repository.CrudRepository
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.stereotype.Repository
 
-interface MessageRepository : CrudRepository<Message, String>
+@Repository
+interface MessageRepository : JpaRepository<Message, String>

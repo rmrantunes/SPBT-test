@@ -1,7 +1,7 @@
 package co.bondspot.spbttest.domain.entity
 
-import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Table
+import jakarta.persistence.*
 
-@Table("MESSAGES")
-data class Message(val text: String, @Id val id: String? = null)
+@Entity
+@Table(name = "messages")
+data class Message(val text: String, @Id @GeneratedValue(strategy = GenerationType.UUID) val id: String? = null)
