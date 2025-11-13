@@ -1,6 +1,6 @@
 package co.bondspot.spbttest.presentation.controller
 
-import co.bondspot.spbttest.application.service.MessageService
+import co.bondspot.spbttest.application.service.MessageApplicationService
 import co.bondspot.spbttest.domain.entity.Message
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -13,17 +13,17 @@ import java.net.URI
 
 @RestController
 @RequestMapping("/message")
-class MessageController(private val messageService: MessageService) {
+class MessageController(private val messageService: MessageApplicationService) {
     @GetMapping("/")
-    fun listMessages(): List<Message> = messageService.findMessages()
+    fun listMessages(): List<Message> = messageService.find()
 
     @GetMapping("/{id}")
     fun getMessage(@PathVariable id: String): ResponseEntity<Message> =
-        messageService.findMessageById(id).toResponseEntity()
+        messageService.findById(id).toResponseEntity()
 
     @PostMapping
-    fun createMessage(@RequestBody message: Message): ResponseEntity<Message> {
-        val savedMessage = messageService.save(message)
+    fun createMessage(@RequestBody messageEntity: Message): ResponseEntity<Message> {
+        val savedMessage = messageService.save(messageEntity)
         return ResponseEntity.created(URI("/message/${savedMessage.id}")).body(savedMessage)
     }
 

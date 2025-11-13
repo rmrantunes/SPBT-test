@@ -1,5 +1,5 @@
 ### Post "Hello!"
-POST http://localhost:8080/
+POST http://localhost:8080/message
 Content-Type: application/json
 
 {
@@ -8,7 +8,7 @@ Content-Type: application/json
 
 ### Post "Bonjour!"
 
-POST http://localhost:8080/
+POST http://localhost:8080/message
 Content-Type: application/json
 
 {
@@ -17,7 +17,7 @@ Content-Type: application/json
 
 ### Post "Privet!"
 
-POST http://localhost:8080/
+POST http://localhost:8080/message
 Content-Type: application/json
 
 {
@@ -25,7 +25,7 @@ Content-Type: application/json
 }
 
 ### Get all the messages
-GET http://localhost:8080/
+GET http://localhost:8080/message/
 
 ### Get one message
-GET http://localhost:8080/360f9166-5b19-42b5-8e5f-7bbe22108026
+GET http://localhost:8080/message/f2e680d9-f820-4fda-b58e-00c9e44281ff

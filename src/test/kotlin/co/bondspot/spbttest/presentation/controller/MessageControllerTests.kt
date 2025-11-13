@@ -1,6 +1,6 @@
 package co.bondspot.spbttest.presentation.controller
 
-import co.bondspot.spbttest.application.service.MessageService
+import co.bondspot.spbttest.application.service.MessageApplicationService
 import co.bondspot.spbttest.domain.entity.Message
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
@@ -23,7 +23,7 @@ class MessageControllerTests(@param:Autowired private val objectMapper: ObjectMa
     private lateinit var mockMvc: MockMvc
 
     @MockkBean
-    private lateinit var messageService: MessageService
+    private lateinit var messageService: MessageApplicationService
 
     @Test
     fun `should create message`() {
@@ -50,7 +50,7 @@ class MessageControllerTests(@param:Autowired private val objectMapper: ObjectMa
     fun `should get get message`() {
         val id = "some_uuid"
         val created = Message("My message", id = id)
-        every { messageService.findMessageById(id) } returns created
+        every { messageService.findById(id) } returns created
 
         mockMvc.perform(get("/message/${created.id}"))
             .andDo { print() }
@@ -58,6 +58,6 @@ class MessageControllerTests(@param:Autowired private val objectMapper: ObjectMa
             .andExpect(jsonPath("$.id").value(id))
             .andExpect(jsonPath("$.text").value(created.text))
 
-        verify { messageService.findMessageById(id) }
+        verify { messageService.findById(id) }
     }
 }
