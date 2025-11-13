@@ -1,4 +1,4 @@
-package co.bondspot.spbttest.infrastructure.entity
+package co.bondspot.spbttest.springweb.persistence
 
 import co.bondspot.spbttest.domain.entity.Message
 import jakarta.persistence.*
@@ -12,11 +12,11 @@ data class MessageEntity(
     val id: String? = null
 ) {
     companion object {
-        fun fromDomainEntity(entity: Message): MessageEntity = MessageEntity(
+        fun fromDomain(entity: Message): MessageEntity = MessageEntity(
             text = entity.text,
             id = entity.id
         )
     }
 
-    fun toDomainEntity(): Message = Message(text, id)
+    fun toDomain(): Message = Message(text, id)
 }

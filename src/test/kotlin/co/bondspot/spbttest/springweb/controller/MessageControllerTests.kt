@@ -1,6 +1,6 @@
-package co.bondspot.spbttest.presentation.controller
+package co.bondspot.spbttest.springweb.controller
 
-import co.bondspot.spbttest.application.service.MessageApplicationService
+import co.bondspot.spbttest.springweb.service.MessageService
 import co.bondspot.spbttest.domain.entity.Message
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
@@ -23,7 +23,7 @@ class MessageControllerTests(@param:Autowired private val objectMapper: ObjectMa
     private lateinit var mockMvc: MockMvc
 
     @MockkBean
-    private lateinit var messageService: MessageApplicationService
+    private lateinit var messageService: MessageService
 
     @Test
     fun `should create message`() {

@@ -1,6 +1,6 @@
-package co.bondspot.spbttest.presentation.controller
+package co.bondspot.spbttest.springweb.controller
 
-import co.bondspot.spbttest.application.service.MessageApplicationService
+import co.bondspot.spbttest.springweb.service.MessageService
 import co.bondspot.spbttest.domain.entity.Message
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -13,7 +13,7 @@ import java.net.URI
 
 @RestController
 @RequestMapping("/message")
-class MessageController(private val messageService: MessageApplicationService) {
+class MessageController(private val messageService: MessageService) {
     @GetMapping("/")
     fun listMessages(): List<Message> = messageService.find()
 
