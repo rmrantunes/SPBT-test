@@ -1,12 +1,12 @@
 package co.bondspot.spbttest.application
 
-import co.bondspot.spbttest.domain.contract.MessageApplicationServiceContract
-import co.bondspot.spbttest.domain.contract.MessageRepositoryContract
+import co.bondspot.spbttest.domain.signature.MessageApplicationServiceSignature
+import co.bondspot.spbttest.domain.signature.MessageRepositorySignature
 import co.bondspot.spbttest.domain.entity.Message
 
 open class MessageApplicationService (
-    private val repository: MessageRepositoryContract
-) : MessageApplicationServiceContract {
+    private val repository: MessageRepositorySignature
+) : MessageApplicationServiceSignature {
     override fun save(message: Message): Message {
         return repository.save(message)
     }
