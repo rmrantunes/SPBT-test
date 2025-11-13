@@ -1,8 +1,8 @@
-package co.bondspot.spbttest.application
+package co.bondspot.spbttest.application.service
 
+import co.bondspot.spbttest.domain.entity.Message
 import co.bondspot.spbttest.domain.signature.MessageApplicationServiceSignature
 import co.bondspot.spbttest.domain.signature.MessageRepositorySignature
-import co.bondspot.spbttest.domain.entity.Message
 
 open class MessageApplicationService (
     private val repository: MessageRepositorySignature
