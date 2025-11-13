@@ -11,7 +11,27 @@ open class TaskApplicationService(
 
     override fun getById(id: String): Task? = repository.getById(id)
 
-    override fun update(id: String, task: Task): Boolean? = repository.update(id, task)
+    override fun updateDetails(id: String, title: String?): Boolean? {
+        val existing = getById(id) ?: return null
+        repository.update(
+            id,
+            existing.copy(
+                title = title ?: existing.title,
+            )
+        )
+        return true
+    }
+
+    override fun updateStatus(id: String, status: Task.Status): Boolean? {
+        val existing = getById(id)?: return null
+        repository.update(
+            id,
+            existing.copy(
+                status = status,
+            )
+        )
+        return true
+    }
 
     override fun list(): List<Task> = repository.list()
 
