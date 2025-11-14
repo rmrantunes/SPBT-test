@@ -49,15 +49,15 @@ class TaskControllerTests(@param:Autowired private val objectMapper: ObjectMappe
         }
 
         @Test
-        fun `validate input if fields are missing or have type mismatch`() {
+        fun `validate input if fields are missing`() {
             mockMvc.perform(
                 post("/task")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{ "title": "" }""")
+                    .content("""{}""")
             )
-                .andDo { print() }
                 .andExpect(status().isBadRequest)
-                .andExpect(jsonPath("$.errors[0]").value("'title' must not be blank"))
+                .andExpect(jsonPath("$.errors[0]").value("'title' is required"))
+                .andExpect(jsonPath("$.errors[1]").value("'title' size must be between 1 and 160"))
         }
     }
 
