@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import kotlin.test.Ignore
 
 @WebMvcTest(TaskController::class)
 @DisplayName("task controller")
@@ -39,7 +40,7 @@ class TaskControllerTests(@param:Autowired private val objectMapper: ObjectMappe
             mockMvc.perform(
                 post("/task")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(body))
+                    .content("""{"title": "Uma tarefa qualquer"}""")
             )
                 .andDo { print() }
                 .andExpect(status().isCreated)
@@ -59,6 +60,18 @@ class TaskControllerTests(@param:Autowired private val objectMapper: ObjectMappe
                 .andExpect(jsonPath("$.errors[0]").value("'title' is required"))
                 .andExpect(jsonPath("$.errors[1]").value("'title' size must be between 1 and 160"))
         }
-    }
 
+        @Ignore
+        // TODO consider using Kotlin Serialization to handle type mismatches (& undefined values)
+        // NOTE Sem preciosismo por agora, foca no domínio
+        fun `validate input if fields have type mismatch`() {
+            mockMvc.perform(
+                post("/task")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{ "title": null }""")
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.errors[0]").value("'title' must be of type from the docs"))
+        }
+    }
 }

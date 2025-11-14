@@ -2,6 +2,7 @@ package co.bondspot.spbttest.springweb.dto
 
 import co.bondspot.spbttest.domain.entity.Task
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 
 data class CreateTaskReqDto(
