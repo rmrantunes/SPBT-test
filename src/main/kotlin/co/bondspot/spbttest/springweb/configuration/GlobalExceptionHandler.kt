@@ -21,8 +21,6 @@ class GlobalExceptionHandler {
             }
         }
 
-        println(ResponseEntity(ResponseDto(errors = errors), HttpStatus.BAD_REQUEST))
-
         return ResponseEntity.badRequest().body(ResponseDto(errors = errors))
     }
 }
