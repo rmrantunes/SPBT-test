@@ -12,7 +12,7 @@ data class CreateTaskReqDto(
     @Serializable(KSVString::class)
     val title: KSVerifiable<String> = KSVerifiable(),
 
-    @IsString(nullable = true)
+    @IsString(nullable = true, required = false)
     @Serializable(KSVString::class)
     val description: KSVerifiable<String?> = KSVerifiable(),
 ) {

@@ -56,7 +56,7 @@ class TaskControllerTests() {
                     .content("""{}""")
             )
                 .andExpect(status().isBadRequest)
-                .andExpect(jsonPath("$.errors[0]").value("'title' is required"))
+                .andExpect(jsonPath("$.errors[0]").value("'title' must be a string"))
         }
 
         @Test
@@ -64,7 +64,7 @@ class TaskControllerTests() {
             mockMvc.perform(
                 post("/task")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{ "title": false, "description": false }""")
+                    .content("""{ "description": false, "title": false }""")
             )
                 .andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.errors[0]").value("'description' must be a string or null"))

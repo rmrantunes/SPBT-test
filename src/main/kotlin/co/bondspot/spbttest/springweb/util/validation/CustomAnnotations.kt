@@ -14,35 +14,70 @@ annotation class IsString(
     val groups: Array<KClass<*>> = [],
     val payload: Array<KClass<out Payload>> = [],
     val nullable: Boolean = false,
+    val required: Boolean = true,
 )
 
 class IsStringValidator : ConstraintValidator<IsString, Any?> {
     private var nullable = false
+    private var required = true
     private var message: String? = null
 
     override fun initialize(constraintAnnotation: IsString?) {
         nullable = constraintAnnotation?.nullable == true
+        required = constraintAnnotation?.required == true
         message = constraintAnnotation?.message
     }
 
     override fun isValid(value: Any?, context: ConstraintValidatorContext?): Boolean {
+        if (canBypassRequired(value, required)) return true
+
+        if (!checkRequired(value, context, required, nullable, message)) return false
+
         val v = if (value is KSVerifiable<*>) value.value else value
-        return handleNullable(value, context, nullable, message) && v is String
+
+        if (!checkNullable(value, context, nullable, message)) return false
+
+        return v is String
     }
 }
 
-private fun handleNullable(
+private fun canBypassRequired(value: Any?, required: Boolean): Boolean {
+    return !required && value is KSVerifiable<*> && value.isUndefined()
+}
+
+private fun checkRequired(
+    value: Any?,
+    context: ConstraintValidatorContext?,
+    required: Boolean,
+    nullable: Boolean,
+    message: String? = null
+): Boolean {
+    if (required && value is KSVerifiable<*> && value.isUndefined()) {
+        val messageTemplate = if (message != null) if (nullable) "$message or null" else message else "is required"
+
+        context?.disableDefaultConstraintViolation()
+        context?.buildConstraintViolationWithTemplate(
+            messageTemplate,
+        )?.addConstraintViolation()
+
+        return false
+    }
+    return true
+}
+
+private fun checkNullable(
     value: Any?,
     context: ConstraintValidatorContext?,
     nullable: Boolean,
     message: String? = null
 ): Boolean {
-    val isNullValue = if (value is KSVerifiable<*>) value.value == null && !value.isUndefined()
-    else value == null
+    val isNullValue =
+        if (value is KSVerifiable<*>) value.value == null && !value.isUndefined()
+        else value == null
 
-    val isNullableAndNotNull = !isNullValue && nullable
+    val isNotNullableAndNull = !nullable && isNullValue
 
-    if (isNullableAndNotNull) {
+    if (isNotNullableAndNull) {
         val messageTemplate = if (message != null) "$message or null" else "can be a null value"
 
         context?.disableDefaultConstraintViolation()
