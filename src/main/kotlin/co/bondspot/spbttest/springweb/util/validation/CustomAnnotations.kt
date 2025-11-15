@@ -46,13 +46,31 @@ open class ConstraintValidatorWithDefaults {
     }
 
     fun defaultChecks(value: Any?, context: ConstraintValidatorContext?, customCheck: () -> Boolean): Boolean {
-        if (!checkHasDeserializationTypeException(value, context, nullable, message)) return false
+        checkHasDeserializationTypeException(value, nullable, message).let { message ->
+            if (message.isNotEmpty()) {
+                context?.disableDefaultConstraintViolation()
+                context?.buildConstraintViolationWithTemplate(message)?.addConstraintViolation()
+                return false
+            }
+        }
 
         if (canBypassRequired(value, required)) return true
 
-        if (!checkRequired(value, context, required, nullable, message)) return false
+        checkRequired(value, required, nullable, message).let { message ->
+            if (message.isNotEmpty()) {
+                context?.disableDefaultConstraintViolation()
+                context?.buildConstraintViolationWithTemplate(message)?.addConstraintViolation()
+                return false
+            }
+        }
 
-        if (!checkNullable(value, context, nullable, message)) return false
+        checkNullable(value, nullable, message).let { message ->
+            if (message.isNotEmpty()) {
+                context?.disableDefaultConstraintViolation()
+                context?.buildConstraintViolationWithTemplate(message)?.addConstraintViolation()
+                return false
+            }
+        }
 
         return customCheck()
     }
@@ -61,65 +79,47 @@ open class ConstraintValidatorWithDefaults {
         return !required && value is KSVerifiable<*> && value.isUndefined()
     }
 
-    private fun checkHasDeserializationTypeException(value: Any?, context: ConstraintValidatorContext?, nullable: Boolean, message: String? = null): Boolean {
+    private fun checkHasDeserializationTypeException(
+        value: Any?,
+        nullable: Boolean,
+        message: String? = null
+    ): String {
         val valid = !(value as KSVerifiable<*>).hasDeserializationTypeException
 
-        if(!valid) {
-            val messageTemplate = if (message != null) if (nullable) "$message or null" else message else "value with invalid type (check the docs)"
-
-            context?.disableDefaultConstraintViolation()
-            context?.buildConstraintViolationWithTemplate(
-                messageTemplate,
-            )?.addConstraintViolation()
+        if (!valid) {
+            return if (message != null) if (nullable) "$message or null" else message else "value with invalid type (check the docs)"
         }
 
-        return valid
+        return ""
     }
 
     private fun checkRequired(
         value: Any?,
-        context: ConstraintValidatorContext?,
         required: Boolean,
         nullable: Boolean,
         message: String? = null
-    ): Boolean {
+    ): String {
         if (required && value is KSVerifiable<*> && value.isUndefined()) {
-            val messageTemplate = if (message != null) if (nullable) "$message or null" else message else "is required"
-
-            context?.disableDefaultConstraintViolation()
-            context?.buildConstraintViolationWithTemplate(
-                messageTemplate,
-            )?.addConstraintViolation()
-
-            return false
+            return if (message != null) if (nullable) "$message or null" else message else "is required"
         }
-        return true
+        return ""
     }
 
     private fun checkNullable(
         value: Any?,
-        context: ConstraintValidatorContext?,
         nullable: Boolean,
         message: String? = null
-    ): Boolean {
-
+    ): String {
         val isNullValue =
             if (value is KSVerifiable<*>) value.value == null && !value.isUndefined()
             else value == null
 
         val isNotNullableAndNull = !nullable && isNullValue
 
-        if (isNotNullableAndNull) {
-            val messageTemplate = if (message != null) "$message or null" else "can be a null value"
+        if (isNotNullableAndNull)
+            return if (message != null) "$message or null" else "can be a null value"
 
-            context?.disableDefaultConstraintViolation()
-            context?.buildConstraintViolationWithTemplate(
-                messageTemplate,
-            )?.addConstraintViolation()
-            return false
-        }
-
-        return true
+        return ""
     }
 
 }
