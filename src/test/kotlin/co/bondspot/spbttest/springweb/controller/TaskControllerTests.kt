@@ -1,5 +1,6 @@
 package co.bondspot.spbttest.springweb.controller
 
+import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.springweb.dto.CreateTaskReqDto
 import co.bondspot.spbttest.springweb.service.TaskService
 import com.ninjasquad.springmockk.MockkBean
@@ -32,8 +33,7 @@ class TaskControllerTests() {
 
         @Test
         fun `return it if input is valid`() {
-            val body = CreateTaskReqDto("Uma tarefa qualquer")
-            val createdTask = body.toDomainEntity().copy(id = "some_id")
+            val createdTask = Task("Uma tarefa qualquer", id = "some_id")
             every { taskService.create(any()) } returns createdTask
 
             mockMvc.perform(
@@ -57,20 +57,18 @@ class TaskControllerTests() {
             )
                 .andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.errors[0]").value("'title' is required"))
-                .andExpect(jsonPath("$.errors[1]").value("'title' size must be between 1 and 160"))
         }
 
-        @Ignore
-        // TODO consider using Kotlin Serialization to handle type mismatches (& undefined values)
-        // NOTE Sem preciosismo por agora, foca no domínio
+        @Test
         fun `validate input if fields have type mismatch`() {
             mockMvc.perform(
                 post("/task")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{ "title": null }""")
+                    .content("""{ "title": false, "description": false }""")
             )
                 .andExpect(status().isBadRequest)
-                .andExpect(jsonPath("$.errors[0]").value("'title' must be of type from the docs"))
+                .andExpect(jsonPath("$.errors[0]").value("'description' must be a string or null"))
+                .andExpect(jsonPath("$.errors[1]").value("'title' must be a string"))
         }
     }
 }
