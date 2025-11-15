@@ -2,7 +2,6 @@ package co.bondspot.spbttest.springweb.controller
 
 import co.bondspot.spbttest.springweb.dto.CreateTaskReqDto
 import co.bondspot.spbttest.springweb.service.TaskService
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import org.junit.jupiter.api.DisplayName
@@ -19,7 +18,7 @@ import kotlin.test.Ignore
 
 @WebMvcTest(TaskController::class)
 @DisplayName("task controller")
-class TaskControllerTests(@param:Autowired private val objectMapper: ObjectMapper) {
+class TaskControllerTests() {
 
     @Autowired
     private lateinit var mockMvc: MockMvc

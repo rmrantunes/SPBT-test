@@ -1,8 +1,7 @@
 package co.bondspot.spbttest.springweb.controller
 
-import co.bondspot.spbttest.springweb.service.MessageService
 import co.bondspot.spbttest.domain.entity.Message
-import com.fasterxml.jackson.databind.ObjectMapper
+import co.bondspot.spbttest.springweb.service.MessageService
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import io.mockk.verify
@@ -17,7 +16,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 
 @WebMvcTest(MessageController::class)
-class MessageControllerTests(@param:Autowired private val objectMapper: ObjectMapper) {
+class MessageControllerTests() {
 
     @Autowired
     private lateinit var mockMvc: MockMvc
@@ -35,7 +34,7 @@ class MessageControllerTests(@param:Autowired private val objectMapper: ObjectMa
         mockMvc.perform(
             post("/message")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(body))
+                .content("""{ "text": "My message" }""")
         )
             .andDo { print() }
             .andExpect(status().isCreated())
