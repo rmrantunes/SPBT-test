@@ -46,6 +46,8 @@ open class ConstraintValidatorWithDefaults {
     }
 
     fun defaultChecks(value: Any?, context: ConstraintValidatorContext?, customCheck: () -> Boolean): Boolean {
+        if (!checkHasDeserializationTypeException(value, context, nullable, message)) return false
+
         if (canBypassRequired(value, required)) return true
 
         if (!checkRequired(value, context, required, nullable, message)) return false
@@ -57,6 +59,21 @@ open class ConstraintValidatorWithDefaults {
 
     private fun canBypassRequired(value: Any?, required: Boolean): Boolean {
         return !required && value is KSVerifiable<*> && value.isUndefined()
+    }
+
+    private fun checkHasDeserializationTypeException(value: Any?, context: ConstraintValidatorContext?, nullable: Boolean, message: String? = null): Boolean {
+        val valid = !(value as KSVerifiable<*>).hasDeserializationTypeException
+
+        if(!valid) {
+            val messageTemplate = if (message != null) if (nullable) "$message or null" else message else "value with invalid type (check the docs)"
+
+            context?.disableDefaultConstraintViolation()
+            context?.buildConstraintViolationWithTemplate(
+                messageTemplate,
+            )?.addConstraintViolation()
+        }
+
+        return valid
     }
 
     private fun checkRequired(
@@ -92,7 +109,7 @@ open class ConstraintValidatorWithDefaults {
 
         val isNotNullableAndNull = !nullable && isNullValue
 
-        if (isNotNullableAndNull || (value as KSVerifiable<*>).hasDeserializationTypeException) {
+        if (isNotNullableAndNull) {
             val messageTemplate = if (message != null) "$message or null" else "can be a null value"
 
             context?.disableDefaultConstraintViolation()
