@@ -1,5 +1,6 @@
 package co.bondspot.spbttest.springweb.configuration
 
+import kotlinx.serialization.SerializationException
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.FieldError
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -19,6 +20,21 @@ class GlobalExceptionHandler {
             }
         }.sorted()
 
+        return ResponseEntity.badRequest().body(ResponseDto(errors = errors))
+    }
+
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun handleIllegalArgumentExceptions(ex: IllegalArgumentException): ResponseEntity<ResponseDto> {
+        return ResponseEntity.badRequest().body(ResponseDto(errors = listOf(ex.message!!)))
+    }
+
+    @ExceptionHandler(SerializationException::class)
+    fun handleSerializationExceptions(ex: SerializationException): ResponseEntity<ResponseDto> {
+        val message =
+            (ex.message ?: "JSON deserialization failed (e.g., malformed JSON or type mismatch or missing field)")
+                // .replace(Regex("\\$.([\\w.]*)"), "\'$1\'")
+                .split("\nJSON input:")[0]
+        val errors = listOf("$message. Please, check the docs for details.")
         return ResponseEntity.badRequest().body(ResponseDto(errors = errors))
     }
 }
