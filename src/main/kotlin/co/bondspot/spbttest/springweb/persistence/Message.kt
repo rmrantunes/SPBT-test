@@ -2,6 +2,8 @@ package co.bondspot.spbttest.springweb.persistence
 
 import co.bondspot.spbttest.domain.entity.Message
 import jakarta.persistence.*
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.stereotype.Repository
 
 @Entity
 @Table(name = "messages")
@@ -20,3 +22,6 @@ data class MessageEntity(
 
     fun toDomain(): Message = Message(text, id)
 }
+
+@Repository
+interface MessageRepository : JpaRepository<MessageEntity, String>

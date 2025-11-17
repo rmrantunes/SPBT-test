@@ -3,6 +3,8 @@ package co.bondspot.spbttest.springweb.persistence
 import co.bondspot.spbttest.domain.entity.Task
 import jakarta.persistence.*
 import org.hibernate.annotations.ColumnDefault
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.stereotype.Repository
 
 @Entity
 @Table(name = "task")
@@ -26,3 +28,6 @@ data class TaskEntity(
 
     fun toDomain(): Task = Task(title, status, description, id)
 }
+
+@Repository
+interface TaskRepository : JpaRepository<TaskEntity, String>
