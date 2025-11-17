@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -33,6 +34,14 @@ class TaskController(private val taskService: TaskService) {
         @PathVariable id: String
     ): ResponseEntity<Task?> {
         val task = taskService.getById(id)
+        return ResponseEntity.ok().body(task)
+    }
+
+    @PutMapping("/{id}/details")
+    fun updateDetails(
+        @PathVariable id: String
+    ): ResponseEntity<Boolean?> {
+        val task = taskService.updateDetails(id)
         return ResponseEntity.ok().body(task)
     }
 }

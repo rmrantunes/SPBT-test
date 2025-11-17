@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.*
@@ -140,6 +141,19 @@ class TaskControllerTests() {
                 .andExpect(jsonPath("$.title").value(created.title))
                 .andExpect(jsonPath("$.description").value(created.description))
                 .andExpect(jsonPath("$.status").value("PENDING"))
+        }
+    }
+
+    @Nested
+    @DisplayName("when updating a task details...")
+    inner class UpdateTaskDetails {
+        @Test
+        fun `return 404 if no task found with given id`() {
+            mockMvc.perform(
+                put("/task/${UUID.randomUUID()}/details")
+            )
+                .andExpect(status().isNotFound)
+                .andExpect(jsonPath("$.errors[0]").value("Task not found"))
         }
     }
 }
