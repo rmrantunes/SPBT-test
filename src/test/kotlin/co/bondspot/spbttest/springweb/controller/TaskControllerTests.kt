@@ -182,4 +182,44 @@ class TaskControllerTests() {
             assertThat(updated?.title).isEqualTo("Task 1 updated")
         }
     }
+
+    @Nested
+    @DisplayName("when updating a task status...")
+    inner class UpdateTaskStatus {
+        @Ignore
+        fun `validate request body status options`() {
+            TODO("Test request body validation")
+        }
+
+        @Test
+        fun `return 404 if no task found with given id`() {
+            mockMvc.perform(
+                patch("/task/${UUID.randomUUID()}/status")
+                    .contentType(MediaType.APPLICATION_JSON).content(
+                        """{"status":  "IN_PROGRESS"}""".trimIndent()
+                    )
+            )
+                .andExpect(status().isNotFound)
+                .andExpect(jsonPath("$.errors[0]").value("Task not found"))
+        }
+
+        @Test
+        fun `return success result for found task updated`() {
+            val created = taskRepositorySignature.create(Task("Task 1", description = "alguma coisa aí"))
+            val id = created.id!!
+
+            mockMvc.perform(
+                patch("/task/$id/status")
+                    .contentType(MediaType.APPLICATION_JSON).content(
+                        """{"status":  "IN_PROGRESS"}""".trimIndent()
+                    )
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.updated").value(true))
+
+            val updated = taskRepositorySignature.getById(id)
+
+            assertThat(updated?.status).isEqualTo(Task.Status.IN_PROGRESS)
+        }
+    }
 }

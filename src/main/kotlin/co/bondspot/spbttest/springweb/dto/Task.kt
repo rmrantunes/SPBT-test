@@ -36,3 +36,19 @@ data class UpdateTaskDetailsReqDto(
 data class UpdateTaskDetailsResDto(
     val updated: Boolean?,
 )
+
+@Serializable
+data class UpdateTaskStatusReqDto(
+    @IsString(nullable = true, required = false)
+    //@IsOneOf(Task.Status.entries)
+    @Serializable(KSVString::class)
+    val status: KSVerifiable<String> = KSVerifiable(),
+) {
+    fun toDomainEntity() = Task(status = Task.Status.valueOf(status.dangerouslyForceCast()))
+}
+
+@Serializable
+data class UpdateTaskStatusResDto(
+    val updated: Boolean?,
+)
+

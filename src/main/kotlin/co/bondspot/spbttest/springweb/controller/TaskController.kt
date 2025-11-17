@@ -4,6 +4,8 @@ import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.springweb.dto.CreateTaskReqDto
 import co.bondspot.spbttest.springweb.dto.UpdateTaskDetailsReqDto
 import co.bondspot.spbttest.springweb.dto.UpdateTaskDetailsResDto
+import co.bondspot.spbttest.springweb.dto.UpdateTaskStatusReqDto
+import co.bondspot.spbttest.springweb.dto.UpdateTaskStatusResDto
 import co.bondspot.spbttest.springweb.service.TaskService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -40,5 +42,14 @@ class TaskController(private val taskService: TaskService) {
     ): ResponseEntity<UpdateTaskDetailsResDto> {
         val updated = taskService.updateDetails(id, body.toDomainEntity().title)
         return ResponseEntity.ok().body(UpdateTaskDetailsResDto(updated))
+    }
+
+    @PatchMapping("/{id}/status")
+    fun updateStatus(
+        @PathVariable id: String,
+        @Valid @RequestBody body: UpdateTaskStatusReqDto
+    ): ResponseEntity<UpdateTaskStatusResDto> {
+        val updated = taskService.updateStatus(id, body.toDomainEntity().status)
+        return ResponseEntity.ok().body(UpdateTaskStatusResDto(updated))
     }
 }
