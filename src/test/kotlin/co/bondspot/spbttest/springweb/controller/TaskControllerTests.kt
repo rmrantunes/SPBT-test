@@ -216,18 +216,20 @@ class TaskControllerTests() {
             val created = taskRepositorySignature.create(Task("Task 1", description = "alguma coisa aí"))
             val id = created.id!!
 
-            mockMvc.perform(
-                patch("/task/$id/status")
-                    .contentType(MediaType.APPLICATION_JSON).content(
-                        """{"status":  "IN_PROGRESS"}""".trimIndent()
-                    )
-            )
-                .andExpect(status().isOk)
-                .andExpect(jsonPath("$.updated").value(true))
+            for (value in Task.Status.entries) {
+                mockMvc.perform(
+                    patch("/task/$id/status")
+                        .contentType(MediaType.APPLICATION_JSON).content(
+                            """{"status":  "$value"}""".trimIndent()
+                        )
+                )
+                    .andExpect(status().isOk)
+                    .andExpect(jsonPath("$.updated").value(true))
 
-            val updated = taskRepositorySignature.getById(id)
+                val updated = taskRepositorySignature.getById(id)
 
-            assertThat(updated?.status).isEqualTo(Task.Status.IN_PROGRESS)
+                assertThat(updated?.status).isEqualTo(value)
+            }
         }
     }
 }
