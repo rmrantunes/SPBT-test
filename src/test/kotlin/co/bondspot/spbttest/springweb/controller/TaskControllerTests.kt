@@ -151,8 +151,8 @@ class TaskControllerTests() {
             mockMvc.perform(
                 patch("/task/${UUID.randomUUID()}/details")
                     .contentType(MediaType.APPLICATION_JSON).content(
-                    """{"title":  "Task 1 updated"}""".trimIndent()
-                )
+                        """{"title":  "Task 1 updated"}""".trimIndent()
+                    )
             )
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.errors[0]").value("Task not found"))
@@ -171,8 +171,8 @@ class TaskControllerTests() {
             mockMvc.perform(
                 patch("/task/$id/details")
                     .contentType(MediaType.APPLICATION_JSON).content(
-                    """{"title":  "Task 1 updated"}""".trimIndent()
-                )
+                        """{"title":  "Task 1 updated"}""".trimIndent()
+                    )
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.updated").value(true))
@@ -186,9 +186,17 @@ class TaskControllerTests() {
     @Nested
     @DisplayName("when updating a task status...")
     inner class UpdateTaskStatus {
-        @Ignore
+        @Test
         fun `validate request body status options`() {
-            TODO("Test request body validation")
+            mockMvc.perform(
+                patch("/task/${UUID.randomUUID()}/status")
+                    .contentType(MediaType.APPLICATION_JSON).content(
+                        """{"status":  "DOING"}""".trimIndent()
+                    )
+            )
+                .andExpect(status().isBadRequest)
+                //.andExpect(jsonPath("$.errors[0]").value("'status' must be a string'"))
+                .andExpect(jsonPath("$.errors[0]").value("'status' must be one of: ${Task.Status.entries.joinToString(", ")}"))
         }
 
         @Test

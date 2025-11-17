@@ -34,6 +34,48 @@ class IsStringValidator : ConstraintValidator<IsString, Any?>, ConstraintValidat
     }
 }
 
+@Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.RUNTIME)
+@Constraint(validatedBy = [IsOneOfValidator::class])
+annotation class IsOneOf(
+    val list: Array<String> = [],
+    val message: String = "must be one of: {commaList}",
+    val groups: Array<KClass<*>> = [],
+    val payload: Array<KClass<out Payload>> = [],
+    val nullable: Boolean = false,
+    val required: Boolean = true,
+)
+
+class IsOneOfValidator : ConstraintValidator<IsOneOf, Any?>, ConstraintValidatorWithDefaults() {
+    lateinit var list: Array<String>
+    override fun initialize(constraintAnnotation: IsOneOf?) {
+        list = constraintAnnotation?.list!!
+
+        val joinedOptions = list.joinToString(separator = ", ")
+        val message = constraintAnnotation.message.replace("{commaList}", joinedOptions)
+
+        super.init(
+            message,
+            constraintAnnotation.nullable,
+            constraintAnnotation.required
+        )
+    }
+
+    override fun isValid(value: Any?, context: ConstraintValidatorContext?): Boolean {
+        return defaultChecks(value, context) {
+            val v = if (value is KSVerifiable<*>) value.value else value
+            val valid = v is String && list.contains(v)
+
+            if (!valid) {
+                context?.disableDefaultConstraintViolation()
+                context?.buildConstraintViolationWithTemplate(message)?.addConstraintViolation()
+            }
+
+            valid
+        }
+    }
+}
+
 open class ConstraintValidatorWithDefaults {
     protected var nullable = false
     protected var required = true

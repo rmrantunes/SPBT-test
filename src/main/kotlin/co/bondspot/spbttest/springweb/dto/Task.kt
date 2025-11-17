@@ -1,6 +1,7 @@
 package co.bondspot.spbttest.springweb.dto
 
 import co.bondspot.spbttest.domain.entity.Task
+import co.bondspot.spbttest.springweb.util.validation.IsOneOf
 import co.bondspot.spbttest.springweb.util.validation.IsString
 import co.bondspot.spbttest.springweb.util.validation.KSVString
 import co.bondspot.spbttest.springweb.util.validation.KSVerifiable
@@ -29,7 +30,7 @@ data class UpdateTaskDetailsReqDto(
     @Serializable(KSVString::class)
     val description: KSVerifiable<String?> = KSVerifiable(),
 ) {
-    fun toDomainEntity(): Task = Task(title.dangerouslyForceCast(), description = description.value)
+    fun toDomainEntity(): Task = Task(title.value ?: "", description = description.value)
 }
 
 @Serializable
@@ -39,13 +40,14 @@ data class UpdateTaskDetailsResDto(
 
 @Serializable
 data class UpdateTaskStatusReqDto(
-    @IsString(nullable = true, required = false)
-    //@IsOneOf(Task.Status.entries)
+    @IsString
+    @IsOneOf(["PENDING", "IN_PROGRESS", "COMPLETED"])
     @Serializable(KSVString::class)
     val status: KSVerifiable<String> = KSVerifiable(),
 ) {
     fun toDomainEntity() = Task(status = Task.Status.valueOf(status.dangerouslyForceCast()))
 }
+
 
 @Serializable
 data class UpdateTaskStatusResDto(
