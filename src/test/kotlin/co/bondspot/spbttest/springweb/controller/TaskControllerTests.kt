@@ -150,9 +150,17 @@ class TaskControllerTests() {
         fun `return 404 if no task found with given id`() {
             mockMvc.perform(
                 patch("/task/${UUID.randomUUID()}/details")
+                    .contentType(MediaType.APPLICATION_JSON).content(
+                    """{"title":  "Task 1 updated"}""".trimIndent()
+                )
             )
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.errors[0]").value("Task not found"))
+        }
+
+        @Ignore
+        fun `validate request body`() {
+            TODO("Test request body validation")
         }
 
         @Test
