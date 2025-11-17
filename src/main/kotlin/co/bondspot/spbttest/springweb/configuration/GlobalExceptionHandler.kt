@@ -1,5 +1,6 @@
 package co.bondspot.spbttest.springweb.configuration
 
+import co.bondspot.spbttest.application.exception.ApplicationServiceException
 import kotlinx.serialization.SerializationException
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.FieldError
@@ -21,6 +22,13 @@ class GlobalExceptionHandler {
         }.sorted()
 
         return ResponseEntity.badRequest().body(ResponseDto(errors = errors))
+    }
+
+    @ExceptionHandler(ApplicationServiceException::class)
+    fun handleExceptions(ex: ApplicationServiceException): ResponseEntity<ResponseDto> {
+        return ResponseEntity
+            .status(ex.httpStatusCode)
+            .body(ResponseDto(errors = ex.errors))
     }
 
     @ExceptionHandler(IllegalArgumentException::class)

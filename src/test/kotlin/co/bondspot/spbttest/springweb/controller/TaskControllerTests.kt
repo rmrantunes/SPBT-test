@@ -15,6 +15,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.util.UUID
+import kotlin.test.Ignore
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -107,6 +109,23 @@ class TaskControllerTests() {
                         m.andExpect(jsonPath("$[${it}].title").value("Task $it"))
                     }
                 }
+        }
+
+        @Ignore
+        fun `return a paginated list of tasks`() {
+        }
+    }
+
+    @Nested
+    @DisplayName("when getting a task...")
+    inner class GetTask() {
+        @Test
+        fun `return 404 if no task found with given id`() {
+            mockMvc.perform(
+                get("/task/${UUID.randomUUID()}")
+            )
+                .andExpect(status().isNotFound)
+                .andExpect(jsonPath("$.errors[0]").value("Task not found"))
         }
     }
 }

@@ -6,6 +6,7 @@ import co.bondspot.spbttest.springweb.service.TaskService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -25,5 +26,13 @@ class TaskController(private val taskService: TaskService) {
     fun list(): ResponseEntity<List<Task>> {
         val tasks = taskService.list()
         return ResponseEntity.ok().body(tasks)
+    }
+
+    @GetMapping("/{id}")
+    fun list(
+        @PathVariable id: String
+    ): ResponseEntity<Task?> {
+        val task = taskService.getById(id)
+        return ResponseEntity.ok().body(task)
     }
 }
