@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CreateTaskReqDto(
-    @IsString()
+    @IsString
     @Serializable(KSVString::class)
     val title: KSVerifiable<String> = KSVerifiable(),
 
@@ -16,5 +16,5 @@ data class CreateTaskReqDto(
     @Serializable(KSVString::class)
     val description: KSVerifiable<String?> = KSVerifiable(),
 ) {
-    fun toDomainEntity(): Task = Task(title.dangerouslyForceCast())
+    fun toDomainEntity(): Task = Task(title.dangerouslyForceCast(), description = description.value)
 }

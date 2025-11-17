@@ -29,3 +29,12 @@ GET http://localhost:8080/message/
 
 ### Get one message
 GET http://localhost:8080/message/f2e680d9-f820-4fda-b58e-00c9e44281ff
+
+### Post empty title Task
+
+POST http://localhost:8080/task
+Content-Type: application/json
+
+{ "title": "FODSE",
+  "description": "alguma coisa mano"
+}
