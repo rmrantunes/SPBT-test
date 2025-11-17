@@ -5,6 +5,7 @@ import co.bondspot.spbttest.springweb.dto.CreateTaskReqDto
 import co.bondspot.spbttest.springweb.service.TaskService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -18,5 +19,11 @@ class TaskController(private val taskService: TaskService) {
     fun create(@Valid @RequestBody body: CreateTaskReqDto): ResponseEntity<Task> {
         val created = taskService.create(body.toDomainEntity())
         return ResponseEntity.created(URI("/task/${created.id}")).body(created)
+    }
+
+    @GetMapping
+    fun list(): ResponseEntity<List<Task>> {
+        val tasks = taskService.list()
+        return ResponseEntity.ok().body(tasks)
     }
 }

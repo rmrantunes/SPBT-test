@@ -1,5 +1,6 @@
 package co.bondspot.spbttest.springweb.controller
 
+import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.domain.signature.TaskRepositorySignature
 import co.bondspot.spbttest.springweb.persistence.TaskRepository
 import org.junit.jupiter.api.*
@@ -10,6 +11,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -82,6 +84,29 @@ class TaskControllerTests() {
                 .andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.errors[0]").value("'description' must be a string or null"))
                 .andExpect(jsonPath("$.errors[1]").value("'title' must be a string"))
+        }
+    }
+
+    @Nested
+    @DisplayName("when listing a task...")
+    inner class ListTasks() {
+        @Test
+        fun `return list of created tasks`() {
+            repeat(3) {
+                taskRepositorySignature.create(Task("Task $it"))
+            }
+
+            mockMvc.perform(
+                get("/task")
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$").isArray)
+                .andExpect(jsonPath("$.size()").value(3))
+                .also { m ->
+                    repeat(3) {
+                        m.andExpect(jsonPath("$[${it}].title").value("Task $it"))
+                    }
+                }
         }
     }
 }
