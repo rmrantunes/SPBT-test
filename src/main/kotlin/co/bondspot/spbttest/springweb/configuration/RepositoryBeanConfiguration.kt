@@ -2,8 +2,8 @@ package co.bondspot.spbttest.springweb.configuration
 
 import co.bondspot.spbttest.domain.entity.Message
 import co.bondspot.spbttest.domain.entity.Task
-import co.bondspot.spbttest.domain.signature.MessageRepositorySignature
-import co.bondspot.spbttest.domain.signature.TaskRepositorySignature
+import co.bondspot.spbttest.domain.contract.MessageRepositoryContract
+import co.bondspot.spbttest.domain.contract.TaskRepositoryContract
 import co.bondspot.spbttest.springweb.persistence.MessageEntity
 import co.bondspot.spbttest.springweb.persistence.MessageRepository
 import co.bondspot.spbttest.springweb.persistence.TaskEntity
@@ -19,7 +19,7 @@ class RepositoryBeanConfiguration(
 ) {
 
     @Bean
-    fun getMessageRepository(): MessageRepositorySignature = object : MessageRepositorySignature {
+    fun getMessageRepository(): MessageRepositoryContract = object : MessageRepositoryContract {
         override fun find(): List<Message> = messageRepository.findAll().map { it.toDomain() }
 
         override fun findById(id: String): Message? = messageRepository.findByIdOrNull(id)?.toDomain()
@@ -29,7 +29,7 @@ class RepositoryBeanConfiguration(
     }
 
     @Bean
-    fun getTaskRepository(): TaskRepositorySignature = object : TaskRepositorySignature {
+    fun getTaskRepository(): TaskRepositoryContract = object : TaskRepositoryContract {
         override fun create(task: Task): Task = taskRepository.save(TaskEntity.fromDomain(task)).toDomain()
 
         override fun getById(id: String): Task? = taskRepository.findByIdOrNull(id)?.toDomain()

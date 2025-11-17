@@ -1,7 +1,7 @@
 package co.bondspot.spbttest.springweb.controller
 
 import co.bondspot.spbttest.domain.entity.Task
-import co.bondspot.spbttest.domain.signature.TaskRepositorySignature
+import co.bondspot.spbttest.domain.contract.TaskRepositoryContract
 import co.bondspot.spbttest.springweb.persistence.TaskRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
@@ -30,19 +30,19 @@ class TaskControllerTests() {
     private lateinit var mockMvc: MockMvc
 
     @Autowired
-    private lateinit var taskRepository: TaskRepository
+    private lateinit var jpaTaskRepository: TaskRepository
 
     @Autowired
-    private lateinit var taskRepositorySignature: TaskRepositorySignature
+    private lateinit var taskRepositoryImpl: TaskRepositoryContract
 
     @BeforeEach
     fun beforeEach() {
-        taskRepository.deleteAll()
+        jpaTaskRepository.deleteAll()
     }
 
     @AfterEach
     fun afterEach() {
-        taskRepository.deleteAll()
+        jpaTaskRepository.deleteAll()
     }
 
     @Nested
@@ -95,7 +95,7 @@ class TaskControllerTests() {
         @Test
         fun `return list of created tasks`() {
             repeat(3) {
-                taskRepositorySignature.create(Task("Task $it"))
+                taskRepositoryImpl.create(Task("Task $it"))
             }
 
             mockMvc.perform(
@@ -130,7 +130,7 @@ class TaskControllerTests() {
 
         @Test
         fun `return task found with given id`() {
-            val created = taskRepositorySignature.create(Task("Task 1", description = "alguma coisa aí"))
+            val created = taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí"))
 
             mockMvc.perform(
                 get("/task/${created.id}")
@@ -165,7 +165,7 @@ class TaskControllerTests() {
 
         @Test
         fun `return success result for found task updated`() {
-            val created = taskRepositorySignature.create(Task("Task 1", description = "alguma coisa aí"))
+            val created = taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí"))
             val id = created.id!!
 
             mockMvc.perform(
@@ -177,7 +177,7 @@ class TaskControllerTests() {
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.updated").value(true))
 
-            val updated = taskRepositorySignature.getById(id)
+            val updated = taskRepositoryImpl.getById(id)
 
             assertThat(updated?.title).isEqualTo("Task 1 updated")
         }
@@ -213,7 +213,7 @@ class TaskControllerTests() {
 
         @Test
         fun `return success result for found task updated`() {
-            val created = taskRepositorySignature.create(Task("Task 1", description = "alguma coisa aí"))
+            val created = taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí"))
             val id = created.id!!
 
             for (value in Task.Status.entries) {
@@ -226,7 +226,7 @@ class TaskControllerTests() {
                     .andExpect(status().isOk)
                     .andExpect(jsonPath("$.updated").value(true))
 
-                val updated = taskRepositorySignature.getById(id)
+                val updated = taskRepositoryImpl.getById(id)
 
                 assertThat(updated?.status).isEqualTo(value)
             }

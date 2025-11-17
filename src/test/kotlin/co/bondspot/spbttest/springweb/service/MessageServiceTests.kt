@@ -1,6 +1,6 @@
 package co.bondspot.spbttest.springweb.service
 
-import co.bondspot.spbttest.domain.signature.MessageRepositorySignature
+import co.bondspot.spbttest.domain.contract.MessageRepositoryContract
 import co.bondspot.spbttest.domain.entity.Message
 import io.mockk.every
 import io.mockk.mockk
@@ -11,7 +11,7 @@ class MessageServiceTests {
 
     @Test
     fun `should create and return message`() {
-        val repository = mockk<MessageRepositorySignature>()
+        val repository = mockk<MessageRepositoryContract>()
         val created = Message("Text", "Some ID")
         every { repository.save(any()) } returns created
         val service = MessageService(repository)
@@ -24,7 +24,7 @@ class MessageServiceTests {
 
     @Test
     fun `should return message by id`() {
-        val repository = mockk<MessageRepositorySignature>()
+        val repository = mockk<MessageRepositoryContract>()
         val message = Message("Text", "Some ID")
         every { repository.findById(message.id!!) } returns message
         val service = MessageService(repository)
@@ -37,7 +37,7 @@ class MessageServiceTests {
 
     @Test
     fun `should list messages`() {
-        val repository = mockk<MessageRepositorySignature>()
+        val repository = mockk<MessageRepositoryContract>()
         val list = listOf(Message("Text", "Some ID"), Message("Text2", "Some ID2"))
         every { repository.find() } returns list
         val service = MessageService(repository)

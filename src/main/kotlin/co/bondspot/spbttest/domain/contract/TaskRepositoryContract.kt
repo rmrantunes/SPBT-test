@@ -1,8 +1,8 @@
-package co.bondspot.spbttest.domain.signature
+package co.bondspot.spbttest.domain.contract
 
 import co.bondspot.spbttest.domain.entity.Task
 
-interface TaskRepositorySignature {
+interface TaskRepositoryContract {
     fun create(task: Task): Task
     fun getById(id: String): Task?
     fun update(id: String, task: Task): Boolean?

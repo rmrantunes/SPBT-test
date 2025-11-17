@@ -2,12 +2,12 @@ package co.bondspot.spbttest.application.service
 
 import co.bondspot.spbttest.application.exception.ApplicationServiceException
 import co.bondspot.spbttest.domain.entity.Task
-import co.bondspot.spbttest.domain.signature.TaskApplicationServiceSignature
-import co.bondspot.spbttest.domain.signature.TaskRepositorySignature
+import co.bondspot.spbttest.domain.contract.TaskApplicationServiceContract
+import co.bondspot.spbttest.domain.contract.TaskRepositoryContract
 
 open class TaskApplicationService(
-    private val repository: TaskRepositorySignature
-) : TaskApplicationServiceSignature {
+    private val repository: TaskRepositoryContract
+) : TaskApplicationServiceContract {
     override fun create(task: Task): Task = repository.create(task)
 
     /**
