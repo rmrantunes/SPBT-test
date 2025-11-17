@@ -15,7 +15,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.util.UUID
+import java.util.*
 import kotlin.test.Ignore
 import kotlin.test.assertTrue
 
@@ -126,6 +126,20 @@ class TaskControllerTests() {
             )
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.errors[0]").value("Task not found"))
+        }
+
+        @Test
+        fun `return task found with given id`() {
+            val created = taskRepositorySignature.create(Task("Task 1", description = "alguma coisa aí"))
+
+            mockMvc.perform(
+                get("/task/${created.id}")
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.id").value(created.id))
+                .andExpect(jsonPath("$.title").value(created.title))
+                .andExpect(jsonPath("$.description").value(created.description))
+                .andExpect(jsonPath("$.status").value("PENDING"))
         }
     }
 }
