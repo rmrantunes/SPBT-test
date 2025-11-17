@@ -2,16 +2,12 @@ package co.bondspot.spbttest.springweb.controller
 
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.springweb.dto.CreateTaskReqDto
+import co.bondspot.spbttest.springweb.dto.UpdateTaskDetailsReqDto
+import co.bondspot.spbttest.springweb.dto.UpdateTaskDetailsResDto
 import co.bondspot.spbttest.springweb.service.TaskService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.net.URI
 
 @RestController
@@ -37,11 +33,12 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok().body(task)
     }
 
-    @PutMapping("/{id}/details")
+    @PatchMapping("/{id}/details")
     fun updateDetails(
-        @PathVariable id: String
-    ): ResponseEntity<Boolean?> {
-        val task = taskService.updateDetails(id)
-        return ResponseEntity.ok().body(task)
+        @PathVariable id: String,
+        @Valid @RequestBody body: UpdateTaskDetailsReqDto
+    ): ResponseEntity<UpdateTaskDetailsResDto> {
+        val updated = taskService.updateDetails(id, body.toDomainEntity().title)
+        return ResponseEntity.ok().body(UpdateTaskDetailsResDto(updated))
     }
 }

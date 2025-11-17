@@ -3,6 +3,7 @@ package co.bondspot.spbttest.springweb.controller
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.domain.signature.TaskRepositorySignature
 import co.bondspot.spbttest.springweb.persistence.TaskRepository
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -11,9 +12,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.*
@@ -150,10 +149,29 @@ class TaskControllerTests() {
         @Test
         fun `return 404 if no task found with given id`() {
             mockMvc.perform(
-                put("/task/${UUID.randomUUID()}/details")
+                patch("/task/${UUID.randomUUID()}/details")
             )
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.errors[0]").value("Task not found"))
+        }
+
+        @Test
+        fun `return success result for found task updated`() {
+            val created = taskRepositorySignature.create(Task("Task 1", description = "alguma coisa aí"))
+            val id = created.id!!
+
+            mockMvc.perform(
+                patch("/task/$id/details")
+                    .contentType(MediaType.APPLICATION_JSON).content(
+                    """{"title":  "Task 1 updated"}""".trimIndent()
+                )
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.updated").value(true))
+
+            val updated = taskRepositorySignature.getById(id)
+
+            assertThat(updated?.title).isEqualTo("Task 1 updated")
         }
     }
 }
