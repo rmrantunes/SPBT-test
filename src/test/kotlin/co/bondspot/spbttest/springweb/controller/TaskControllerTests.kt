@@ -1,31 +1,45 @@
 package co.bondspot.spbttest.springweb.controller
 
-import co.bondspot.spbttest.domain.entity.Task
-import co.bondspot.spbttest.springweb.dto.CreateTaskReqDto
-import co.bondspot.spbttest.springweb.service.TaskService
-import com.ninjasquad.springmockk.MockkBean
-import io.mockk.every
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
+import co.bondspot.spbttest.domain.signature.TaskRepositorySignature
+import co.bondspot.spbttest.springweb.persistence.TaskRepository
+import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import kotlin.test.Ignore
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import kotlin.test.assertTrue
 
-@WebMvcTest(TaskController::class)
+@SpringBootTest
+@AutoConfigureMockMvc
 @DisplayName("task controller")
+@ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class TaskControllerTests() {
 
     @Autowired
     private lateinit var mockMvc: MockMvc
 
-    @MockkBean
-    private lateinit var taskService: TaskService
+    @Autowired
+    private lateinit var taskRepository: TaskRepository
+
+    @Autowired
+    private lateinit var taskRepositorySignature: TaskRepositorySignature
+
+    @BeforeEach
+    fun beforeEach() {
+        taskRepository.deleteAll()
+    }
+
+    @AfterEach
+    fun afterEach() {
+        taskRepository.deleteAll()
+    }
 
     @Nested
     @DisplayName("when creating a task...")
@@ -33,19 +47,18 @@ class TaskControllerTests() {
 
         @Test
         fun `return it if input is valid`() {
-            val createdTask = Task("Uma tarefa qualquer", id = "some_id")
-            every { taskService.create(any()) } returns createdTask
-
             mockMvc.perform(
                 post("/task")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""{"title": "Uma tarefa qualquer"}""")
             )
-                .andDo { print() }
                 .andExpect(status().isCreated)
-                .andExpect(header().string("Location", "/task/${createdTask.id}"))
-                .andExpect(jsonPath("$.id").value(createdTask.id))
-                .andExpect(jsonPath("$.title").value(createdTask.title))
+                .andExpect(jsonPath("$.id").isString)
+                .andExpect(jsonPath("$.title").value("Uma tarefa qualquer"))
+                .andReturn()
+                .also {
+                    assertTrue { it.response.getHeaderValue("Location").toString().startsWith("/task") }
+                }
         }
 
         @Test
