@@ -1,13 +1,20 @@
 package co.bondspot.spbttest.infrastructure.iam
 
 import co.bondspot.spbttest.domain.entity.IAMAccount
+import dasniko.testcontainers.keycloak.KeycloakContainer
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.*
+import org.testcontainers.junit.jupiter.Container
 
-class KeycloakIAMProviderTests {
+val keycloakContainerImage = "quay.io/keycloak/keycloak:26.0.5"
+val keycloakRealmImportFilePath = "/keycloaktc-realm.json"
+
+private class KeycloakIAMProviderTests {
+    @Container
+    private var keycloak = KeycloakContainer(keycloakContainerImage)
+        .withRealmImportFile(keycloakRealmImportFilePath)
+
     val provider = KeycloakIAMProvider()
 
     val inputAccount = IAMAccount(
@@ -17,8 +24,14 @@ class KeycloakIAMProviderTests {
         "Antunes",
     )
 
+    @BeforeEach
+    fun setup() {
+        keycloak.start()
+    }
+
     @AfterEach
     fun tearDownEach() {
+        keycloak.close()
         provider.close()
     }
 
