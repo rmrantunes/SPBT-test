@@ -15,6 +15,8 @@ import org.springframework.stereotype.Repository
 @Table(name = "messages")
 data class AccountEntity(
     @Column(nullable = false)
+    val username: String,
+    @Column(nullable = false)
     val email: String,
     @Column("first_name", nullable = false)
     val firstName: String,
@@ -27,6 +29,7 @@ data class AccountEntity(
 ) {
     companion object {
         fun fromDomain(domain: Account) = AccountEntity(
+            username = domain.username,
             email = domain.email,
             firstName = domain.firstName,
             lastName = domain.lastName,
@@ -35,7 +38,7 @@ data class AccountEntity(
         )
     }
 
-    fun toDomain(): Account = Account(email, firstName, lastName, iamAccountId, id)
+    fun toDomain(): Account = Account(username, email, firstName, lastName, iamAccountId, id)
 }
 
 @Repository

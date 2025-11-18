@@ -22,6 +22,7 @@ open class AccountApplicationService(
 
         val iamAccount = iamProviderContract.register(
             IAMAccount(
+                account.username,
                 account.email,
                 account.firstName,
                 account.lastName,

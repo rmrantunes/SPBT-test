@@ -79,9 +79,7 @@ class AccountServiceTests {
                 )
             }
 
-            every { iamProvider.setExternalId(iamAccountId, accountId) } answers {
-                iamAccount.copy(externalId = secondArg())
-            }
+            every { iamProvider.setExternalId(iamAccountId, accountId) } returns Unit
 
             service.register(account, "pas123")
 
