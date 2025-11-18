@@ -6,17 +6,23 @@ import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
 
-class KeycloakIAMProvider : IAMProviderContract {
+class KeycloakIAMProvider(
+    private val serverUrl: String = "http://localhost:8080",
+    private val clientSecret: String = "luJ0BaS4TtMK8tbK2AAwNKCtAM4Yd3Om",
+    private val grantType: String = "client_credentials"
+) : IAMProviderContract {
     private val externalIdAttrKey = "externalId"
     private val realm = "spbttest"
     private var keycloak = KeycloakBuilder
         .builder()
-        .serverUrl("http://localhost:8080")
+        .serverUrl(serverUrl)
         .realm(realm)
         .clientId("spbttest-api")
-        .clientSecret("luJ0BaS4TtMK8tbK2AAwNKCtAM4Yd3Om")
-        .username("realm-admin")
-        .password("5kbR0E2tzuUqJBKFzuFM")
+        .clientSecret(clientSecret)
+        .also {
+            if (grantType == "password") it.password("5kbR0E2tzuUqJBKFzuFM")
+        }
+        .grantType(grantType)
         .build()
 
     fun close() {

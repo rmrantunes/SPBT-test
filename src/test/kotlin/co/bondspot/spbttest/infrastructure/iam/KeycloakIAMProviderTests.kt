@@ -1,21 +1,12 @@
 package co.bondspot.spbttest.infrastructure.iam
 
+import co.bondspot.spbttest.KeycloakContainerExtension
 import co.bondspot.spbttest.domain.entity.IAMAccount
-import dasniko.testcontainers.keycloak.KeycloakContainer
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.*
-import org.testcontainers.junit.jupiter.Container
 
-val keycloakContainerImage = "quay.io/keycloak/keycloak:26.0.5"
-val keycloakRealmImportFilePath = "/keycloaktc-realm.json"
-
-private class KeycloakIAMProviderTests {
-    @Container
-    private var keycloak = KeycloakContainer(keycloakContainerImage)
-        .withRealmImportFile(keycloakRealmImportFilePath)
-
-    val provider = KeycloakIAMProvider()
+private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
+    private lateinit var provider: KeycloakIAMProvider
 
     val inputAccount = IAMAccount(
         "myusername",
@@ -26,12 +17,11 @@ private class KeycloakIAMProviderTests {
 
     @BeforeEach
     fun setup() {
-        keycloak.start()
+        provider = KeycloakIAMProvider(KEYCLOAK.authServerUrl)
     }
 
     @AfterEach
     fun tearDownEach() {
-        keycloak.close()
         provider.close()
     }
 
