@@ -7,7 +7,7 @@ import co.bondspot.spbttest.domain.contract.IAMProviderContract
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.IAMAccount
 
-class AccountApplicationService(
+open class AccountApplicationService(
     private val accountRepositoryContract: AccountRepositoryContract,
     private val iamProviderContract: IAMProviderContract
 ) :

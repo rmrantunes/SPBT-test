@@ -1,19 +1,19 @@
 package co.bondspot.spbttest.springweb.configuration
 
-import co.bondspot.spbttest.domain.entity.Message
-import co.bondspot.spbttest.domain.entity.Task
+import co.bondspot.spbttest.domain.contract.AccountRepositoryContract
 import co.bondspot.spbttest.domain.contract.MessageRepositoryContract
 import co.bondspot.spbttest.domain.contract.TaskRepositoryContract
-import co.bondspot.spbttest.springweb.persistence.MessageEntity
-import co.bondspot.spbttest.springweb.persistence.MessageRepository
-import co.bondspot.spbttest.springweb.persistence.TaskEntity
-import co.bondspot.spbttest.springweb.persistence.TaskRepository
+import co.bondspot.spbttest.domain.entity.Account
+import co.bondspot.spbttest.domain.entity.Message
+import co.bondspot.spbttest.domain.entity.Task
+import co.bondspot.spbttest.springweb.persistence.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.repository.findByIdOrNull
 
 @Configuration
 class RepositoryBeanConfiguration(
+    private val accountRepository: AccountRepository,
     private val messageRepository: MessageRepository,
     private val taskRepository: TaskRepository
 ) {
@@ -44,6 +44,14 @@ class RepositoryBeanConfiguration(
         }
 
         override fun list(): List<Task> = taskRepository.findAll().map { it.toDomain() }
+    }
+
+    @Bean
+    fun getAccountRepository(): AccountRepositoryContract = object : AccountRepositoryContract {
+        override fun register(account: Account): Account =
+            accountRepository.save(AccountEntity.fromDomain(account)).toDomain()
+
+        override fun getByEmail(email: String) = accountRepository.findByEmail(email)?.toDomain()
 
     }
 }

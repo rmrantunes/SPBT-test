@@ -3,7 +3,7 @@ package co.bondspot.spbttest.domain.entity
 data class Account(
     val email: String = "",
     val firstName: String = "",
-    val lastName: String = "",
+    val lastName: String? = null,
     val iamAccountId: String? = null,
     val id: String? = null,
 ) {
