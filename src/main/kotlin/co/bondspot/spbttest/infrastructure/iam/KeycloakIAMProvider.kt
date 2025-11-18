@@ -7,6 +7,7 @@ import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
 
 class KeycloakIAMProvider : IAMProviderContract {
+    private val externalIdAttrKey = "externalId"
     private val realm = "spbttest"
     private var keycloak = KeycloakBuilder
         .builder()
@@ -20,6 +21,10 @@ class KeycloakIAMProvider : IAMProviderContract {
 
     fun close() {
         keycloak.close()
+    }
+
+    fun dangerouslyDeleteUser(id: String) {
+        keycloak.realm(realm).users().delete(id).also { response -> response.close() }
     }
 
     override fun register(
@@ -67,7 +72,7 @@ class KeycloakIAMProvider : IAMProviderContract {
     ) {
         keycloak.realm(realm)?.users()?.get(id)?.update(
             UserRepresentation().also {
-                it.attributes["externalId"] = listOf(it.id)
+                it.attributes[externalIdAttrKey] = listOf(it.id)
             }
         )
     }
@@ -77,7 +82,8 @@ class KeycloakIAMProvider : IAMProviderContract {
         email,
         firstName,
         lastName,
-        externalId = id,
+        id = id,
+        //externalId = attributes[externalIdAttrKey]?.get(0)
     )
 
     private fun IAMAccount.toUserRepresentation(): UserRepresentation {
@@ -86,7 +92,7 @@ class KeycloakIAMProvider : IAMProviderContract {
             it.email = email
             it.firstName = firstName
             it.lastName = lastName
-            it.id = externalId
+            it.id = id
         }
     }
 }
