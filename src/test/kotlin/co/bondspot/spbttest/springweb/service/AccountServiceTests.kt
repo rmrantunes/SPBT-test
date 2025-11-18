@@ -8,16 +8,17 @@ import co.bondspot.spbttest.domain.entity.IAMAccount
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.Ignore
+import java.util.*
 
 class AccountServiceTests {
     @Nested
-    @DisplayName("when registering an account")
+    @DisplayName("when registering an account...")
     inner class RegisterAccount {
         @Test
         fun `return FORBIDDEN if user with same email already exists in IAM or DB`() {
@@ -56,8 +57,36 @@ class AccountServiceTests {
             assertThat(exception2.httpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
         }
 
-        @Ignore
-        fun `should register a new account with IAM integration`() {
+        @Test
+        fun `if valid should register to DB with IAM integration`() {
+            val iamProvider = mockk<IAMProviderContract>()
+            val accountRepository = mockk<AccountRepositoryContract>()
+            val service = AccountService(accountRepository, iamProvider)
+
+            val accountId = UUID.randomUUID().toString()
+            val iamAccountId = UUID.randomUUID().toString()
+
+            val account = Account("haha@email.com", "Haha", "O Monstro")
+            val iamAccount = IAMAccount("haha@email.com", "Haha", "O Monstro")
+
+            every { iamProvider.getByEmail(account.email) } returns null
+            every { accountRepository.getByEmail(account.email) } returns null
+
+            every { iamProvider.register(iamAccount, "pas123") } returns iamAccount.copy(id = iamAccountId)
+            every { accountRepository.register(account.copy(iamAccountId = iamAccountId)) } answers {
+                (firstArg() as Account).copy(
+                    id = accountId
+                )
+            }
+
+            every { iamProvider.setExternalId(iamAccountId, accountId) } answers {
+                iamAccount.copy(externalId = secondArg())
+            }
+
+            service.register(account, "pas123")
+
+            verify { iamProvider.register(iamAccount, "pas123") }
+            verify { iamProvider.setExternalId(iamAccountId, accountId) }
         }
     }
 }
