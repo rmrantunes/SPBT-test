@@ -15,10 +15,10 @@ open class AccountApplicationService(
 
     override fun register(account: Account, password: String) {
         val existingIAMAccount = iamProviderContract.getByEmail(account.email)
-        if (existingIAMAccount != null) throw ApplicationServiceException("Account already exists").relatedHttpStatusCode { FORBIDDEN }
+        if (existingIAMAccount != null) throw ApplicationServiceException("Account already exists").relatedHttpStatusCode { CONFLICT }
 
         val existingAccount = accountRepositoryContract.getByEmail(account.email)
-        if (existingAccount != null) throw ApplicationServiceException("Account already exists").relatedHttpStatusCode { FORBIDDEN }
+        if (existingAccount != null) throw ApplicationServiceException("Account already exists").relatedHttpStatusCode { CONFLICT }
 
         val iamAccount = iamProviderContract.register(
             IAMAccount(

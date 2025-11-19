@@ -21,7 +21,7 @@ class AccountServiceTests {
     @DisplayName("when registering an account...")
     inner class RegisterAccount {
         @Test
-        fun `return FORBIDDEN if user with same email already exists in IAM or DB`() {
+        fun `return CONFLICT if user with same email already exists in IAM or DB`() {
             val iamProvider = mockk<IAMProviderContract>()
             val accountRepository = mockk<AccountRepositoryContract>()
             val service = AccountService(accountRepository, iamProvider)
@@ -41,7 +41,7 @@ class AccountServiceTests {
 
             assertThat(exception.message).isEqualTo("Account already exists")
             assertThat(exception.errors[0]).isEqualTo("Account already exists")
-            assertThat(exception.httpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
+            assertThat(exception.httpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
 
             every { iamProvider.getByEmail(account.email) } returns null
 
@@ -54,7 +54,7 @@ class AccountServiceTests {
 
             assertThat(exception2.message).isEqualTo("Account already exists")
             assertThat(exception2.errors[0]).isEqualTo("Account already exists")
-            assertThat(exception2.httpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
+            assertThat(exception2.httpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
         }
 
         @Test
