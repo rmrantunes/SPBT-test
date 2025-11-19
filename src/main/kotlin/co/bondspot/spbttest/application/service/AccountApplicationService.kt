@@ -6,6 +6,7 @@ import co.bondspot.spbttest.domain.contract.AccountRepositoryContract
 import co.bondspot.spbttest.domain.contract.IAMProviderContract
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.IAMAccount
+import co.bondspot.spbttest.domain.entity.IAMAuthenticatedToken
 
 open class AccountApplicationService(
     private val accountRepositoryContract: AccountRepositoryContract,
@@ -45,7 +46,7 @@ open class AccountApplicationService(
     override fun authenticate(
         email: String,
         password: String
-    ): Pair<String, String> {
+    ): IAMAuthenticatedToken {
         return iamProviderContract.authenticate(email, password)
     }
 }

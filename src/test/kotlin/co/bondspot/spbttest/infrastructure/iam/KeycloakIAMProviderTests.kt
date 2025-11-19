@@ -132,8 +132,9 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
 
             val response = provider.authenticate(inputAccount.username, password)
 
-            assertThat(response.first).isNotNull.isNotBlank
-            assertThat(response.second).isNotNull.isNotBlank
+            assertThat(response.token).isNotNull.isNotBlank
+            assertThat(response.refreshToken).isNotNull.isNotBlank
+            assertThat(response.expiresIn).isNotNull.isPositive
         }
     }
 }

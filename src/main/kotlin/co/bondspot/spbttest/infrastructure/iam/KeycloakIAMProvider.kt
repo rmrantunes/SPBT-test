@@ -2,6 +2,7 @@ package co.bondspot.spbttest.infrastructure.iam
 
 import co.bondspot.spbttest.domain.contract.IAMProviderContract
 import co.bondspot.spbttest.domain.entity.IAMAccount
+import co.bondspot.spbttest.domain.entity.IAMAuthenticatedToken
 import co.bondspot.spbttest.domain.exception.IAMProviderException
 import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.authorization.client.AuthzClient
@@ -92,9 +93,9 @@ class KeycloakIAMProvider(
     override fun authenticate(
         username: String,
         password: String
-    ): Pair<String, String> {
+    ): IAMAuthenticatedToken {
         val response = authzClient.obtainAccessToken(username, password)
-        return Pair(response.token, response.refreshToken)
+        return IAMAuthenticatedToken(response.token, response.refreshToken, response.expiresIn)
     }
 
     override fun getByEmail(email: String): IAMAccount? {
