@@ -5,6 +5,7 @@ import co.bondspot.spbttest.domain.entity.IAMAccount
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
+import java.util.UUID
 
 private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
     private lateinit var provider: KeycloakIAMProvider
@@ -115,6 +116,30 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
             assertThat(account?.email).isEqualTo(inputAccount2.email)
             assertThat(account?.firstName).isEqualTo(inputAccount2.firstName)
             assertThat(account?.lastName).isEqualTo(inputAccount2.lastName)
+        }
+    }
+
+
+    @Nested
+    @DisplayName("when setting externalId...")
+    inner class SetExternalId() {
+        @Test
+        fun `throw not found exception if no user with id`() {
+            val ex = assertThrows<KeycloakIAMProviderException> {
+                provider.setExternalId("fdsf", "some-external-id")
+            }
+
+            assertThat(ex.message).isEqualTo("User not found")
+            assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.NOT_FOUND)
+        }
+
+        @Test
+        fun `return account if user external id is set`() {
+            val inputAccount = inputAccount.copy(email = "nolose@example.com", username = "haha")
+            val password = "rafAAA###123"
+            val account = provider.register(inputAccount, password)
+
+            val externalId = UUID.randomUUID().toString()
         }
     }
 

@@ -4,6 +4,8 @@ import co.bondspot.spbttest.domain.contract.IAMProviderContract
 import co.bondspot.spbttest.domain.entity.IAMAccount
 import co.bondspot.spbttest.domain.entity.IAMAuthenticatedToken
 import co.bondspot.spbttest.domain.exception.IAMProviderException
+import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
+import jakarta.ws.rs.NotFoundException
 import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.authorization.client.AuthzClient
 import org.keycloak.authorization.client.Configuration
@@ -88,7 +90,7 @@ class KeycloakIAMProvider(
             it.isTemporary = false
         })
 
-        return account.copy(externalId = userId)
+        return account.copy(id = userId)
     }
 
     override fun obtainAccessToken(
@@ -124,11 +126,18 @@ class KeycloakIAMProvider(
         id: String,
         externalId: String
     ) {
-        keycloak.realm(realm)?.users()?.get(id)?.update(
-            UserRepresentation().also {
-                it.attributes[externalIdAttrKey] = listOf(it.id)
-            }
-        )
+        val userNotFoundMessage = "User not found"
+        try {
+            val user = keycloak.realm(realm)?.users()?.get(id)
+
+            user?.update(
+                UserRepresentation().also {
+                    it.attributes = mapOf(externalIdAttrKey to listOf(it.id))
+                }
+            )
+        } catch (_: NotFoundException) {
+            throw KeycloakIAMProviderException(userNotFoundMessage, HttpStatusCode.NOT_FOUND)
+        }
     }
 
     private fun UserRepresentation.toIAMAccount() = IAMAccount(
@@ -136,8 +145,8 @@ class KeycloakIAMProvider(
         email,
         firstName,
         lastName,
-        id = id,
-        //externalId = attributes[externalIdAttrKey]?.get(0)
+        id = attributes[externalIdAttrKey]?.get(0),
+        externalId = id
     )
 
     private fun IAMAccount.toUserRepresentation(): UserRepresentation {
@@ -146,7 +155,7 @@ class KeycloakIAMProvider(
             it.email = email
             it.firstName = firstName
             it.lastName = lastName
-            it.id = id
+            it.id = externalId
         }
     }
 }
