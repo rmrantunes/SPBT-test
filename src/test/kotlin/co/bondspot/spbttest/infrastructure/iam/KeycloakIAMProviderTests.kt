@@ -117,4 +117,23 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
             assertThat(account?.lastName).isEqualTo(inputAccount2.lastName)
         }
     }
+
+    @Nested
+    @DisplayName("when authenticating with password...")
+    inner class AuthenticateByPassword() {
+        @Test
+        fun `if valid return access token and refresh token`() {
+            val inputAccount = inputAccount.copy(email = "fadfs3sf@example.com", username = "zi3kasnois")
+            val password = "rafAAA###123"
+            provider.register(
+                inputAccount,
+                password
+            )
+
+            val response = provider.authenticate(inputAccount.email, password)
+
+            assertThat(response.first).isNotNull.isNotBlank
+            assertThat(response.second).isNotNull.isNotBlank
+        }
+    }
 }
