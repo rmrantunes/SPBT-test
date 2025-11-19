@@ -1,7 +1,7 @@
 package co.bondspot.spbttest.springweb.controller
 
 import co.bondspot.spbttest.domain.entity.Task
-import co.bondspot.spbttest.domain.contract.TaskRepositoryContract
+import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.springweb.persistence.TaskRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
@@ -33,7 +33,7 @@ class TaskControllerTests() {
     private lateinit var jpaTaskRepository: TaskRepository
 
     @Autowired
-    private lateinit var taskRepositoryImpl: TaskRepositoryContract
+    private lateinit var taskRepositoryImpl: ITaskRepository
 
     @BeforeEach
     fun beforeEach() {

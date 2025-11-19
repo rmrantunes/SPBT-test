@@ -2,9 +2,10 @@ package co.bondspot.spbttest.domain.contract
 
 import co.bondspot.spbttest.domain.entity.Task
 
-interface TaskRepositoryContract {
+interface ITaskApplicationService {
     fun create(task: Task): Task
     fun getById(id: String): Task?
-    fun update(id: String, task: Task): Boolean?
+    fun updateDetails(id: String, title: String? = null): Boolean?
+    fun updateStatus(id: String, status: Task.Status): Boolean?
     fun list(): List<Task>
 }

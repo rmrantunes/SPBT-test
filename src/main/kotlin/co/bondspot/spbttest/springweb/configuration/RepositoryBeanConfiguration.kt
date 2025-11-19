@@ -1,8 +1,8 @@
 package co.bondspot.spbttest.springweb.configuration
 
-import co.bondspot.spbttest.domain.contract.AccountRepositoryContract
-import co.bondspot.spbttest.domain.contract.MessageRepositoryContract
-import co.bondspot.spbttest.domain.contract.TaskRepositoryContract
+import co.bondspot.spbttest.domain.contract.IAccountRepository
+import co.bondspot.spbttest.domain.contract.IMessageRepository
+import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.Message
 import co.bondspot.spbttest.domain.entity.Task
@@ -19,7 +19,7 @@ class RepositoryBeanConfiguration(
 ) {
 
     @Bean
-    fun getMessageRepository(): MessageRepositoryContract = object : MessageRepositoryContract {
+    fun getMessageRepository(): IMessageRepository = object : IMessageRepository {
         override fun find(): List<Message> = messageRepository.findAll().map { it.toDomain() }
 
         override fun findById(id: String): Message? = messageRepository.findByIdOrNull(id)?.toDomain()
@@ -29,7 +29,7 @@ class RepositoryBeanConfiguration(
     }
 
     @Bean
-    fun getTaskRepository(): TaskRepositoryContract = object : TaskRepositoryContract {
+    fun getTaskRepository(): ITaskRepository = object : ITaskRepository {
         override fun create(task: Task): Task = taskRepository.save(TaskEntity.fromDomain(task)).toDomain()
 
         override fun getById(id: String): Task? = taskRepository.findByIdOrNull(id)?.toDomain()
@@ -47,7 +47,7 @@ class RepositoryBeanConfiguration(
     }
 
     @Bean
-    fun getAccountRepository(): AccountRepositoryContract = object : AccountRepositoryContract {
+    fun getAccountRepository(): IAccountRepository = object : IAccountRepository {
         override fun register(account: Account): Account =
             accountRepository.save(AccountEntity.fromDomain(account)).toDomain()
         override fun getByEmail(email: String) = accountRepository.findByEmail(email)?.toDomain()

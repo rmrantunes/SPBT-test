@@ -1,6 +1,6 @@
 package co.bondspot.spbttest.infrastructure.iam
 
-import co.bondspot.spbttest.domain.contract.IAMProviderContract
+import co.bondspot.spbttest.domain.contract.IIAMProvider
 import co.bondspot.spbttest.domain.entity.IAMAccount
 import co.bondspot.spbttest.domain.entity.IAMAuthenticatedToken
 import co.bondspot.spbttest.domain.exception.IAMProviderException
@@ -20,7 +20,7 @@ class KeycloakIAMProvider(
     private val serverUrl: String = "http://localhost:8080",
     private val clientSecret: String = "luJ0BaS4TtMK8tbK2AAwNKCtAM4Yd3Om",
     private val grantType: String = "client_credentials"
-) : IAMProviderContract {
+) : IIAMProvider {
     private val externalIdAttrKey = "externalId"
     private val realm = "spbttest"
     private val clientId = "spbttest-api"

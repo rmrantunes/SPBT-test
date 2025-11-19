@@ -1,7 +1,7 @@
 package co.bondspot.spbttest.springweb.service
 
 import co.bondspot.spbttest.domain.entity.Task
-import co.bondspot.spbttest.domain.contract.TaskRepositoryContract
+import co.bondspot.spbttest.domain.contract.ITaskRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -13,7 +13,7 @@ class TaskServiceTests {
 
     @Test
     fun `should create and return message`() {
-        val repository = mockk<TaskRepositoryContract>()
+        val repository = mockk<ITaskRepository>()
         val created = Task("Text", id = "Some ID")
         every { repository.create(any()) } returns created
         val service = TaskService(repository)
@@ -25,7 +25,7 @@ class TaskServiceTests {
 
     @Test
     fun `should update status`() {
-        val repository = spyk<TaskRepositoryContract>(recordPrivateCalls = true)
+        val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
         val id = "some_id"
         val existing = Task("Text", id = id)
         every { repository.create(any()) } returns existing
@@ -42,7 +42,7 @@ class TaskServiceTests {
 
     @Test
     fun `should update details`() {
-        val repository = spyk<TaskRepositoryContract>(recordPrivateCalls = true)
+        val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
         val id = "some_id"
         val existing = Task("Text", id = id)
         every { repository.create(any()) } returns existing

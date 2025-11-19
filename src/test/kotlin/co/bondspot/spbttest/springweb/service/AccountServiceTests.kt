@@ -1,8 +1,8 @@
 package co.bondspot.spbttest.springweb.service
 
 import co.bondspot.spbttest.application.exception.ApplicationServiceException
-import co.bondspot.spbttest.domain.contract.AccountRepositoryContract
-import co.bondspot.spbttest.domain.contract.IAMProviderContract
+import co.bondspot.spbttest.domain.contract.IAccountRepository
+import co.bondspot.spbttest.domain.contract.IIAMProvider
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.IAMAccount
 import co.bondspot.spbttest.domain.exception.IAMProviderException
@@ -23,8 +23,8 @@ class AccountServiceTests {
     inner class RegisterAccount {
         @Test
         fun `return CONFLICT if user with same username or email already exists in IAM or DB`() {
-            val iamProvider = mockk<IAMProviderContract>()
-            val accountRepository = mockk<AccountRepositoryContract>()
+            val iamProvider = mockk<IIAMProvider>()
+            val accountRepository = mockk<IAccountRepository>()
             val service = AccountService(accountRepository, iamProvider)
 
             val account = Account("user1", "haha@email.com", "Haha", "O Monstro")
@@ -77,8 +77,8 @@ class AccountServiceTests {
 
         @Test
         fun `if valid should register to DB with IAM integration`() {
-            val iamProvider = mockk<IAMProviderContract>()
-            val accountRepository = mockk<AccountRepositoryContract>()
+            val iamProvider = mockk<IIAMProvider>()
+            val accountRepository = mockk<IAccountRepository>()
             val service = AccountService(accountRepository, iamProvider)
 
             val accountId = UUID.randomUUID().toString()
@@ -113,8 +113,8 @@ class AccountServiceTests {
     inner class ObtainAccountAccessToken {
         @Test
         fun `if invalid throw ApplicationServiceException`() {
-            val iamProvider = mockk<IAMProviderContract>()
-            val accountRepository = mockk<AccountRepositoryContract>()
+            val iamProvider = mockk<IIAMProvider>()
+            val accountRepository = mockk<IAccountRepository>()
             val service = AccountService(accountRepository, iamProvider)
 
             every { iamProvider.obtainAccessToken(any(), any()) } throws IAMProviderException(
