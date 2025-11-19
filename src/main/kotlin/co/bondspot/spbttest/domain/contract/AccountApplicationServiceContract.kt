@@ -5,5 +5,5 @@ import co.bondspot.spbttest.domain.entity.IAMAuthenticatedToken
 
 interface AccountApplicationServiceContract {
     fun register(account: Account, password: String)
-    fun authenticate(email: String, password: String): IAMAuthenticatedToken
+    fun obtainAccessToken(username: String, password: String): IAMAuthenticatedToken
 }

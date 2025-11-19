@@ -91,7 +91,7 @@ class KeycloakIAMProvider(
         return account.copy(externalId = userId)
     }
 
-    override fun authenticate(
+    override fun obtainAccessToken(
         username: String,
         password: String
     ): IAMAuthenticatedToken {

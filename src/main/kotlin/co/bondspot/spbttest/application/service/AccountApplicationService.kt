@@ -43,10 +43,10 @@ open class AccountApplicationService(
         iamProviderContract.setExternalId(iamAccount.id!!, account.id!!)
     }
 
-    override fun authenticate(
-        email: String,
+    override fun obtainAccessToken(
+        username: String,
         password: String
     ): IAMAuthenticatedToken {
-        return iamProviderContract.authenticate(email, password)
+        return iamProviderContract.obtainAccessToken(username, password)
     }
 }

@@ -130,7 +130,7 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
                 password
             )
 
-            val response = provider.authenticate(inputAccount.username, password)
+            val response = provider.obtainAccessToken(inputAccount.username, password)
 
             assertThat(response.token).isNotNull.isNotBlank
             assertThat(response.refreshToken).isNotNull.isNotBlank
@@ -141,7 +141,7 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
         fun `if invalid username throw exception`() {
             val password = "rafAAA###123"
             val response =
-                assertThrows<KeycloakIAMProviderException> { provider.authenticate("not_the_username", password) }
+                assertThrows<KeycloakIAMProviderException> { provider.obtainAccessToken("not_the_username", password) }
 
             assertThat(response.message).isEqualTo("Invalid account credentials")
             assertThat(response.relatedHttpStatusCode).isEqualTo(401)
@@ -156,7 +156,7 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
                 password
             )
             val response = assertThrows<KeycloakIAMProviderException> {
-                provider.authenticate(
+                provider.obtainAccessToken(
                     inputAccount.username,
                     "not_the_password"
                 )
