@@ -2,6 +2,7 @@ package co.bondspot.spbttest.infrastructure.iam
 
 import co.bondspot.spbttest.KeycloakContainerExtension
 import co.bondspot.spbttest.domain.entity.IAMAccount
+import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 
@@ -39,6 +40,33 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
             assertThat(createdAccount.firstName).isEqualTo(inputAccount.firstName)
             assertThat(createdAccount.lastName).isEqualTo(inputAccount.lastName)
             assertThat(createdAccount.firstName).isEqualTo(inputAccount.firstName)
+        }
+
+        @Test
+        fun `return provider exception if a user exists with same credentials`() {
+            val inputAccount2 = IAMAccount(
+                "myusername",
+                "myusername.dev@example.com",
+                "Rafael",
+                "Antunes",
+            )
+
+            assertDoesNotThrow {
+                provider.register(
+                    inputAccount2,
+                    "rafAAA###123"
+                )
+            }
+
+            val ex = assertThrows<KeycloakIAMProviderException> {
+                provider.register(
+                    inputAccount2,
+                    "rafAAA###123"
+                )
+            }
+
+            assertThat(ex.message).isEqualTo("A user exists with same credentials")
+            assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
         }
     }
 

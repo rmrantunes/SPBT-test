@@ -2,9 +2,12 @@ package co.bondspot.spbttest.infrastructure.iam
 
 import co.bondspot.spbttest.domain.contract.IAMProviderContract
 import co.bondspot.spbttest.domain.entity.IAMAccount
+import co.bondspot.spbttest.domain.exception.IAMProviderException
 import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
+
+class KeycloakIAMProviderException(message: String? = null, relatedHttpStatusCode: Int = 500) : IAMProviderException(message, relatedHttpStatusCode)
 
 class KeycloakIAMProvider(
     private val serverUrl: String = "http://localhost:8080",
@@ -43,10 +46,21 @@ class KeycloakIAMProvider(
 
         var userId: String?
 
-        if (response.status == 201) {
-            userId = response.location.path.replace(Regex("([\\w+/]+)/"), "")
-        } else {
-            throw Exception("Failed to create user: " + response.statusInfo)
+
+        when (response.status) {
+            201 -> {
+                userId = response.location.path.replace(Regex("([\\w+/]+)/"), "")
+            }
+
+            409 -> {
+                response.close()
+                throw KeycloakIAMProviderException("A user exists with same credentials", response.status)
+            }
+
+            else -> {
+                response.close()
+                throw Exception("Failed to create user: " + response.statusInfo)
+            }
         }
 
         response.close()
