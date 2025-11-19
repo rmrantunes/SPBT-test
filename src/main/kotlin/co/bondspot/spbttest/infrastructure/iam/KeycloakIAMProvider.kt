@@ -87,8 +87,8 @@ class KeycloakIAMProvider(
     }
 
     override fun getByUsername(username: String): IAMAccount? {
-        TODO("Not yet implemented")
-    }
+        val users = keycloak.realm(realm)?.users()?.search(username, null)
+        return users?.getOrNull(0)?.toIAMAccount()    }
 
     override fun setExternalId(
         id: String,

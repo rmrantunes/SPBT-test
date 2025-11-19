@@ -44,4 +44,5 @@ data class AccountEntity(
 @Repository
 interface AccountRepository : JpaRepository<AccountEntity, String> {
     fun findByEmail(email: String): AccountEntity?
+    fun findByUsername(username: String): AccountEntity?
 }

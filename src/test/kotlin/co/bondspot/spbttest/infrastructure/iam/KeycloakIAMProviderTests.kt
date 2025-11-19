@@ -93,4 +93,28 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
             assertThat(account?.lastName).isEqualTo(inputAccount2.lastName)
         }
     }
+
+    @Nested
+    @DisplayName("when getting by username...")
+    inner class GetByUsername() {
+        @Test
+        fun `if no one found return null`() {
+            val notFound = provider.getByUsername(inputAccount.username)
+            assertThat(notFound).isNull()
+        }
+
+        @Test
+        fun `return found Account`() {
+            val inputAccount2 = inputAccount.copy(email = "fadfs3f@example.com", username = "zi3kanois")
+            provider.register(
+                inputAccount2,
+                "rafAAA###123"
+            )
+            val account = provider.getByUsername(inputAccount2.username)
+            assertThat(account?.id).isNotNull.isNotBlank
+            assertThat(account?.email).isEqualTo(inputAccount2.email)
+            assertThat(account?.firstName).isEqualTo(inputAccount2.firstName)
+            assertThat(account?.lastName).isEqualTo(inputAccount2.lastName)
+        }
+    }
 }
