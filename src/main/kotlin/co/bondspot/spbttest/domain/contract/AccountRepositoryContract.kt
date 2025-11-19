@@ -5,4 +5,5 @@ import co.bondspot.spbttest.domain.entity.Account
 interface AccountRepositoryContract {
     fun register(account: Account): Account
     fun getByEmail(email: String): Account?
+    fun getByUsername(username: String): Account?
 }

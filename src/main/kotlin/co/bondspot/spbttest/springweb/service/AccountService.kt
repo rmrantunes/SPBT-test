@@ -6,5 +6,4 @@ import co.bondspot.spbttest.domain.contract.IAMProviderContract
 import org.springframework.stereotype.Service
 
 @Service
-class AccountService(accountRepository: AccountRepositoryContract, iamProvider: IAMProviderContract) : AccountApplicationService(accountRepository, iamProvider) {
-}
+class AccountService(accountRepository: AccountRepositoryContract, iamProvider: IAMProviderContract) : AccountApplicationService(accountRepository, iamProvider)

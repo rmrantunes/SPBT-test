@@ -86,6 +86,10 @@ class KeycloakIAMProvider(
         return users?.getOrNull(0)?.toIAMAccount()
     }
 
+    override fun getByUsername(username: String): IAMAccount? {
+        TODO("Not yet implemented")
+    }
+
     override fun setExternalId(
         id: String,
         externalId: String

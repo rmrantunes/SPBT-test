@@ -21,14 +21,16 @@ class AccountServiceTests {
     @DisplayName("when registering an account...")
     inner class RegisterAccount {
         @Test
-        fun `return CONFLICT if user with same email already exists in IAM or DB`() {
+        fun `return CONFLICT if user with same username or email already exists in IAM or DB`() {
             val iamProvider = mockk<IAMProviderContract>()
             val accountRepository = mockk<AccountRepositoryContract>()
             val service = AccountService(accountRepository, iamProvider)
 
-            val account = Account("haha@email.com", "Haha", "O Monstro")
-            val iamAccount = IAMAccount("haha@email.com", "Haha", "O Monstro")
+            val account = Account("user1", "haha@email.com", "Haha", "O Monstro")
+            val iamAccount = IAMAccount("user1", "haha@email.com", "Haha", "O Monstro")
 
+            every { iamProvider.getByUsername(account.username) } returns iamAccount
+            every { accountRepository.getByUsername(account.username) } returns account
             every { iamProvider.getByEmail(account.email) } returns iamAccount
             every { accountRepository.getByEmail(account.email) } returns account
 
@@ -39,11 +41,13 @@ class AccountServiceTests {
                 )
             }
 
-            assertThat(exception.message).isEqualTo("Account already exists")
-            assertThat(exception.errors[0]).isEqualTo("Account already exists")
+            val exMessage = "Account already exists"
+            assertThat(exception.message).isEqualTo(exMessage)
+            assertThat(exception.errors[0]).isEqualTo(exMessage)
             assertThat(exception.httpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
 
-            every { iamProvider.getByEmail(account.email) } returns null
+            every { iamProvider.getByUsername(account.username) } returns null
+            every { accountRepository.getByUsername(account.username) } returns null
 
             val exception2 = assertThrows<ApplicationServiceException> {
                 service.register(
@@ -52,9 +56,22 @@ class AccountServiceTests {
                 )
             }
 
-            assertThat(exception2.message).isEqualTo("Account already exists")
-            assertThat(exception2.errors[0]).isEqualTo("Account already exists")
+            assertThat(exception2.message).isEqualTo(exMessage)
+            assertThat(exception2.errors[0]).isEqualTo(exMessage)
             assertThat(exception2.httpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
+
+            every { iamProvider.getByEmail(account.email) } returns null
+
+            val exception3 = assertThrows<ApplicationServiceException> {
+                service.register(
+                    account,
+                    "pas123"
+                )
+            }
+
+            assertThat(exception3.message).isEqualTo(exMessage)
+            assertThat(exception3.errors[0]).isEqualTo(exMessage)
+            assertThat(exception3.httpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
         }
 
         @Test
@@ -71,6 +88,8 @@ class AccountServiceTests {
 
             every { iamProvider.getByEmail(account.email) } returns null
             every { accountRepository.getByEmail(account.email) } returns null
+            every { iamProvider.getByUsername(account.username) } returns null
+            every { accountRepository.getByUsername(account.username) } returns null
 
             every { iamProvider.register(iamAccount, "pas123") } returns iamAccount.copy(id = iamAccountId)
             every { accountRepository.register(account.copy(iamAccountId = iamAccountId)) } answers {

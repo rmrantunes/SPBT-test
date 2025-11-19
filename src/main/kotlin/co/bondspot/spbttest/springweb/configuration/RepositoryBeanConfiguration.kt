@@ -52,6 +52,9 @@ class RepositoryBeanConfiguration(
             accountRepository.save(AccountEntity.fromDomain(account)).toDomain()
 
         override fun getByEmail(email: String) = accountRepository.findByEmail(email)?.toDomain()
+        override fun getByUsername(username: String): Account? {
+            TODO("Not yet implemented")
+        }
 
     }
 }
