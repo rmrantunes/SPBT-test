@@ -13,7 +13,6 @@ import org.keycloak.authorization.client.util.HttpResponseException
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
 
-
 class KeycloakIAMProviderException(message: String? = null, relatedHttpStatusCode: Int = 500) :
     IAMProviderException(message, relatedHttpStatusCode)
 
@@ -53,14 +52,14 @@ class KeycloakIAMProvider(
     }
 
     fun dangerouslyDeleteUser(id: String) {
-        keycloak.realm(realm).users().delete(id).also { response -> response.close() }
+        realmResource().users().delete(id).also { response -> response.close() }
     }
 
     override fun register(
         account: IAMAccount,
         password: String
     ): IAMAccount {
-        val realm = keycloak.realm(realm)
+        val realm = realmResource()
         val userRepresentation = account.toUserRepresentation().apply { isEnabled = true }
         val response = realm.users().create(userRepresentation)
 
@@ -113,12 +112,12 @@ class KeycloakIAMProvider(
     }
 
     override fun getByEmail(email: String): IAMAccount? {
-        val users = keycloak.realm(realm)?.users()?.searchByEmail(email, true)
+        val users = realmResource()?.users()?.searchByEmail(email, null)
         return users?.getOrNull(0)?.toIAMAccount()
     }
 
     override fun getByUsername(username: String): IAMAccount? {
-        val users = keycloak.realm(realm)?.users()?.search(username, true)
+        val users = realmResource()?.users()?.search(username, true)
         return users?.getOrNull(0)?.toIAMAccount()
     }
 
@@ -139,6 +138,8 @@ class KeycloakIAMProvider(
             throw KeycloakIAMProviderException(userNotFoundMessage, HttpStatusCode.NOT_FOUND)
         }
     }
+
+    private fun realmResource() = keycloak.realm(realm)
 
     private fun UserRepresentation.toIAMAccount(): IAMAccount {
         return IAMAccount(
