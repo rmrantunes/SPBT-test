@@ -113,12 +113,12 @@ class KeycloakIAMProvider(
     }
 
     override fun getByEmail(email: String): IAMAccount? {
-        val users = keycloak.realm(realm)?.users()?.searchByEmail(email, null)
+        val users = keycloak.realm(realm)?.users()?.searchByEmail(email, true)
         return users?.getOrNull(0)?.toIAMAccount()
     }
 
     override fun getByUsername(username: String): IAMAccount? {
-        val users = keycloak.realm(realm)?.users()?.search(username, null)
+        val users = keycloak.realm(realm)?.users()?.search(username, true)
         return users?.getOrNull(0)?.toIAMAccount()
     }
 
@@ -131,8 +131,8 @@ class KeycloakIAMProvider(
             val user = keycloak.realm(realm)?.users()?.get(id)
 
             user?.update(
-                UserRepresentation().also {
-                    it.attributes = mapOf(externalIdAttrKey to listOf(it.id))
+                user.toRepresentation().also {
+                    it.attributes = mapOf(externalIdAttrKey to listOf(externalId))
                 }
             )
         } catch (_: NotFoundException) {
@@ -140,14 +140,16 @@ class KeycloakIAMProvider(
         }
     }
 
-    private fun UserRepresentation.toIAMAccount() = IAMAccount(
-        username,
-        email,
-        firstName,
-        lastName,
-        id = attributes[externalIdAttrKey]?.get(0),
-        externalId = id
-    )
+    private fun UserRepresentation.toIAMAccount(): IAMAccount {
+        return IAMAccount(
+            username,
+            email,
+            firstName,
+            lastName,
+            id = id,
+            externalId = attributes?.get(externalIdAttrKey)?.get((0)),
+        )
+    }
 
     private fun IAMAccount.toUserRepresentation(): UserRepresentation {
         return UserRepresentation().also {
@@ -155,7 +157,7 @@ class KeycloakIAMProvider(
             it.email = email
             it.firstName = firstName
             it.lastName = lastName
-            it.id = externalId
+            it.id = id
         }
     }
 }

@@ -6,7 +6,6 @@ import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import java.util.*
-import kotlin.test.Ignore
 
 private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
     private lateinit var provider: KeycloakIAMProvider
@@ -127,7 +126,6 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
         }
     }
 
-
     @Nested
     @DisplayName("when setting externalId...")
     inner class SetExternalId() {
@@ -141,7 +139,7 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.NOT_FOUND)
         }
 
-        @Ignore
+        @Test
         fun `if found update set user external id successfully`() {
             val inputAccount = inputAccount.copy(email = "idontnou@example.com", username = "heheffafa")
             val password = "rafAAA###123"
@@ -149,7 +147,7 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
 
             val externalId = UUID.randomUUID().toString()
 
-            assertDoesNotThrow { provider.setExternalId(account.id!!, password) }
+            assertDoesNotThrow { provider.setExternalId(account.id!!, externalId) }
 
             val updatedAccount = provider.getByEmail(inputAccount.email)
 
