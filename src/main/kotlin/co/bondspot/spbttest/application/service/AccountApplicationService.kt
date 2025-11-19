@@ -7,6 +7,7 @@ import co.bondspot.spbttest.domain.contract.IAMProviderContract
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.IAMAccount
 import co.bondspot.spbttest.domain.entity.IAMAuthenticatedToken
+import co.bondspot.spbttest.domain.exception.IAMProviderException
 
 open class AccountApplicationService(
     private val accountRepositoryContract: AccountRepositoryContract,
@@ -47,6 +48,13 @@ open class AccountApplicationService(
         username: String,
         password: String
     ): IAMAuthenticatedToken {
-        return iamProviderContract.obtainAccessToken(username, password)
+        return try {
+            iamProviderContract.obtainAccessToken(username, password)
+        } catch (e: Exception) {
+            if (e is IAMProviderException) throw ApplicationServiceException(
+                e.message ?: ""
+            ).relatedHttpStatusCode { e.relatedHttpStatusCode }
+            throw e
+        }
     }
 }

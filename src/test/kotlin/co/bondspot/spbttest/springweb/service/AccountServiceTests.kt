@@ -5,6 +5,7 @@ import co.bondspot.spbttest.domain.contract.AccountRepositoryContract
 import co.bondspot.spbttest.domain.contract.IAMProviderContract
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.IAMAccount
+import co.bondspot.spbttest.domain.exception.IAMProviderException
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import io.mockk.every
 import io.mockk.mockk
@@ -104,6 +105,31 @@ class AccountServiceTests {
 
             verify { iamProvider.register(iamAccount, "pas123") }
             verify { iamProvider.setExternalId(iamAccountId, accountId) }
+        }
+    }
+
+    @Nested
+    @DisplayName("when obtaining an account access token...")
+    inner class ObtainAccountAccessToken {
+        @Test
+        fun `if invalid throw ApplicationServiceException`() {
+            val iamProvider = mockk<IAMProviderContract>()
+            val accountRepository = mockk<AccountRepositoryContract>()
+            val service = AccountService(accountRepository, iamProvider)
+
+            every { iamProvider.obtainAccessToken(any(), any()) } throws IAMProviderException(
+                "Invalid account credentials",
+                HttpStatusCode.UNAUTHORIZED
+            )
+
+            val ex = assertThrows<ApplicationServiceException> {
+                service.obtainAccessToken(
+                    "not_the_username",
+                    "not_the_password"
+                )
+            }
+            assertThat(ex.message).isEqualTo("Invalid account credentials")
+            assertThat(ex.httpStatusCode).isEqualTo(HttpStatusCode.UNAUTHORIZED)
         }
     }
 }
