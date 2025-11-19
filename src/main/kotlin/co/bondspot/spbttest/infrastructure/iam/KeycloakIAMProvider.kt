@@ -7,6 +7,7 @@ import co.bondspot.spbttest.domain.exception.IAMProviderException
 import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.authorization.client.AuthzClient
 import org.keycloak.authorization.client.Configuration
+import org.keycloak.authorization.client.util.HttpResponseException
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
 
@@ -94,8 +95,19 @@ class KeycloakIAMProvider(
         username: String,
         password: String
     ): IAMAuthenticatedToken {
-        val response = authzClient.obtainAccessToken(username, password)
-        return IAMAuthenticatedToken(response.token, response.refreshToken, response.expiresIn)
+        return try {
+            val response = authzClient.obtainAccessToken(username, password)
+            IAMAuthenticatedToken(response.token, response.refreshToken, response.expiresIn)
+        } catch (e: HttpResponseException) {
+            val (message, statusCode) = when (e.statusCode) {
+                401 -> Pair("Invalid account credentials", e.statusCode)
+                else -> Pair(e.message, e.statusCode)
+            }
+
+            throw KeycloakIAMProviderException(message, statusCode)
+        } catch (e: Exception) {
+            throw KeycloakIAMProviderException("Internal Error: ${e.message}")
+        }
     }
 
     override fun getByEmail(email: String): IAMAccount? {

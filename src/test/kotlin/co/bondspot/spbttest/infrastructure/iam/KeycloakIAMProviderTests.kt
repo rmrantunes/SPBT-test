@@ -136,5 +136,14 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
             assertThat(response.refreshToken).isNotNull.isNotBlank
             assertThat(response.expiresIn).isNotNull.isPositive
         }
+
+        @Test
+        fun `if invalid username throw exception`() {
+            val password = "rafAAA###123"
+            val response = assertThrows<KeycloakIAMProviderException> { provider.authenticate("not_the_username", password) }
+
+            assertThat(response.message).isEqualTo("Invalid account credentials")
+            assertThat(response.relatedHttpStatusCode).isEqualTo(401)
+        }
     }
 }
