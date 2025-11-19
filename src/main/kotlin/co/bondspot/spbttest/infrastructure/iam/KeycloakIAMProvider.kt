@@ -4,10 +4,14 @@ import co.bondspot.spbttest.domain.contract.IAMProviderContract
 import co.bondspot.spbttest.domain.entity.IAMAccount
 import co.bondspot.spbttest.domain.exception.IAMProviderException
 import org.keycloak.admin.client.KeycloakBuilder
+import org.keycloak.authorization.client.AuthzClient
+import org.keycloak.authorization.client.Configuration
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
 
-class KeycloakIAMProviderException(message: String? = null, relatedHttpStatusCode: Int = 500) : IAMProviderException(message, relatedHttpStatusCode)
+
+class KeycloakIAMProviderException(message: String? = null, relatedHttpStatusCode: Int = 500) :
+    IAMProviderException(message, relatedHttpStatusCode)
 
 class KeycloakIAMProvider(
     private val serverUrl: String = "http://localhost:8080",
@@ -16,17 +20,29 @@ class KeycloakIAMProvider(
 ) : IAMProviderContract {
     private val externalIdAttrKey = "externalId"
     private val realm = "spbttest"
+    private val clientId = "spbttest-api"
     private var keycloak = KeycloakBuilder
         .builder()
         .serverUrl(serverUrl)
         .realm(realm)
-        .clientId("spbttest-api")
+        .clientId(clientId)
         .clientSecret(clientSecret)
         .also {
             if (grantType == "password") it.password("5kbR0E2tzuUqJBKFzuFM")
         }
         .grantType(grantType)
         .build()
+
+    var authzClient: AuthzClient = AuthzClient.create(
+        Configuration(
+            serverUrl,
+            realm,
+            clientId,
+            mapOf("secret" to clientSecret),
+            null
+        )
+    )
+
 
     fun close() {
         keycloak.close()
@@ -45,7 +61,6 @@ class KeycloakIAMProvider(
         val response = realm.users().create(userRepresentation)
 
         var userId: String?
-
 
         when (response.status) {
             201 -> {
@@ -75,10 +90,11 @@ class KeycloakIAMProvider(
     }
 
     override fun authenticate(
-        email: String,
+        username: String,
         password: String
     ): Pair<String, String> {
-        return Pair("test", "test")
+        val response = authzClient.obtainAccessToken(username, password)
+        return Pair(response.token, response.refreshToken)
     }
 
     override fun getByEmail(email: String): IAMAccount? {
@@ -88,7 +104,8 @@ class KeycloakIAMProvider(
 
     override fun getByUsername(username: String): IAMAccount? {
         val users = keycloak.realm(realm)?.users()?.search(username, null)
-        return users?.getOrNull(0)?.toIAMAccount()    }
+        return users?.getOrNull(0)?.toIAMAccount()
+    }
 
     override fun setExternalId(
         id: String,

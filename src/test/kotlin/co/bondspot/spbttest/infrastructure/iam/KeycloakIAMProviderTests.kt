@@ -130,7 +130,7 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
                 password
             )
 
-            val response = provider.authenticate(inputAccount.email, password)
+            val response = provider.authenticate(inputAccount.username, password)
 
             assertThat(response.first).isNotNull.isNotBlank
             assertThat(response.second).isNotNull.isNotBlank
