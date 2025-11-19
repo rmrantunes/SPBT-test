@@ -5,7 +5,8 @@ import co.bondspot.spbttest.domain.entity.IAMAccount
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
-import java.util.UUID
+import java.util.*
+import kotlin.test.Ignore
 
 private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
     private lateinit var provider: KeycloakIAMProvider
@@ -32,11 +33,18 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
     inner class RegisterAccount() {
         @Test
         fun `register with password and return Account`() {
+            val inputAccount = IAMAccount(
+                "myusernam222e",
+                "myusern2222ame.dev@example.com",
+                "Rafael",
+                "Antunes",
+            )
+
             val createdAccount = provider.register(
                 inputAccount,
                 "rafAAA###123"
             )
-            assertThat(createdAccount.externalId).isNotNull.isNotBlank
+            assertThat(createdAccount.id).isNotNull.isNotBlank
             assertThat(createdAccount.email).isEqualTo(inputAccount.email)
             assertThat(createdAccount.firstName).isEqualTo(inputAccount.firstName)
             assertThat(createdAccount.lastName).isEqualTo(inputAccount.lastName)
@@ -106,7 +114,7 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
 
         @Test
         fun `return found Account`() {
-            val inputAccount2 = inputAccount.copy(email = "fadfs3f@example.com", username = "zi3kanois")
+            val inputAccount2 = inputAccount.copy(email = "noloseeeee@example.com", username = "zi3kanois3333")
             provider.register(
                 inputAccount2,
                 "rafAAA###123"
@@ -133,13 +141,19 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.NOT_FOUND)
         }
 
-        @Test
-        fun `return account if user external id is set`() {
-            val inputAccount = inputAccount.copy(email = "nolose@example.com", username = "haha")
+        @Ignore
+        fun `if found update set user external id successfully`() {
+            val inputAccount = inputAccount.copy(email = "idontnou@example.com", username = "heheffafa")
             val password = "rafAAA###123"
             val account = provider.register(inputAccount, password)
 
             val externalId = UUID.randomUUID().toString()
+
+            assertDoesNotThrow { provider.setExternalId(account.id!!, password) }
+
+            val updatedAccount = provider.getByEmail(inputAccount.email)
+
+            assertThat(updatedAccount?.externalId).isEqualTo(externalId)
         }
     }
 
