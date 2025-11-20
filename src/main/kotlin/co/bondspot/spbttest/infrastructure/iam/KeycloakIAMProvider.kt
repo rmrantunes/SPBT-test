@@ -127,8 +127,12 @@ class KeycloakIAMProvider(
     ) {
         val userNotFoundMessage = "User not found"
         try {
-            val user = keycloak.realm(realm)?.users()?.get(id)
+            val user = realmResource()?.users()?.get(id)
 
+            // WARNING: updating without extending UserRepresentation instance can lead to
+            // full wipe of the user record in Keycloak. Either don't forget about it, or try to
+            // send a direct http request to Keycloak Admin REST API instead using SDK.
+            // https://www.keycloak.org/docs-api/latest/rest-api/index.html#_users
             user?.update(
                 user.toRepresentation().also {
                     it.attributes = mapOf(externalIdAttrKey to listOf(externalId))
