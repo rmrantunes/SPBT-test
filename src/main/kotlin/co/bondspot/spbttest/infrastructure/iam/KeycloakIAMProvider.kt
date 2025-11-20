@@ -6,6 +6,7 @@ import co.bondspot.spbttest.domain.entity.IAMAuthenticatedToken
 import co.bondspot.spbttest.domain.exception.IAMProviderException
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import jakarta.ws.rs.NotFoundException
+import org.keycloak.admin.client.Keycloak
 import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.authorization.client.AuthzClient
 import org.keycloak.authorization.client.Configuration
@@ -127,8 +128,14 @@ class KeycloakIAMProvider(
     ) {
         val userNotFoundMessage = "User not found"
         try {
-            val user = realmResource()?.users()?.get(id)
+            realmResource()?.users()?.searchByAttributes("$externalIdAttrKey:$externalId", true)?.run {
+                if (isNotEmpty()) throw KeycloakIAMProviderException(
+                    "A user already exists with same externalId",
+                    HttpStatusCode.CONFLICT
+                )
+            }
 
+            val user = realmResource()?.users()?.get(id)
             // WARNING: updating without extending UserRepresentation instance can lead to
             // full wipe of the user record in Keycloak. Either don't forget about it, or try to
             // send a direct http request to Keycloak Admin REST API instead using SDK.

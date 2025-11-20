@@ -131,6 +131,23 @@ private class KeycloakIAMProviderTests() : KeycloakContainerExtension() {
 
             assertThat(updatedAccount?.externalId).isEqualTo(externalId)
         }
+
+        @Test
+        fun `throw conflict if external id exists in Keycloak`() {
+            val inputAccount = generateInputAccount()
+            val account = provider.register(inputAccount, password)
+            val inputAccount2 = generateInputAccount()
+            val account2 = provider.register(inputAccount2, password)
+
+            val externalId = UUID.randomUUID().toString()
+
+            assertDoesNotThrow { provider.setExternalId(account.id!!, externalId) }
+
+            val ex = assertThrows<KeycloakIAMProviderException> { provider.setExternalId(account2.id!!, externalId) }
+
+            assertThat(ex.message).isEqualTo("A user already exists with same externalId")
+            assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
+        }
     }
 
     @Nested
