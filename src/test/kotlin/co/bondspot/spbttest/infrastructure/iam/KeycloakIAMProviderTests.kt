@@ -3,19 +3,23 @@ package co.bondspot.spbttest.infrastructure.iam
 import co.bondspot.spbttest.KeycloakContainerExtension
 import co.bondspot.spbttest.domain.entity.IAMAccount
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
+import co.bondspot.spbttest.testutils.KSelect
 import org.assertj.core.api.Assertions.assertThat
+import org.instancio.Instancio
 import org.junit.jupiter.api.*
 import java.util.*
 
-private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
+private class KeycloakIAMProviderTests() : KeycloakContainerExtension() {
     private lateinit var provider: KeycloakIAMProvider
 
-    val inputAccount = IAMAccount(
-        "myusername",
-        "myusername.dev@example.com",
-        "Rafael",
-        "Antunes",
-    )
+    private val password = "1#1#pass__sup3rst00ng$"
+
+    private fun generateInputAccount() = Instancio.of(IAMAccount::class.java)
+        .generate(KSelect.field(IAMAccount::username)) { it.text().word().adjective().noun() }
+        .generate(KSelect.field(IAMAccount::email)) { it.net().email() }
+        .generate(KSelect.field(IAMAccount::firstName)) { it.text().word().adjective() }
+        .generate(KSelect.field(IAMAccount::lastName)) { it.text().word().noun() }
+        .create()
 
     @BeforeEach
     fun setup() {
@@ -32,17 +36,9 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
     inner class RegisterAccount() {
         @Test
         fun `register with password and return Account`() {
-            val inputAccount = IAMAccount(
-                "myusernam222e",
-                "myusern2222ame.dev@example.com",
-                "Rafael",
-                "Antunes",
-            )
+            val inputAccount = generateInputAccount()
 
-            val createdAccount = provider.register(
-                inputAccount,
-                "rafAAA###123"
-            )
+            val createdAccount = provider.register(inputAccount, password)
             assertThat(createdAccount.id).isNotNull.isNotBlank
             assertThat(createdAccount.email).isEqualTo(inputAccount.email)
             assertThat(createdAccount.firstName).isEqualTo(inputAccount.firstName)
@@ -52,25 +48,14 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
 
         @Test
         fun `return provider exception if a user exists with same credentials`() {
-            val inputAccount2 = IAMAccount(
-                "myusername",
-                "myusername.dev@example.com",
-                "Rafael",
-                "Antunes",
-            )
+            val inputAccount = generateInputAccount()
 
             assertDoesNotThrow {
-                provider.register(
-                    inputAccount2,
-                    "rafAAA###123"
-                )
+                provider.register(inputAccount, password)
             }
 
             val ex = assertThrows<KeycloakIAMProviderException> {
-                provider.register(
-                    inputAccount2,
-                    "rafAAA###123"
-                )
+                provider.register(inputAccount, password)
             }
 
             assertThat(ex.message).isEqualTo("A user exists with same credentials")
@@ -83,22 +68,19 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
     inner class GetByEmail() {
         @Test
         fun `if no one found return null`() {
-            val notFound = provider.getByEmail(inputAccount.email)
+            val notFound = provider.getByEmail("notanemail@example.com")
             assertThat(notFound).isNull()
         }
 
         @Test
         fun `return found Account`() {
-            val inputAccount2 = inputAccount.copy(email = "fadfs3f@example.com", username = "zi3kanois")
-            provider.register(
-                inputAccount2,
-                "rafAAA###123"
-            )
-            val account = provider.getByEmail(inputAccount2.email)
+            val inputAccount = generateInputAccount()
+            provider.register(inputAccount, password)
+            val account = provider.getByEmail(inputAccount.email)
             assertThat(account?.id).isNotNull.isNotBlank
-            assertThat(account?.email).isEqualTo(inputAccount2.email)
-            assertThat(account?.firstName).isEqualTo(inputAccount2.firstName)
-            assertThat(account?.lastName).isEqualTo(inputAccount2.lastName)
+            assertThat(account?.email).isEqualTo(inputAccount.email)
+            assertThat(account?.firstName).isEqualTo(inputAccount.firstName)
+            assertThat(account?.lastName).isEqualTo(inputAccount.lastName)
         }
     }
 
@@ -107,22 +89,19 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
     inner class GetByUsername() {
         @Test
         fun `if no one found return null`() {
-            val notFound = provider.getByUsername(inputAccount.username)
+            val notFound = provider.getByUsername("not_me")
             assertThat(notFound).isNull()
         }
 
         @Test
         fun `return found Account`() {
-            val inputAccount2 = inputAccount.copy(email = "noloseeeee@example.com", username = "zi3kanois3333")
-            provider.register(
-                inputAccount2,
-                "rafAAA###123"
-            )
-            val account = provider.getByUsername(inputAccount2.username)
+            val inputAccount = generateInputAccount()
+            provider.register(inputAccount, password)
+            val account = provider.getByUsername(inputAccount.username)
             assertThat(account?.id).isNotNull.isNotBlank
-            assertThat(account?.email).isEqualTo(inputAccount2.email)
-            assertThat(account?.firstName).isEqualTo(inputAccount2.firstName)
-            assertThat(account?.lastName).isEqualTo(inputAccount2.lastName)
+            assertThat(account?.email).isEqualTo(inputAccount.email)
+            assertThat(account?.firstName).isEqualTo(inputAccount.firstName)
+            assertThat(account?.lastName).isEqualTo(inputAccount.lastName)
         }
     }
 
@@ -132,7 +111,7 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
         @Test
         fun `throw not found exception if no user with id`() {
             val ex = assertThrows<KeycloakIAMProviderException> {
-                provider.setExternalId("fdsf", "some-external-id")
+                provider.setExternalId("not_an_id", "some-external-id")
             }
 
             assertThat(ex.message).isEqualTo("User not found")
@@ -141,8 +120,7 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
 
         @Test
         fun `if found update set user external id successfully`() {
-            val inputAccount = inputAccount.copy(email = "idontnou@example.com", username = "heheffafa")
-            val password = "rafAAA###123"
+            val inputAccount = generateInputAccount()
             val account = provider.register(inputAccount, password)
 
             val externalId = UUID.randomUUID().toString()
@@ -160,12 +138,8 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
     inner class AuthenticateByPassword() {
         @Test
         fun `if valid return access token and refresh token`() {
-            val inputAccount = inputAccount.copy(email = "fadfs3sf@example.com", username = "zi3kasnois")
-            val password = "rafAAA###123"
-            provider.register(
-                inputAccount,
-                password
-            )
+            val inputAccount = generateInputAccount()
+            provider.register(inputAccount, password)
 
             val response = provider.obtainAccessToken(inputAccount.username, password)
 
@@ -176,7 +150,6 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
 
         @Test
         fun `if invalid username throw exception`() {
-            val password = "rafAAA###123"
             val response =
                 assertThrows<KeycloakIAMProviderException> { provider.obtainAccessToken("not_the_username", password) }
 
@@ -186,12 +159,8 @@ private class KeycloakIAMProviderTests : KeycloakContainerExtension() {
 
         @Test
         fun `if invalid password throw exception`() {
-            val inputAccount = inputAccount.copy(email = "hahadfsd@example.com", username = "faskjdflks")
-            val password = "rafAAA###123"
-            provider.register(
-                inputAccount,
-                password
-            )
+            val inputAccount = generateInputAccount()
+            provider.register(inputAccount, password)
             val response = assertThrows<KeycloakIAMProviderException> {
                 provider.obtainAccessToken(
                     inputAccount.username,
