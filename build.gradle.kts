@@ -45,6 +45,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(module = "mockito-core")
     }
+    testImplementation("org.instancio:instancio-junit:5.5.1")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("com.github.dasniko:testcontainers-keycloak:3.4.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
