@@ -45,11 +45,10 @@ open class AccountApplicationService(
     ): IAMAuthenticatedToken {
         return try {
             iamProvider.obtainAccessToken(username, password)
-        } catch (e: Exception) {
-            if (e is IAMProviderException) throw ApplicationServiceException(
+        } catch (e: IAMProviderException) {
+            throw ApplicationServiceException(
                 e.message ?: ""
             ).relatedHttpStatusCode { e.relatedHttpStatusCode }
-            throw e
         }
     }
 }
