@@ -6,7 +6,6 @@ import co.bondspot.spbttest.domain.entity.IAMAuthenticatedToken
 import co.bondspot.spbttest.domain.exception.IAMProviderException
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import jakarta.ws.rs.NotFoundException
-import org.keycloak.admin.client.Keycloak
 import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.authorization.client.AuthzClient
 import org.keycloak.authorization.client.Configuration
