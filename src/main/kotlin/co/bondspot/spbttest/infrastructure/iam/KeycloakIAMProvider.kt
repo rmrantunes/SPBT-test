@@ -59,6 +59,8 @@ class KeycloakIAMProvider(
         account: IAMAccount,
         password: String
     ): IAMAccount {
+        requireThat(password.isNotEmpty()) { "password attribute must not be empty" }
+
         val realm = realmResource()
         val userRepresentation = account.toUserRepresentation().apply { isEnabled = true }
         val response = realm.users().create(userRepresentation)
@@ -96,6 +98,9 @@ class KeycloakIAMProvider(
         username: String,
         password: String
     ): IAMAuthenticatedToken {
+        requireThat(username.isNotEmpty()) { "username attribute must not be empty" }
+        requireThat(password.isNotEmpty()) { "password attribute must not be empty" }
+
         return try {
             val response = authzClient.obtainAccessToken(username, password)
             IAMAuthenticatedToken(response.token, response.refreshToken, response.expiresIn)
@@ -112,11 +117,13 @@ class KeycloakIAMProvider(
     }
 
     override fun getByEmail(email: String): IAMAccount? {
+        requireThat(email.isNotEmpty()) { "email attribute must not be empty" }
         val users = realmResource()?.users()?.searchByEmail(email, null)
         return users?.getOrNull(0)?.toIAMAccount()
     }
 
     override fun getByUsername(username: String): IAMAccount? {
+        requireThat(username.isNotEmpty()) { "username attribute must not be empty" }
         val users = realmResource()?.users()?.search(username, true)
         return users?.getOrNull(0)?.toIAMAccount()
     }
@@ -125,6 +132,9 @@ class KeycloakIAMProvider(
         id: String,
         externalId: String
     ) {
+        requireThat(id.isNotEmpty()) { "id attribute must not be empty" }
+        requireThat(externalId.isNotEmpty()) { "externalId attribute must not be empty" }
+
         val userNotFoundMessage = "User not found"
         try {
             realmResource()?.users()?.searchByAttributes("$externalIdAttrKey:$externalId", true)?.run {
@@ -170,5 +180,9 @@ class KeycloakIAMProvider(
             it.lastName = lastName
             it.id = id
         }
+    }
+
+    private fun requireThat(value: Boolean, message: () -> String) {
+        if (!value) throw KeycloakIAMProviderException(message(), HttpStatusCode.INTERNAL_SERVER_ERROR)
     }
 }
