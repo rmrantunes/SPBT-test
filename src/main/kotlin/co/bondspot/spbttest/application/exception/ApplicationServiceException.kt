@@ -5,14 +5,14 @@ import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 /** Arbitrary exceptions thrown by the developer from application services executions. */
 class ApplicationServiceException(errorMessage: String) : Exception(errorMessage) {
     val errors: List<String> = listOf(errorMessage)
-    var httpStatusCode: Int = 400
+    var relatedHttpStatusCode: Int = 400
 
     /**
-     * In order to inform the presentation user of application the closest related HTTP status code
+     * In order to inform the user of the application layer the closest related HTTP status code
      * to the thrown exception.
      */
-    fun relatedHttpStatusCode(lambda: HttpStatusCode.() -> Int): ApplicationServiceException {
-        this.httpStatusCode = lambda(HttpStatusCode)
+    fun setRelatedHttpStatusCode(lambda: HttpStatusCode.() -> Int): ApplicationServiceException {
+        this.relatedHttpStatusCode = lambda(HttpStatusCode)
         return this
     }
 }

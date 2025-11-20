@@ -16,16 +16,16 @@ open class AccountApplicationService(
         val errorMessage = "Account already exists"
 
         var existingIAMAccount = iamProvider.getByUsername(account.username)
-        if (existingIAMAccount != null) throw ApplicationServiceException(errorMessage).relatedHttpStatusCode { CONFLICT }
+        if (existingIAMAccount != null) throw ApplicationServiceException(errorMessage).setRelatedHttpStatusCode { CONFLICT }
 
         var existingAccount = accountRepository.getByUsername(account.username)
-        if (existingAccount != null) throw ApplicationServiceException(errorMessage).relatedHttpStatusCode { CONFLICT }
+        if (existingAccount != null) throw ApplicationServiceException(errorMessage).setRelatedHttpStatusCode { CONFLICT }
 
         existingIAMAccount = iamProvider.getByEmail(account.email)
-        if (existingIAMAccount != null) throw ApplicationServiceException(errorMessage).relatedHttpStatusCode { CONFLICT }
+        if (existingIAMAccount != null) throw ApplicationServiceException(errorMessage).setRelatedHttpStatusCode { CONFLICT }
 
         existingAccount = accountRepository.getByEmail(account.email)
-        if (existingAccount != null) throw ApplicationServiceException(errorMessage).relatedHttpStatusCode { CONFLICT }
+        if (existingAccount != null) throw ApplicationServiceException(errorMessage).setRelatedHttpStatusCode { CONFLICT }
 
         val iamAccount = iamProvider.register(
             IAMAccount(
@@ -48,7 +48,7 @@ open class AccountApplicationService(
         } catch (e: IAMProviderException) {
             throw ApplicationServiceException(
                 e.message ?: ""
-            ).relatedHttpStatusCode { e.relatedHttpStatusCode }
+            ).setRelatedHttpStatusCode { e.relatedHttpStatusCode }
         }
     }
 }

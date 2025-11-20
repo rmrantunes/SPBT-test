@@ -27,7 +27,7 @@ class GlobalExceptionHandler {
     @ExceptionHandler(ApplicationServiceException::class)
     fun handleExceptions(ex: ApplicationServiceException): ResponseEntity<ResponseDto> {
         return ResponseEntity
-            .status(ex.httpStatusCode)
+            .status(ex.relatedHttpStatusCode)
             .body(ResponseDto(errors = ex.errors))
     }
 

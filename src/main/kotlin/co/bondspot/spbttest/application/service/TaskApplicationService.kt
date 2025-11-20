@@ -15,7 +15,7 @@ open class TaskApplicationService(
      * */
     override fun getById(id: String): Task? {
         return repository.getById(id) ?: throw ApplicationServiceException("Task not found")
-            .relatedHttpStatusCode {
+            .setRelatedHttpStatusCode {
             NOT_FOUND
         }
     }
