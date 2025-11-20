@@ -45,7 +45,7 @@ class AccountServiceTests {
             val exMessage = "Account already exists"
             assertThat(exception.message).isEqualTo(exMessage)
             assertThat(exception.errors[0]).isEqualTo(exMessage)
-            assertThat(exception.httpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
+            assertThat(exception.relatedHttpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
 
             every { iamProvider.getByUsername(account.username) } returns null
             every { accountRepository.getByUsername(account.username) } returns null
@@ -59,7 +59,7 @@ class AccountServiceTests {
 
             assertThat(exception2.message).isEqualTo(exMessage)
             assertThat(exception2.errors[0]).isEqualTo(exMessage)
-            assertThat(exception2.httpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
+            assertThat(exception2.relatedHttpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
 
             every { iamProvider.getByEmail(account.email) } returns null
 
@@ -72,7 +72,7 @@ class AccountServiceTests {
 
             assertThat(exception3.message).isEqualTo(exMessage)
             assertThat(exception3.errors[0]).isEqualTo(exMessage)
-            assertThat(exception3.httpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
+            assertThat(exception3.relatedHttpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
         }
 
         @Test
@@ -129,7 +129,7 @@ class AccountServiceTests {
                 )
             }
             assertThat(ex.message).isEqualTo("Invalid account credentials")
-            assertThat(ex.httpStatusCode).isEqualTo(HttpStatusCode.UNAUTHORIZED)
+            assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.UNAUTHORIZED)
         }
     }
 }
