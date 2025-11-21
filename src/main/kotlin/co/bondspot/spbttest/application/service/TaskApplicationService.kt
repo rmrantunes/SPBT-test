@@ -28,6 +28,11 @@ open class TaskApplicationService(private val repository: ITaskRepository) :
 
     override fun updateStatus(id: String, status: Task.Status, reqAccount: Account): Boolean? {
         val existing = getById(id, reqAccount) ?: return null
+        if (existing.createdById != reqAccount.id)
+            throw ApplicationServiceException(
+                "Requested resource (Task: '$id') is not bonded to requester"
+            )
+                .setRelatedHttpStatusCode { FORBIDDEN }
         repository.update(id, existing.copy(status = status))
         return true
     }

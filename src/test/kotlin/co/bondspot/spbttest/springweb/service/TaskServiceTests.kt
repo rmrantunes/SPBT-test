@@ -1,16 +1,20 @@
 package co.bondspot.spbttest.springweb.service
 
+import co.bondspot.spbttest.application.exception.ApplicationServiceException
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.Task
+import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class TaskServiceTests {
     private val accountId = "accountId"
@@ -33,21 +37,40 @@ class TaskServiceTests {
         }
     }
 
-    @Test
-    fun `should update status`() {
-        val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
-        val id = "some_id"
-        val existing = Task("Text", id = id)
-        every { repository.create(any()) } returns existing
-        val service = TaskService(repository)
+    @Nested
+    @DisplayName("when updating status...")
+    inner class UpdateStatus {
+        @Test
+        fun `throw forbidden if req user is not bonded to task`() {
+            val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
+            val id = "some_id"
+            val existing = Task("Text", id = id)
+            every { repository.create(any()) } returns existing.copy(id = accountId)
+            val service = TaskService(repository)
 
-        every { repository.getById(id) } returns existing
+            every { repository.getById(id) } returns existing.copy(createdById = "not_you")
 
-        val result = service.updateStatus(id, Task.Status.IN_PROGRESS, reqAccount)
+            val ex = assertThrows<ApplicationServiceException> { service.updateStatus(id, Task.Status.IN_PROGRESS, reqAccount) }
+            assertThat(ex.message).isEqualTo("Requested resource (Task: '$id') is not bonded to requester")
+            assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
+        }
 
-        Assertions.assertThat(result).isTrue()
+        @Test
+        fun `should update successfully`() {
+            val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
+            val id = "some_id"
+            val existing = Task("Text", id = id)
+            every { repository.create(any()) } returns existing
+            val service = TaskService(repository)
 
-        verify { repository invoke "update" withArguments listOf(id, existing.copy(status = Task.Status.IN_PROGRESS)) }
+            every { repository.getById(id) } returns existing
+
+            val result = service.updateStatus(id, Task.Status.IN_PROGRESS, reqAccount)
+
+            Assertions.assertThat(result).isTrue()
+
+            verify { repository invoke "update" withArguments listOf(id, existing.copy(status = Task.Status.IN_PROGRESS)) }
+        }
     }
 
     @Test
