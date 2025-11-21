@@ -28,12 +28,12 @@ class TaskServiceTests {
             val repository = mockk<ITaskRepository>()
             val task = Task("Text", id = "Some ID")
             val createdTask = task.copy(createdById = task.id)
-            every { repository.create(task) } returns createdTask
+            every { repository.create(any()) } returns createdTask
             val service = TaskService(repository)
 
             val result = service.create(task, reqAccount = reqAccount)
 
-            Assertions.assertThat(result).isEqualTo(createdTask)
+            assertThat(result).isEqualTo(createdTask)
         }
     }
 
@@ -93,7 +93,7 @@ class TaskServiceTests {
         fun `should update successfully`() {
             val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
             val id = "some_id"
-            val existing = Task("Text", id = id)
+            val existing = Task("Text", id = id, createdById = reqAccount.id)
             every { repository.create(any()) } returns existing
             val service = TaskService(repository)
 
@@ -129,7 +129,7 @@ class TaskServiceTests {
         fun `should update successfully`() {
             val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
             val id = "some_id"
-            val existing = Task("Text", id = id)
+            val existing = Task("Text", id = id, createdById = reqAccount.id)
             every { repository.create(any()) } returns existing
             val service = TaskService(repository)
 
