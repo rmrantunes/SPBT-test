@@ -1,26 +1,35 @@
 package co.bondspot.spbttest.springweb.service
 
-import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.domain.contract.ITaskRepository
+import co.bondspot.spbttest.domain.entity.Account
+import co.bondspot.spbttest.domain.entity.Task
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class TaskServiceTests {
+    @Nested
+    @DisplayName("when creating a task...")
+    inner class CreateTask {
+        @Test
+        fun `should create and return task`() {
+            val repository = mockk<ITaskRepository>()
+            val accountId = "accountId"
+            val account = Account("some_account", "some_email@example.com", id = accountId)
+            val task = Task("Text", id = "Some ID")
+            val createdTask = task.copy(createdById = task.id)
+            every { repository.create(task) } returns createdTask
+            val service = TaskService(repository)
 
-    @Test
-    fun `should create and return message`() {
-        val repository = mockk<ITaskRepository>()
-        val created = Task("Text", id = "Some ID")
-        every { repository.create(any()) } returns created
-        val service = TaskService(repository)
+            val result = service.create(task, reqAccount = account)
 
-        val result = service.create(created)
-
-        Assertions.assertThat(result).isEqualTo(created)
+            Assertions.assertThat(result).isEqualTo(createdTask)
+        }
     }
 
     @Test

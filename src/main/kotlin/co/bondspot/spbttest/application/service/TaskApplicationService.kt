@@ -4,11 +4,15 @@ import co.bondspot.spbttest.application.exception.ApplicationServiceException
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.domain.contract.ITaskApplicationService
 import co.bondspot.spbttest.domain.contract.ITaskRepository
+import co.bondspot.spbttest.domain.entity.Account
 
 open class TaskApplicationService(
     private val repository: ITaskRepository
 ) : ITaskApplicationService {
-    override fun create(task: Task): Task = repository.create(task)
+    override fun create(task: Task, reqAccount: Account): Task  {
+        // We're considering the user exists in the Api DB. Right approach?
+        return repository.create(task.copy(createdById = reqAccount.id))
+    }
 
     /**
      * @throws co.bondspot.spbttest.application.exception.ApplicationServiceException

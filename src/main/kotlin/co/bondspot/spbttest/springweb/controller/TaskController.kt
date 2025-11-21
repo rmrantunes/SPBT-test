@@ -1,5 +1,6 @@
 package co.bondspot.spbttest.springweb.controller
 
+import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.springweb.dto.CreateTaskReqDto
 import co.bondspot.spbttest.springweb.dto.UpdateTaskDetailsReqDto
@@ -17,7 +18,7 @@ import java.net.URI
 class TaskController(private val taskService: TaskService) {
     @PostMapping
     fun create(@Valid @RequestBody body: CreateTaskReqDto): ResponseEntity<Task> {
-        val created = taskService.create(body.toDomainEntity())
+        val created = taskService.create(body.toDomainEntity(), Account())
         return ResponseEntity.created(URI("/task/${created.id}")).body(created)
     }
 
