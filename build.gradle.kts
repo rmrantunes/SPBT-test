@@ -35,6 +35,8 @@ dependencies {
         exclude(group = "com.fasterxml.jackson.databind")
         exclude(group = "com.fasterxml.jackson.module")
     }
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
     implementation("org.keycloak:keycloak-admin-client:26.0.7")
