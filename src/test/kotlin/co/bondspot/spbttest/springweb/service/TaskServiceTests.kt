@@ -38,6 +38,40 @@ class TaskServiceTests {
     }
 
     @Nested
+    @DisplayName("when getting a task...")
+    inner class GetTask {
+        @Test
+        fun `throw forbidden if req user is not bonded to task`() {
+            val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
+            val id = "some_id"
+            val existing = Task("Text", id = id)
+            every { repository.create(any()) } returns existing.copy(id = accountId)
+            val service = TaskService(repository)
+
+            every { repository.getById(id) } returns existing.copy(createdById = "not_you")
+
+            val ex = assertThrows<ApplicationServiceException> { service.getById(id, reqAccount) }
+            assertThat(ex.message).isEqualTo("Requested resource (Task: '$id') is not bonded to requester")
+            assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
+        }
+
+        @Test
+        fun `return task bonded to requester`() {
+            val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
+            val id = "some_id"
+            val existing = Task("Text", id = id)
+            val createdTask = existing.copy(createdById = reqAccount.id)
+            every { repository.create(any()) } returns createdTask
+            val service = TaskService(repository)
+
+            every { repository.getById(id) } returns createdTask
+
+            val task = service.getById(id, reqAccount)
+            assertThat(task).isEqualTo(createdTask)
+        }
+    }
+
+    @Nested
     @DisplayName("when updating status...")
     inner class UpdateStatus {
         @Test
