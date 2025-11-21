@@ -13,20 +13,21 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class TaskServiceTests {
+    private val accountId = "accountId"
+    private val reqAccount = Account("some_account", "some_email@example.com", id = accountId)
+
     @Nested
     @DisplayName("when creating a task...")
     inner class CreateTask {
         @Test
         fun `should create and return task`() {
             val repository = mockk<ITaskRepository>()
-            val accountId = "accountId"
-            val account = Account("some_account", "some_email@example.com", id = accountId)
             val task = Task("Text", id = "Some ID")
             val createdTask = task.copy(createdById = task.id)
             every { repository.create(task) } returns createdTask
             val service = TaskService(repository)
 
-            val result = service.create(task, reqAccount = account)
+            val result = service.create(task, reqAccount = reqAccount)
 
             Assertions.assertThat(result).isEqualTo(createdTask)
         }
@@ -42,7 +43,7 @@ class TaskServiceTests {
 
         every { repository.getById(id) } returns existing
 
-        val result = service.updateStatus(id, Task.Status.IN_PROGRESS)
+        val result = service.updateStatus(id, Task.Status.IN_PROGRESS, reqAccount)
 
         Assertions.assertThat(result).isTrue()
 
@@ -59,7 +60,7 @@ class TaskServiceTests {
 
         every { repository.getById(id) } returns existing
 
-        val result = service.updateDetails(id, "Editado")
+        val result = service.updateDetails(id, "Editado", reqAccount)
 
         Assertions.assertThat(result).isTrue()
 

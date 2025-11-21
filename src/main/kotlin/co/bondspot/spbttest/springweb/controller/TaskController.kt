@@ -2,11 +2,7 @@ package co.bondspot.spbttest.springweb.controller
 
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.Task
-import co.bondspot.spbttest.springweb.dto.CreateTaskReqDto
-import co.bondspot.spbttest.springweb.dto.UpdateTaskDetailsReqDto
-import co.bondspot.spbttest.springweb.dto.UpdateTaskDetailsResDto
-import co.bondspot.spbttest.springweb.dto.UpdateTaskStatusReqDto
-import co.bondspot.spbttest.springweb.dto.UpdateTaskStatusResDto
+import co.bondspot.spbttest.springweb.dto.*
 import co.bondspot.spbttest.springweb.service.TaskService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -24,7 +20,7 @@ class TaskController(private val taskService: TaskService) {
 
     @GetMapping
     fun list(): ResponseEntity<List<Task>> {
-        val tasks = taskService.list()
+        val tasks = taskService.list(Account())
         return ResponseEntity.ok().body(tasks)
     }
 
@@ -32,7 +28,7 @@ class TaskController(private val taskService: TaskService) {
     fun list(
         @PathVariable id: String
     ): ResponseEntity<Task?> {
-        val task = taskService.getById(id)
+        val task = taskService.getById(id, Account())
         return ResponseEntity.ok().body(task)
     }
 
@@ -41,7 +37,7 @@ class TaskController(private val taskService: TaskService) {
         @PathVariable id: String,
         @Valid @RequestBody body: UpdateTaskDetailsReqDto
     ): ResponseEntity<UpdateTaskDetailsResDto> {
-        val updated = taskService.updateDetails(id, body.toDomainEntity().title)
+        val updated = taskService.updateDetails(id, body.toDomainEntity().title, Account())
         return ResponseEntity.ok().body(UpdateTaskDetailsResDto(updated))
     }
 
@@ -50,7 +46,7 @@ class TaskController(private val taskService: TaskService) {
         @PathVariable id: String,
         @Valid @RequestBody body: UpdateTaskStatusReqDto
     ): ResponseEntity<UpdateTaskStatusResDto> {
-        val updated = taskService.updateStatus(id, body.toDomainEntity().status)
+        val updated = taskService.updateStatus(id, body.toDomainEntity().status, Account())
         return ResponseEntity.ok().body(UpdateTaskStatusResDto(updated))
     }
 }
