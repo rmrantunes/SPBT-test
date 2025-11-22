@@ -24,31 +24,37 @@ class KeycloakIAMProvider(
     private val externalIdAttrKey = "externalId"
     private val realm = "spbttest"
     private val clientId = "spbttest-api"
-    private var keycloak = KeycloakBuilder
-        .builder()
-        .serverUrl(serverUrl)
-        .realm(realm)
-        .clientId(clientId)
-        .clientSecret(clientSecret)
-        .also {
-            if (grantType == "password") it.password("5kbR0E2tzuUqJBKFzuFM")
-        }
-        .grantType(grantType)
-        .build()
+    private var keycloak = lazy {
+        KeycloakBuilder
+            .builder()
+            .serverUrl(serverUrl)
+            .realm(realm)
+            .clientId(clientId)
+            .clientSecret(clientSecret)
+            .also {
+                if (grantType == "password") it.password("5kbR0E2tzuUqJBKFzuFM")
+            }
+            .grantType(grantType)
+            .build()
+    }
 
-    var authzClient: AuthzClient = AuthzClient.create(
-        Configuration(
-            serverUrl,
-            realm,
-            clientId,
-            mapOf("secret" to clientSecret),
-            null
+    private val authzClient = lazy {
+        AuthzClient.create(
+            Configuration(
+                serverUrl,
+                realm,
+                clientId,
+                mapOf("secret" to clientSecret),
+                null
+            )
         )
-    )
+    }
 
+    private fun keycloak() = keycloak.value
+    private fun authzClient() = authzClient.value
 
     fun close() {
-        keycloak.close()
+        keycloak().close()
     }
 
     fun dangerouslyDeleteUser(id: String) {
@@ -102,7 +108,7 @@ class KeycloakIAMProvider(
         requireThat(password.isNotEmpty()) { "password attribute must not be empty" }
 
         return try {
-            val response = authzClient.obtainAccessToken(username, password)
+            val response = authzClient().obtainAccessToken(username, password)
             IAMAuthenticatedToken(response.token, response.refreshToken, response.expiresIn)
         } catch (e: HttpResponseException) {
             val (message, statusCode) = when (e.statusCode) {
@@ -159,7 +165,7 @@ class KeycloakIAMProvider(
         }
     }
 
-    private fun realmResource() = keycloak.realm(realm)
+    private fun realmResource() = keycloak().realm(realm)
 
     private fun UserRepresentation.toIAMAccount(): IAMAccount {
         return IAMAccount(
