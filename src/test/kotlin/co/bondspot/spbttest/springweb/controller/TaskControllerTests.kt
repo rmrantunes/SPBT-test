@@ -44,9 +44,11 @@ class TaskControllerTests {
     @Autowired
     private lateinit var taskRepositoryImpl: ITaskRepository
 
+    private val JWT_SUB = UUID.randomUUID().toString()
+
     private val jwtMock = Jwt.withTokenValue("token")
         .header("alg", "none")
-        .claim("sub", UUID.randomUUID().toString())
+        .claim("sub", JWT_SUB)
         .claim("preferred_username", "zezindaesquina")
         .claim("email", "zedaesquina@example.com")
         .build()
@@ -77,6 +79,7 @@ class TaskControllerTests {
                 .andExpect(status().isCreated)
                 .andExpect(jsonPath("$.id").isString)
                 .andExpect(jsonPath("$.title").value("Uma tarefa qualquer"))
+                .andExpect(jsonPath("$.createdById").value(JWT_SUB))
                 .andReturn()
                 .also {
                     assertTrue { it.response.getHeaderValue("Location").toString().startsWith("/task") }
@@ -115,7 +118,7 @@ class TaskControllerTests {
         @Test
         fun `return list of created tasks`() {
             repeat(3) {
-                taskRepositoryImpl.create(Task("Task $it"))
+                taskRepositoryImpl.create(Task("Task $it", createdById = JWT_SUB))
             }
 
             mockMvc.perform(
@@ -152,7 +155,8 @@ class TaskControllerTests {
 
         @Test
         fun `return task found with given id`() {
-            val created = taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí"))
+            val created =
+                taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí", createdById = JWT_SUB))
 
             mockMvc.perform(
                 get("/task/${created.id}")
@@ -189,7 +193,8 @@ class TaskControllerTests {
 
         @Test
         fun `return success result for found task updated`() {
-            val created = taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí"))
+            val created =
+                taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí", createdById = JWT_SUB))
             val id = created.id!!
 
             mockMvc.perform(
@@ -240,7 +245,8 @@ class TaskControllerTests {
 
         @Test
         fun `return success result for found task updated`() {
-            val created = taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí"))
+            val created =
+                taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí", createdById = JWT_SUB))
             val id = created.id!!
 
             for (value in Task.Status.entries) {

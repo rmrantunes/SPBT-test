@@ -20,13 +20,17 @@ data class TaskEntity(
     @Column(length = 1000)
     val description: String? = null,
 
+    @Column(nullable = false, name = "created_by_id")
+    val createdById: String? = null,
+
     @Id @GeneratedValue(strategy = GenerationType.UUID) val id: String? = null,
 ) {
     companion object {
-        fun fromDomain(task: Task): TaskEntity = TaskEntity(task.title, task.status, task.description, task.id)
+        fun fromDomain(task: Task): TaskEntity =
+            TaskEntity(task.title, task.status, task.description, task.createdById, id = task.id)
     }
 
-    fun toDomain(): Task = Task(title, status, description, id = id)
+    fun toDomain(): Task = Task(title, status, description, createdById, id = id)
 }
 
 @Repository
