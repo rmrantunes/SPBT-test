@@ -26,7 +26,7 @@ data class TaskEntity(
         fun fromDomain(task: Task): TaskEntity = TaskEntity(task.title, task.status, task.description, task.id)
     }
 
-    fun toDomain(): Task = Task(title, status, description, id)
+    fun toDomain(): Task = Task(title, status, description, id = id)
 }
 
 @Repository

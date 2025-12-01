@@ -5,6 +5,7 @@ plugins {
     id("org.springframework.boot") version "3.5.7"
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.serialization") version "2.0.21"
+  //  id("com.diffplug.spotless") version "7.2.1"
 }
 
 group = "co.bondspot"
@@ -47,6 +48,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(module = "mockito-core")
     }
+    implementation("org.springframework.security:spring-security-test")
     testImplementation("org.instancio:instancio-junit:5.5.1")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("com.github.dasniko:testcontainers-keycloak:3.4.0")
@@ -63,6 +65,12 @@ kotlin {
         freeCompilerArgs.addAll("-Xjsr305=strict")
     }
 }
+
+//spotless {
+//    kotlin {
+//        ktfmt("0.58").kotlinlangStyle()
+//    }
+//}
 
 tasks.withType<Test> {
     useJUnitPlatform()

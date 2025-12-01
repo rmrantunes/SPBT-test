@@ -1,7 +1,7 @@
 package co.bondspot.spbttest.springweb.controller
 
-import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.domain.contract.ITaskRepository
+import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.springweb.persistence.TaskRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
@@ -9,12 +9,18 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
+import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import org.springframework.web.context.WebApplicationContext
 import java.util.*
 import kotlin.test.Ignore
 import kotlin.test.assertTrue
@@ -24,7 +30,10 @@ import kotlin.test.assertTrue
 @DisplayName("task controller")
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class TaskControllerTests() {
+class TaskControllerTests {
+
+    @Autowired
+    private lateinit var context: WebApplicationContext
 
     @Autowired
     private lateinit var mockMvc: MockMvc
@@ -35,8 +44,16 @@ class TaskControllerTests() {
     @Autowired
     private lateinit var taskRepositoryImpl: ITaskRepository
 
+    private val jwtMock = Jwt.withTokenValue("token")
+        .header("alg", "none")
+        .claim("sub", UUID.randomUUID().toString())
+        .claim("preferred_username", "zezindaesquina")
+        .claim("email", "zedaesquina@example.com")
+        .build()
+
     @BeforeEach
     fun beforeEach() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(context).apply<DefaultMockMvcBuilder>(springSecurity()).build()
         jpaTaskRepository.deleteAll()
     }
 
@@ -55,6 +72,7 @@ class TaskControllerTests() {
                 post("/task")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""{"title": "Uma tarefa qualquer"}""")
+                    .with(jwt().jwt(jwtMock))
             )
                 .andExpect(status().isCreated)
                 .andExpect(jsonPath("$.id").isString)
@@ -71,6 +89,7 @@ class TaskControllerTests() {
                 post("/task")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""{}""")
+                    .with(jwt().jwt(jwtMock))
             )
                 .andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.errors[0]").value("'title' must be a string"))
@@ -82,6 +101,7 @@ class TaskControllerTests() {
                 post("/task")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""{ "description": false, "title": false }""")
+                    .with(jwt().jwt(jwtMock))
             )
                 .andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.errors[0]").value("'description' must be a string or null"))
@@ -100,6 +120,7 @@ class TaskControllerTests() {
 
             mockMvc.perform(
                 get("/task")
+                    .with(jwt().jwt(jwtMock))
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$").isArray)
@@ -123,6 +144,7 @@ class TaskControllerTests() {
         fun `return 404 if no task found with given id`() {
             mockMvc.perform(
                 get("/task/${UUID.randomUUID()}")
+                    .with(jwt().jwt(jwtMock))
             )
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.errors[0]").value("Task not found"))
@@ -134,6 +156,7 @@ class TaskControllerTests() {
 
             mockMvc.perform(
                 get("/task/${created.id}")
+                    .with(jwt().jwt(jwtMock))
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.id").value(created.id))
@@ -153,6 +176,7 @@ class TaskControllerTests() {
                     .contentType(MediaType.APPLICATION_JSON).content(
                         """{"title":  "Task 1 updated"}""".trimIndent()
                     )
+                    .with(jwt().jwt(jwtMock))
             )
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.errors[0]").value("Task not found"))
@@ -173,6 +197,7 @@ class TaskControllerTests() {
                     .contentType(MediaType.APPLICATION_JSON).content(
                         """{"title":  "Task 1 updated"}""".trimIndent()
                     )
+                    .with(jwt().jwt(jwtMock))
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.updated").value(true))
@@ -193,6 +218,7 @@ class TaskControllerTests() {
                     .contentType(MediaType.APPLICATION_JSON).content(
                         """{"status":  "DOING"}""".trimIndent()
                     )
+                    .with(jwt().jwt(jwtMock))
             )
                 .andExpect(status().isBadRequest)
                 //.andExpect(jsonPath("$.errors[0]").value("'status' must be a string'"))
@@ -206,6 +232,7 @@ class TaskControllerTests() {
                     .contentType(MediaType.APPLICATION_JSON).content(
                         """{"status":  "IN_PROGRESS"}""".trimIndent()
                     )
+                    .with(jwt().jwt(jwtMock))
             )
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.errors[0]").value("Task not found"))
@@ -222,6 +249,7 @@ class TaskControllerTests() {
                         .contentType(MediaType.APPLICATION_JSON).content(
                             """{"status":  "$value"}""".trimIndent()
                         )
+                        .with(jwt().jwt(jwtMock))
                 )
                     .andExpect(status().isOk)
                     .andExpect(jsonPath("$.updated").value(true))
