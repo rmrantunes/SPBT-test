@@ -13,3 +13,11 @@ CREATE TABLE IF NOT EXISTS task (
 
     CONSTRAINT chk_task_status_valid CHECK (status in ('PENDING', 'IN_PROGRESS', 'COMPLETED'))
 );
+
+CREATE TABLE IF NOT EXISTS account (
+    id      VARCHAR(60)  DEFAULT RANDOM_UUID() PRIMARY KEY,
+    username    VARCHAR(45)      NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    first_name VARCHAR(60) NOT NULL,
+    last_name VARCHAR(60)
+);
