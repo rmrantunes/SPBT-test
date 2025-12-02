@@ -28,7 +28,17 @@ class SecurityConfig {
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .authorizeHttpRequests { authorize ->
-                authorize.requestMatchers("/auth/**").permitAll().anyRequest().authenticated()
+                authorize
+                    .requestMatchers(
+                        "/message/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**",
+                        "/v3/api-docs.yaml",
+                    )
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated()
             }
             .oauth2ResourceServer { oauth2Server -> oauth2Server.jwt(Customizer.withDefaults()) }
 
@@ -49,7 +59,7 @@ class CreateAccountFromJwtFilter(private val accountRepository: AccountRepositor
         filterChain: FilterChain,
     ) {
         try {
-            val jwt = SecurityContextHolder.getContext().authentication.principal as? Jwt
+            val jwt = SecurityContextHolder.getContext().authentication?.principal as? Jwt
             if (
                 jwt != null &&
                     !jwt.subject.isNullOrBlank() &&

@@ -49,6 +49,7 @@ dependencies {
         exclude(module = "mockito-core")
     }
     implementation("org.springframework.security:spring-security-test")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14")
     testImplementation("org.instancio:instancio-junit:5.5.1")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("com.github.dasniko:testcontainers-keycloak:3.4.0")
