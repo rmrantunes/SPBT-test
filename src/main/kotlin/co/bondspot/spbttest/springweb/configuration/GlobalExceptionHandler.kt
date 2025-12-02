@@ -36,7 +36,7 @@ class GlobalExceptionHandler {
                 }
                 .sortedBy { it.message }
 
-        return ResponseEntity.badRequest().body(ResponseDto(errors = errors))
+        return ResponseEntity.badRequest().body(ResponseDto(errors = errors, HttpStatus.BAD_REQUEST.value()))
     }
 
     @ExceptionHandler(ApplicationServiceException::class)
@@ -44,6 +44,7 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(ex.relatedHttpStatusCode)
             .body(
                 ResponseDto(
+                    statusCode = ex.relatedHttpStatusCode,
                     errors =
                         ex.errors.map {
                             ErrorDto(it, HttpStatus.valueOf(ex.relatedHttpStatusCode).name)
@@ -82,6 +83,6 @@ class GlobalExceptionHandler {
                     type = KnownErrorDtoType.SERIALIZATION_EXCEPTION.name,
                 )
             )
-        return ResponseEntity.badRequest().body(ResponseDto(errors = errors))
+        return ResponseEntity.badRequest().body(ResponseDto(errors = errors, HttpStatus.BAD_REQUEST.value()))
     }
 }
