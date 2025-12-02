@@ -4,6 +4,8 @@ import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.springweb.dto.*
 import co.bondspot.spbttest.springweb.service.TaskService
 import co.bondspot.spbttest.springweb.util.security.toAccount
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import java.net.URI
 import org.springframework.http.ResponseEntity
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/task")
+@SecurityRequirement(name = "bearerJwt")
+@Tag(name = "Task")
 class TaskController(private val taskService: TaskService) {
     @PostMapping
     fun create(
