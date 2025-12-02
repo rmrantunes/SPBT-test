@@ -99,7 +99,7 @@ class TaskControllerTests {
                         .with(jwt().jwt(jwtMock))
                 )
                 .andExpect(status().isBadRequest)
-                .andExpect(jsonPath("$.errors[0]").value("'title' must be a string"))
+                .andExpect(jsonPath("$.errors[0].message").value("'title' must be a string"))
         }
 
         @Test
@@ -112,8 +112,8 @@ class TaskControllerTests {
                         .with(jwt().jwt(jwtMock))
                 )
                 .andExpect(status().isBadRequest)
-                .andExpect(jsonPath("$.errors[0]").value("'description' must be a string or null"))
-                .andExpect(jsonPath("$.errors[1]").value("'title' must be a string"))
+                .andExpect(jsonPath("$.errors[0].message").value("'description' must be a string or null"))
+                .andExpect(jsonPath("$.errors[1].message").value("'title' must be a string"))
         }
     }
 
@@ -145,7 +145,8 @@ class TaskControllerTests {
             mockMvc
                 .perform(get("/task/${UUID.randomUUID()}").with(jwt().jwt(jwtMock)))
                 .andExpect(status().isNotFound)
-                .andExpect(jsonPath("$.errors[0]").value("Task not found"))
+                .andExpect(jsonPath("$.errors[0].message").value("Task not found"))
+                .andExpect(jsonPath("$.errors[0].type").value("NOT_FOUND"))
         }
 
         @Test
@@ -178,7 +179,7 @@ class TaskControllerTests {
                         .with(jwt().jwt(jwtMock))
                 )
                 .andExpect(status().isNotFound)
-                .andExpect(jsonPath("$.errors[0]").value("Task not found"))
+                .andExpect(jsonPath("$.errors[0].message").value("Task not found"))
         }
 
         @Ignore
@@ -223,9 +224,9 @@ class TaskControllerTests {
                         .with(jwt().jwt(jwtMock))
                 )
                 .andExpect(status().isBadRequest)
-                // .andExpect(jsonPath("$.errors[0]").value("'status' must be a string'"))
+                // .andExpect(jsonPath("$.errors[0]")..messagevalue("'status' must be a string'"))
                 .andExpect(
-                    jsonPath("$.errors[0]")
+                    jsonPath("$.errors[0].message")
                         .value("'status' must be one of: ${Task.Status.entries.joinToString(", ")}")
                 )
         }
@@ -240,7 +241,7 @@ class TaskControllerTests {
                         .with(jwt().jwt(jwtMock))
                 )
                 .andExpect(status().isNotFound)
-                .andExpect(jsonPath("$.errors[0]").value("Task not found"))
+                .andExpect(jsonPath("$.errors[0].message").value("Task not found"))
         }
 
         @Test
