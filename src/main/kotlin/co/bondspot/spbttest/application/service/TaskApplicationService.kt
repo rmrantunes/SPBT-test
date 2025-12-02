@@ -14,15 +14,16 @@ open class TaskApplicationService(private val repository: ITaskRepository) :
     }
 
     override fun getById(id: String, reqAccount: Account): Task? {
-        val task = repository.getById(id)
-            ?: throw ApplicationServiceException("Task not found").setRelatedHttpStatusCode {
-                NOT_FOUND
-            }
+        val task =
+            repository.getById(id)
+                ?: throw ApplicationServiceException("Task not found").setRelatedHttpStatusCode {
+                    NOT_FOUND
+                }
 
         if (task.createdById != reqAccount.id)
             throw ApplicationServiceException(
-                "Requested resource (Task: '$id') is not bonded to requester"
-            )
+                    "Requested resource (Task: '$id') is not bonded to requester"
+                )
                 .setRelatedHttpStatusCode { FORBIDDEN }
         return task
     }

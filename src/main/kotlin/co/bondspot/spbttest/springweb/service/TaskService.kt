@@ -5,4 +5,4 @@ import co.bondspot.spbttest.domain.contract.ITaskRepository
 import org.springframework.stereotype.Service
 
 @Service
-class TaskService (taskRepository: ITaskRepository) : TaskApplicationService(taskRepository)
+class TaskService(taskRepository: ITaskRepository) : TaskApplicationService(taskRepository)

@@ -9,10 +9,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CreateTaskReqDto(
-    @IsString
-    @Serializable(KSVString::class)
-    val title: KSVerifiable<String> = KSVerifiable(),
-
+    @IsString @Serializable(KSVString::class) val title: KSVerifiable<String> = KSVerifiable(),
     @IsString(nullable = true, required = false)
     @Serializable(KSVString::class)
     val description: KSVerifiable<String?> = KSVerifiable(),
@@ -25,7 +22,6 @@ data class UpdateTaskDetailsReqDto(
     @IsString(nullable = true, required = false)
     @Serializable(KSVString::class)
     val title: KSVerifiable<String> = KSVerifiable(),
-
     @IsString(nullable = true, required = false)
     @Serializable(KSVString::class)
     val description: KSVerifiable<String?> = KSVerifiable(),
@@ -33,24 +29,16 @@ data class UpdateTaskDetailsReqDto(
     fun toDomainEntity(): Task = Task(title.value ?: "", description = description.value)
 }
 
-@Serializable
-data class UpdateTaskDetailsResDto(
-    val updated: Boolean?,
-)
+@Serializable data class UpdateTaskDetailsResDto(val updated: Boolean?)
 
 @Serializable
 data class UpdateTaskStatusReqDto(
     @IsString
     @IsOneOf(["PENDING", "IN_PROGRESS", "COMPLETED"])
     @Serializable(KSVString::class)
-    val status: KSVerifiable<String> = KSVerifiable(),
+    val status: KSVerifiable<String> = KSVerifiable()
 ) {
     fun toDomainEntity() = Task(status = Task.Status.valueOf(status.dangerouslyForceCast()))
 }
 
-
-@Serializable
-data class UpdateTaskStatusResDto(
-    val updated: Boolean?,
-)
-
+@Serializable data class UpdateTaskStatusResDto(val updated: Boolean?)

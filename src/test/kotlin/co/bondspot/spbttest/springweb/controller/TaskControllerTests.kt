@@ -3,6 +3,9 @@ package co.bondspot.spbttest.springweb.controller
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.springweb.persistence.TaskRepository
+import java.util.*
+import kotlin.test.Ignore
+import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,9 +24,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import java.util.*
-import kotlin.test.Ignore
-import kotlin.test.assertTrue
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -32,30 +32,30 @@ import kotlin.test.assertTrue
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class TaskControllerTests {
 
-    @Autowired
-    private lateinit var context: WebApplicationContext
+    @Autowired private lateinit var context: WebApplicationContext
 
-    @Autowired
-    private lateinit var mockMvc: MockMvc
+    @Autowired private lateinit var mockMvc: MockMvc
 
-    @Autowired
-    private lateinit var jpaTaskRepository: TaskRepository
+    @Autowired private lateinit var jpaTaskRepository: TaskRepository
 
-    @Autowired
-    private lateinit var taskRepositoryImpl: ITaskRepository
+    @Autowired private lateinit var taskRepositoryImpl: ITaskRepository
 
     private val JWT_SUB = UUID.randomUUID().toString()
 
-    private val jwtMock = Jwt.withTokenValue("token")
-        .header("alg", "none")
-        .claim("sub", JWT_SUB)
-        .claim("preferred_username", "zezindaesquina")
-        .claim("email", "zedaesquina@example.com")
-        .build()
+    private val jwtMock =
+        Jwt.withTokenValue("token")
+            .header("alg", "none")
+            .claim("sub", JWT_SUB)
+            .claim("preferred_username", "zezindaesquina")
+            .claim("email", "zedaesquina@example.com")
+            .build()
 
     @BeforeEach
     fun beforeEach() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context).apply<DefaultMockMvcBuilder>(springSecurity()).build()
+        mockMvc =
+            MockMvcBuilders.webAppContextSetup(context)
+                .apply<DefaultMockMvcBuilder>(springSecurity())
+                .build()
         jpaTaskRepository.deleteAll()
     }
 
@@ -70,42 +70,47 @@ class TaskControllerTests {
 
         @Test
         fun `return it if input is valid`() {
-            mockMvc.perform(
-                post("/task")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"title": "Uma tarefa qualquer"}""")
-                    .with(jwt().jwt(jwtMock))
-            )
+            mockMvc
+                .perform(
+                    post("/task")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"title": "Uma tarefa qualquer"}""")
+                        .with(jwt().jwt(jwtMock))
+                )
                 .andExpect(status().isCreated)
                 .andExpect(jsonPath("$.id").isString)
                 .andExpect(jsonPath("$.title").value("Uma tarefa qualquer"))
                 .andExpect(jsonPath("$.createdById").value(JWT_SUB))
                 .andReturn()
                 .also {
-                    assertTrue { it.response.getHeaderValue("Location").toString().startsWith("/task") }
+                    assertTrue {
+                        it.response.getHeaderValue("Location").toString().startsWith("/task")
+                    }
                 }
         }
 
         @Test
         fun `validate input if fields are missing`() {
-            mockMvc.perform(
-                post("/task")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{}""")
-                    .with(jwt().jwt(jwtMock))
-            )
+            mockMvc
+                .perform(
+                    post("/task")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{}""")
+                        .with(jwt().jwt(jwtMock))
+                )
                 .andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.errors[0]").value("'title' must be a string"))
         }
 
         @Test
         fun `validate input if fields have type mismatch`() {
-            mockMvc.perform(
-                post("/task")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{ "description": false, "title": false }""")
-                    .with(jwt().jwt(jwtMock))
-            )
+            mockMvc
+                .perform(
+                    post("/task")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{ "description": false, "title": false }""")
+                        .with(jwt().jwt(jwtMock))
+                )
                 .andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.errors[0]").value("'description' must be a string or null"))
                 .andExpect(jsonPath("$.errors[1]").value("'title' must be a string"))
@@ -117,27 +122,19 @@ class TaskControllerTests {
     inner class ListTasks() {
         @Test
         fun `return list of created tasks`() {
-            repeat(3) {
-                taskRepositoryImpl.create(Task("Task $it", createdById = JWT_SUB))
-            }
+            repeat(3) { taskRepositoryImpl.create(Task("Task $it", createdById = JWT_SUB)) }
 
-            mockMvc.perform(
-                get("/task")
-                    .with(jwt().jwt(jwtMock))
-            )
+            mockMvc
+                .perform(get("/task").with(jwt().jwt(jwtMock)))
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$").isArray)
                 .andExpect(jsonPath("$.size()").value(3))
                 .also { m ->
-                    repeat(3) {
-                        m.andExpect(jsonPath("$[${it}].title").value("Task $it"))
-                    }
+                    repeat(3) { m.andExpect(jsonPath("$[${it}].title").value("Task $it")) }
                 }
         }
 
-        @Ignore
-        fun `return a paginated list of tasks`() {
-        }
+        @Ignore fun `return a paginated list of tasks`() {}
     }
 
     @Nested
@@ -145,10 +142,8 @@ class TaskControllerTests {
     inner class GetTask() {
         @Test
         fun `return 404 if no task found with given id`() {
-            mockMvc.perform(
-                get("/task/${UUID.randomUUID()}")
-                    .with(jwt().jwt(jwtMock))
-            )
+            mockMvc
+                .perform(get("/task/${UUID.randomUUID()}").with(jwt().jwt(jwtMock)))
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.errors[0]").value("Task not found"))
         }
@@ -156,12 +151,12 @@ class TaskControllerTests {
         @Test
         fun `return task found with given id`() {
             val created =
-                taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí", createdById = JWT_SUB))
+                taskRepositoryImpl.create(
+                    Task("Task 1", description = "alguma coisa aí", createdById = JWT_SUB)
+                )
 
-            mockMvc.perform(
-                get("/task/${created.id}")
-                    .with(jwt().jwt(jwtMock))
-            )
+            mockMvc
+                .perform(get("/task/${created.id}").with(jwt().jwt(jwtMock)))
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.id").value(created.id))
                 .andExpect(jsonPath("$.title").value(created.title))
@@ -175,13 +170,13 @@ class TaskControllerTests {
     inner class UpdateTaskDetails {
         @Test
         fun `return 404 if no task found with given id`() {
-            mockMvc.perform(
-                patch("/task/${UUID.randomUUID()}/details")
-                    .contentType(MediaType.APPLICATION_JSON).content(
-                        """{"title":  "Task 1 updated"}""".trimIndent()
-                    )
-                    .with(jwt().jwt(jwtMock))
-            )
+            mockMvc
+                .perform(
+                    patch("/task/${UUID.randomUUID()}/details")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"title":  "Task 1 updated"}""".trimIndent())
+                        .with(jwt().jwt(jwtMock))
+                )
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.errors[0]").value("Task not found"))
         }
@@ -194,16 +189,18 @@ class TaskControllerTests {
         @Test
         fun `return success result for found task updated`() {
             val created =
-                taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí", createdById = JWT_SUB))
+                taskRepositoryImpl.create(
+                    Task("Task 1", description = "alguma coisa aí", createdById = JWT_SUB)
+                )
             val id = created.id!!
 
-            mockMvc.perform(
-                patch("/task/$id/details")
-                    .contentType(MediaType.APPLICATION_JSON).content(
-                        """{"title":  "Task 1 updated"}""".trimIndent()
-                    )
-                    .with(jwt().jwt(jwtMock))
-            )
+            mockMvc
+                .perform(
+                    patch("/task/$id/details")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"title":  "Task 1 updated"}""".trimIndent())
+                        .with(jwt().jwt(jwtMock))
+                )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.updated").value(true))
 
@@ -218,27 +215,30 @@ class TaskControllerTests {
     inner class UpdateTaskStatus {
         @Test
         fun `validate request body status options`() {
-            mockMvc.perform(
-                patch("/task/${UUID.randomUUID()}/status")
-                    .contentType(MediaType.APPLICATION_JSON).content(
-                        """{"status":  "DOING"}""".trimIndent()
-                    )
-                    .with(jwt().jwt(jwtMock))
-            )
+            mockMvc
+                .perform(
+                    patch("/task/${UUID.randomUUID()}/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"status":  "DOING"}""".trimIndent())
+                        .with(jwt().jwt(jwtMock))
+                )
                 .andExpect(status().isBadRequest)
-                //.andExpect(jsonPath("$.errors[0]").value("'status' must be a string'"))
-                .andExpect(jsonPath("$.errors[0]").value("'status' must be one of: ${Task.Status.entries.joinToString(", ")}"))
+                // .andExpect(jsonPath("$.errors[0]").value("'status' must be a string'"))
+                .andExpect(
+                    jsonPath("$.errors[0]")
+                        .value("'status' must be one of: ${Task.Status.entries.joinToString(", ")}")
+                )
         }
 
         @Test
         fun `return 404 if no task found with given id`() {
-            mockMvc.perform(
-                patch("/task/${UUID.randomUUID()}/status")
-                    .contentType(MediaType.APPLICATION_JSON).content(
-                        """{"status":  "IN_PROGRESS"}""".trimIndent()
-                    )
-                    .with(jwt().jwt(jwtMock))
-            )
+            mockMvc
+                .perform(
+                    patch("/task/${UUID.randomUUID()}/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"status":  "IN_PROGRESS"}""".trimIndent())
+                        .with(jwt().jwt(jwtMock))
+                )
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.errors[0]").value("Task not found"))
         }
@@ -246,17 +246,19 @@ class TaskControllerTests {
         @Test
         fun `return success result for found task updated`() {
             val created =
-                taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí", createdById = JWT_SUB))
+                taskRepositoryImpl.create(
+                    Task("Task 1", description = "alguma coisa aí", createdById = JWT_SUB)
+                )
             val id = created.id!!
 
             for (value in Task.Status.entries) {
-                mockMvc.perform(
-                    patch("/task/$id/status")
-                        .contentType(MediaType.APPLICATION_JSON).content(
-                            """{"status":  "$value"}""".trimIndent()
-                        )
-                        .with(jwt().jwt(jwtMock))
-                )
+                mockMvc
+                    .perform(
+                        patch("/task/$id/status")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""{"status":  "$value"}""".trimIndent())
+                            .with(jwt().jwt(jwtMock))
+                    )
                     .andExpect(status().isOk)
                     .andExpect(jsonPath("$.updated").value(true))
 

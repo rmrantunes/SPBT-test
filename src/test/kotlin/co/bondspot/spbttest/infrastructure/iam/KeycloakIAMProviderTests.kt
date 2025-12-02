@@ -4,22 +4,23 @@ import co.bondspot.spbttest.KeycloakContainerExtension
 import co.bondspot.spbttest.domain.entity.IAMAccount
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import co.bondspot.spbttest.testutils.KSelect
+import java.util.*
 import org.assertj.core.api.Assertions.assertThat
 import org.instancio.Instancio
 import org.junit.jupiter.api.*
-import java.util.*
 
 private class KeycloakIAMProviderTests() : KeycloakContainerExtension() {
     private lateinit var provider: KeycloakIAMProvider
 
     private val password = "1#1#pass__sup3rst00ng$"
 
-    private fun generateInputAccount() = Instancio.of(IAMAccount::class.java)
-        .generate(KSelect.field(IAMAccount::username)) { it.text().word().adjective().noun() }
-        .generate(KSelect.field(IAMAccount::email)) { it.net().email() }
-        .generate(KSelect.field(IAMAccount::firstName)) { it.text().word().adjective() }
-        .generate(KSelect.field(IAMAccount::lastName)) { it.text().word().noun() }
-        .create()
+    private fun generateInputAccount() =
+        Instancio.of(IAMAccount::class.java)
+            .generate(KSelect.field(IAMAccount::username)) { it.text().word().adjective().noun() }
+            .generate(KSelect.field(IAMAccount::email)) { it.net().email() }
+            .generate(KSelect.field(IAMAccount::firstName)) { it.text().word().adjective() }
+            .generate(KSelect.field(IAMAccount::lastName)) { it.text().word().noun() }
+            .create()
 
     @BeforeEach
     fun setup() {
@@ -50,13 +51,12 @@ private class KeycloakIAMProviderTests() : KeycloakContainerExtension() {
         fun `return provider exception if a user exists with same credentials`() {
             val inputAccount = generateInputAccount()
 
-            assertDoesNotThrow {
-                provider.register(inputAccount, password)
-            }
+            assertDoesNotThrow { provider.register(inputAccount, password) }
 
-            val ex = assertThrows<KeycloakIAMProviderException> {
-                provider.register(inputAccount, password)
-            }
+            val ex =
+                assertThrows<KeycloakIAMProviderException> {
+                    provider.register(inputAccount, password)
+                }
 
             assertThat(ex.message).isEqualTo("A user exists with same credentials")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
@@ -110,9 +110,10 @@ private class KeycloakIAMProviderTests() : KeycloakContainerExtension() {
     inner class SetExternalId() {
         @Test
         fun `throw not found exception if no user with id`() {
-            val ex = assertThrows<KeycloakIAMProviderException> {
-                provider.setExternalId("not_an_id", "some-external-id")
-            }
+            val ex =
+                assertThrows<KeycloakIAMProviderException> {
+                    provider.setExternalId("not_an_id", "some-external-id")
+                }
 
             assertThat(ex.message).isEqualTo("User not found")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.NOT_FOUND)
@@ -143,7 +144,10 @@ private class KeycloakIAMProviderTests() : KeycloakContainerExtension() {
 
             assertDoesNotThrow { provider.setExternalId(account.id!!, externalId) }
 
-            val ex = assertThrows<KeycloakIAMProviderException> { provider.setExternalId(account2.id!!, externalId) }
+            val ex =
+                assertThrows<KeycloakIAMProviderException> {
+                    provider.setExternalId(account2.id!!, externalId)
+                }
 
             assertThat(ex.message).isEqualTo("A user already exists with same externalId")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.CONFLICT)
@@ -168,7 +172,9 @@ private class KeycloakIAMProviderTests() : KeycloakContainerExtension() {
         @Test
         fun `if invalid username throw exception`() {
             val response =
-                assertThrows<KeycloakIAMProviderException> { provider.obtainAccessToken("not_the_username", password) }
+                assertThrows<KeycloakIAMProviderException> {
+                    provider.obtainAccessToken("not_the_username", password)
+                }
 
             assertThat(response.message).isEqualTo("Invalid account credentials")
             assertThat(response.relatedHttpStatusCode).isEqualTo(401)
@@ -178,12 +184,10 @@ private class KeycloakIAMProviderTests() : KeycloakContainerExtension() {
         fun `if invalid password throw exception`() {
             val inputAccount = generateInputAccount()
             provider.register(inputAccount, password)
-            val response = assertThrows<KeycloakIAMProviderException> {
-                provider.obtainAccessToken(
-                    inputAccount.username,
-                    "not_the_password"
-                )
-            }
+            val response =
+                assertThrows<KeycloakIAMProviderException> {
+                    provider.obtainAccessToken(inputAccount.username, "not_the_password")
+                }
 
             assertThat(response.message).isEqualTo("Invalid account credentials")
             assertThat(response.relatedHttpStatusCode).isEqualTo(401)

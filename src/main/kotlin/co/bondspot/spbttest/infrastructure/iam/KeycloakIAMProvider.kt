@@ -19,38 +19,30 @@ class KeycloakIAMProviderException(message: String? = null, relatedHttpStatusCod
 class KeycloakIAMProvider(
     private val serverUrl: String = "http://localhost:8080",
     private val clientSecret: String = "luJ0BaS4TtMK8tbK2AAwNKCtAM4Yd3Om",
-    private val grantType: String = "client_credentials"
+    private val grantType: String = "client_credentials",
 ) : IIAMProvider {
     private val externalIdAttrKey = "externalId"
     private val realm = "spbttest"
     private val clientId = "spbttest-api"
     private var keycloak = lazy {
-        KeycloakBuilder
-            .builder()
+        KeycloakBuilder.builder()
             .serverUrl(serverUrl)
             .realm(realm)
             .clientId(clientId)
             .clientSecret(clientSecret)
-            .also {
-                if (grantType == "password") it.password("5kbR0E2tzuUqJBKFzuFM")
-            }
+            .also { if (grantType == "password") it.password("5kbR0E2tzuUqJBKFzuFM") }
             .grantType(grantType)
             .build()
     }
 
     private val authzClient = lazy {
         AuthzClient.create(
-            Configuration(
-                serverUrl,
-                realm,
-                clientId,
-                mapOf("secret" to clientSecret),
-                null
-            )
+            Configuration(serverUrl, realm, clientId, mapOf("secret" to clientSecret), null)
         )
     }
 
     private fun keycloak() = keycloak.value
+
     private fun authzClient() = authzClient.value
 
     fun close() {
@@ -61,10 +53,7 @@ class KeycloakIAMProvider(
         realmResource().users().delete(id).also { response -> response.close() }
     }
 
-    override fun register(
-        account: IAMAccount,
-        password: String
-    ): IAMAccount {
+    override fun register(account: IAMAccount, password: String): IAMAccount {
         requireThat(password.isNotEmpty()) { "password attribute must not be empty" }
 
         val realm = realmResource()
@@ -80,7 +69,10 @@ class KeycloakIAMProvider(
 
             409 -> {
                 response.close()
-                throw KeycloakIAMProviderException("A user exists with same credentials", response.status)
+                throw KeycloakIAMProviderException(
+                    "A user exists with same credentials",
+                    response.status,
+                )
             }
 
             else -> {
@@ -91,19 +83,21 @@ class KeycloakIAMProvider(
 
         response.close()
 
-        realm?.users()?.get(userId)?.resetPassword(CredentialRepresentation().also {
-            it.value = password
-            it.type = CredentialRepresentation.PASSWORD
-            it.isTemporary = false
-        })
+        realm
+            ?.users()
+            ?.get(userId)
+            ?.resetPassword(
+                CredentialRepresentation().also {
+                    it.value = password
+                    it.type = CredentialRepresentation.PASSWORD
+                    it.isTemporary = false
+                }
+            )
 
         return account.copy(id = userId)
     }
 
-    override fun obtainAccessToken(
-        username: String,
-        password: String
-    ): IAMAuthenticatedToken {
+    override fun obtainAccessToken(username: String, password: String): IAMAuthenticatedToken {
         requireThat(username.isNotEmpty()) { "username attribute must not be empty" }
         requireThat(password.isNotEmpty()) { "password attribute must not be empty" }
 
@@ -111,10 +105,11 @@ class KeycloakIAMProvider(
             val response = authzClient().obtainAccessToken(username, password)
             IAMAuthenticatedToken(response.token, response.refreshToken, response.expiresIn)
         } catch (e: HttpResponseException) {
-            val (message, statusCode) = when (e.statusCode) {
-                401 -> Pair("Invalid account credentials", e.statusCode)
-                else -> Pair(e.message, e.statusCode)
-            }
+            val (message, statusCode) =
+                when (e.statusCode) {
+                    401 -> Pair("Invalid account credentials", e.statusCode)
+                    else -> Pair(e.message, e.statusCode)
+                }
 
             throw KeycloakIAMProviderException(message, statusCode)
         } catch (e: Exception) {
@@ -134,27 +129,30 @@ class KeycloakIAMProvider(
         return users?.getOrNull(0)?.toIAMAccount()
     }
 
-    override fun setExternalId(
-        id: String,
-        externalId: String
-    ) {
+    override fun setExternalId(id: String, externalId: String) {
         requireThat(id.isNotEmpty()) { "id attribute must not be empty" }
         requireThat(externalId.isNotEmpty()) { "externalId attribute must not be empty" }
 
         val userNotFoundMessage = "User not found"
         try {
-            realmResource()?.users()?.searchByAttributes("$externalIdAttrKey:$externalId", true)?.run {
-                if (isNotEmpty()) throw KeycloakIAMProviderException(
-                    "A user already exists with same externalId",
-                    HttpStatusCode.CONFLICT
-                )
-            }
+            realmResource()
+                ?.users()
+                ?.searchByAttributes("$externalIdAttrKey:$externalId", true)
+                ?.run {
+                    if (isNotEmpty())
+                        throw KeycloakIAMProviderException(
+                            "A user already exists with same externalId",
+                            HttpStatusCode.CONFLICT,
+                        )
+                }
 
             val user = realmResource().users().get(id)
-            val userRepresentation = user.toRepresentation().also {
-                if (it.attributes != null) it.attributes?.set(externalIdAttrKey, listOf(externalId))
-                else it.attributes = mapOf(externalIdAttrKey to listOf(externalId))
-            }
+            val userRepresentation =
+                user.toRepresentation().also {
+                    if (it.attributes != null)
+                        it.attributes?.set(externalIdAttrKey, listOf(externalId))
+                    else it.attributes = mapOf(externalIdAttrKey to listOf(externalId))
+                }
             // WARNING: updating without extending UserRepresentation instance can lead to
             // full wipe of the user record in Keycloak. Either don't forget about it, or try to
             // send a direct http request to Keycloak Admin REST API instead of using SDK.
@@ -189,6 +187,7 @@ class KeycloakIAMProvider(
     }
 
     private fun requireThat(value: Boolean, message: () -> String) {
-        if (!value) throw KeycloakIAMProviderException(message(), HttpStatusCode.INTERNAL_SERVER_ERROR)
+        if (!value)
+            throw KeycloakIAMProviderException(message(), HttpStatusCode.INTERNAL_SERVER_ERROR)
     }
 }

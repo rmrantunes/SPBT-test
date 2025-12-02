@@ -10,12 +10,12 @@ import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.util.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.util.*
 
 class AccountServiceTests {
     @Nested
@@ -35,12 +35,8 @@ class AccountServiceTests {
             every { iamProvider.getByEmail(account.email) } returns iamAccount
             every { accountRepository.getByEmail(account.email) } returns account
 
-            val exception = assertThrows<ApplicationServiceException> {
-                service.register(
-                    account,
-                    "pas123"
-                )
-            }
+            val exception =
+                assertThrows<ApplicationServiceException> { service.register(account, "pas123") }
 
             val exMessage = "Account already exists"
             assertThat(exception.message).isEqualTo(exMessage)
@@ -50,12 +46,8 @@ class AccountServiceTests {
             every { iamProvider.getByUsername(account.username) } returns null
             every { accountRepository.getByUsername(account.username) } returns null
 
-            val exception2 = assertThrows<ApplicationServiceException> {
-                service.register(
-                    account,
-                    "pas123"
-                )
-            }
+            val exception2 =
+                assertThrows<ApplicationServiceException> { service.register(account, "pas123") }
 
             assertThat(exception2.message).isEqualTo(exMessage)
             assertThat(exception2.errors[0]).isEqualTo(exMessage)
@@ -63,12 +55,8 @@ class AccountServiceTests {
 
             every { iamProvider.getByEmail(account.email) } returns null
 
-            val exception3 = assertThrows<ApplicationServiceException> {
-                service.register(
-                    account,
-                    "pas123"
-                )
-            }
+            val exception3 =
+                assertThrows<ApplicationServiceException> { service.register(account, "pas123") }
 
             assertThat(exception3.message).isEqualTo(exMessage)
             assertThat(exception3.errors[0]).isEqualTo(exMessage)
@@ -92,12 +80,12 @@ class AccountServiceTests {
             every { iamProvider.getByUsername(account.username) } returns null
             every { accountRepository.getByUsername(account.username) } returns null
 
-            every { iamProvider.register(iamAccount, "pas123") } returns iamAccount.copy(id = iamAccountId)
-            every { accountRepository.register(account.copy(iamAccountId = iamAccountId)) } answers {
-                (firstArg() as Account).copy(
-                    id = accountId
-                )
-            }
+            every { iamProvider.register(iamAccount, "pas123") } returns
+                iamAccount.copy(id = iamAccountId)
+            every { accountRepository.register(account.copy(iamAccountId = iamAccountId)) } answers
+                {
+                    (firstArg() as Account).copy(id = accountId)
+                }
 
             every { iamProvider.setExternalId(iamAccountId, accountId) } returns Unit
 
@@ -117,17 +105,13 @@ class AccountServiceTests {
             val accountRepository = mockk<IAccountRepository>()
             val service = AccountService(accountRepository, iamProvider)
 
-            every { iamProvider.obtainAccessToken(any(), any()) } throws IAMProviderException(
-                "Invalid account credentials",
-                HttpStatusCode.UNAUTHORIZED
-            )
+            every { iamProvider.obtainAccessToken(any(), any()) } throws
+                IAMProviderException("Invalid account credentials", HttpStatusCode.UNAUTHORIZED)
 
-            val ex = assertThrows<ApplicationServiceException> {
-                service.obtainAccessToken(
-                    "not_the_username",
-                    "not_the_password"
-                )
-            }
+            val ex =
+                assertThrows<ApplicationServiceException> {
+                    service.obtainAccessToken("not_the_username", "not_the_password")
+                }
             assertThat(ex.message).isEqualTo("Invalid account credentials")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.UNAUTHORIZED)
         }

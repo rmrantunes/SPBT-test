@@ -35,9 +35,7 @@ class KSVerifiable<T>(
 
     fun isUndefined(): Boolean = isUndefined
 
-    /**
-     * Make sure if there's no error messages from Spring Validation before executing
-     */
+    /** Make sure if there's no error messages from Spring Validation before executing */
     @Suppress("UNCHECKED_CAST")
     fun dangerouslyForceCast(): T {
         return value as T

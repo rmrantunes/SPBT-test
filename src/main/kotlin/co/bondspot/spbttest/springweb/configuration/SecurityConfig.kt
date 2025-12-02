@@ -22,31 +22,41 @@ import org.springframework.web.filter.OncePerRequestFilter
 @EnableWebSecurity
 class SecurityConfig {
 
-    @Autowired
-    lateinit var accountRepository: AccountRepository
+    @Autowired lateinit var accountRepository: AccountRepository
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
-        http.authorizeHttpRequests { authorize ->
-            authorize.requestMatchers("/auth/**").permitAll().anyRequest().authenticated()
-        }.oauth2ResourceServer { oauth2Server -> oauth2Server.jwt(Customizer.withDefaults()) }
+        http
+            .authorizeHttpRequests { authorize ->
+                authorize.requestMatchers("/auth/**").permitAll().anyRequest().authenticated()
+            }
+            .oauth2ResourceServer { oauth2Server -> oauth2Server.jwt(Customizer.withDefaults()) }
 
-        http.addFilterAfter(CreateAccountFromJwtFilter(accountRepository), AuthenticationFilter::class.java)
+        http.addFilterAfter(
+            CreateAccountFromJwtFilter(accountRepository),
+            AuthenticationFilter::class.java,
+        )
 
         return http.build()
     }
 }
 
-class CreateAccountFromJwtFilter(
-    private val accountRepository: AccountRepository,
-) : OncePerRequestFilter() {
+class CreateAccountFromJwtFilter(private val accountRepository: AccountRepository) :
+    OncePerRequestFilter() {
     override fun doFilterInternal(
-        request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        filterChain: FilterChain,
     ) {
         try {
             val jwt = SecurityContextHolder.getContext().authentication.principal as? Jwt
-            if (jwt != null && !jwt.subject.isNullOrBlank() && accountRepository.findById(jwt.subject).isEmpty) {
-                // TODO update existing app record fields (email, username, first_name, last_name) from incoming jwt data
+            if (
+                jwt != null &&
+                    !jwt.subject.isNullOrBlank() &&
+                    accountRepository.findById(jwt.subject).isEmpty
+            ) {
+                // TODO update existing app record fields (email, username, first_name, last_name)
+                // from incoming jwt data
                 accountRepository.save(AccountEntity.fromDomain(jwt.toAccount()))
             }
         } finally {

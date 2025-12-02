@@ -5,7 +5,7 @@ data class Task(
     val status: Status = Status.PENDING,
     val description: String? = null,
     val createdById: String? = null,
-    val id: String? = null
+    val id: String? = null,
 ) {
     enum class Status {
         PENDING,

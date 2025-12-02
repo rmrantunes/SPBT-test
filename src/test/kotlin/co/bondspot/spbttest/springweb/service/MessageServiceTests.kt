@@ -4,8 +4,8 @@ import co.bondspot.spbttest.domain.contract.IMessageRepository
 import co.bondspot.spbttest.domain.entity.Message
 import io.mockk.every
 import io.mockk.mockk
-import org.assertj.core.api.Assertions
 import kotlin.test.Test
+import org.assertj.core.api.Assertions
 
 class MessageServiceTests {
 
@@ -19,7 +19,6 @@ class MessageServiceTests {
         val result = service.save(created)
 
         Assertions.assertThat(result).isEqualTo(created)
-
     }
 
     @Test
@@ -32,7 +31,6 @@ class MessageServiceTests {
         val result = service.findById(message.id!!)
 
         Assertions.assertThat(result).isEqualTo(message)
-
     }
 
     @Test

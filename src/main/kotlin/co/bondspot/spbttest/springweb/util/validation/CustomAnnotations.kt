@@ -22,7 +22,7 @@ class IsStringValidator : ConstraintValidator<IsString, Any?>, ConstraintValidat
         super.init(
             constraintAnnotation?.message,
             constraintAnnotation?.nullable,
-            constraintAnnotation?.required
+            constraintAnnotation?.required,
         )
     }
 
@@ -48,17 +48,14 @@ annotation class IsOneOf(
 
 class IsOneOfValidator : ConstraintValidator<IsOneOf, Any?>, ConstraintValidatorWithDefaults() {
     lateinit var list: Array<String>
+
     override fun initialize(constraintAnnotation: IsOneOf?) {
         list = constraintAnnotation?.list!!
 
         val joinedOptions = list.joinToString(separator = ", ")
         val message = constraintAnnotation.message.replace("{commaList}", joinedOptions)
 
-        super.init(
-            message,
-            constraintAnnotation.nullable,
-            constraintAnnotation.required
-        )
+        super.init(message, constraintAnnotation.nullable, constraintAnnotation.required)
     }
 
     override fun isValid(value: Any?, context: ConstraintValidatorContext?): Boolean {
@@ -87,7 +84,11 @@ open class ConstraintValidatorWithDefaults {
         this.message = message
     }
 
-    fun defaultChecks(value: Any?, context: ConstraintValidatorContext?, customCheck: () -> Boolean): Boolean {
+    fun defaultChecks(
+        value: Any?,
+        context: ConstraintValidatorContext?,
+        customCheck: () -> Boolean,
+    ): Boolean {
         checkHasDeserializationTypeException(value, nullable, message).let { message ->
             if (message.isNotEmpty()) {
                 context?.disableDefaultConstraintViolation()
@@ -124,12 +125,13 @@ open class ConstraintValidatorWithDefaults {
     private fun checkHasDeserializationTypeException(
         value: Any?,
         nullable: Boolean,
-        message: String? = null
+        message: String? = null,
     ): String {
         val valid = !(value as KSVerifiable<*>).hasDeserializationTypeException
 
         if (!valid) {
-            return if (message != null) if (nullable) "$message or null" else message else "value with invalid type (check the docs)"
+            return if (message != null) if (nullable) "$message or null" else message
+            else "value with invalid type (check the docs)"
         }
 
         return ""
@@ -139,19 +141,16 @@ open class ConstraintValidatorWithDefaults {
         value: Any?,
         required: Boolean,
         nullable: Boolean,
-        message: String? = null
+        message: String? = null,
     ): String {
         if (required && value is KSVerifiable<*> && value.isUndefined()) {
-            return if (message != null) if (nullable) "$message or null" else message else "is required"
+            return if (message != null) if (nullable) "$message or null" else message
+            else "is required"
         }
         return ""
     }
 
-    private fun checkNullable(
-        value: Any?,
-        nullable: Boolean,
-        message: String? = null
-    ): String {
+    private fun checkNullable(value: Any?, nullable: Boolean, message: String? = null): String {
         val isNullValue =
             if (value is KSVerifiable<*>) value.value == null && !value.isUndefined()
             else value == null
@@ -163,5 +162,4 @@ open class ConstraintValidatorWithDefaults {
 
         return ""
     }
-
 }

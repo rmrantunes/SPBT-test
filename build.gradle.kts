@@ -5,7 +5,7 @@ plugins {
     id("org.springframework.boot") version "3.5.7"
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.serialization") version "2.0.21"
-  //  id("com.diffplug.spotless") version "7.2.1"
+   id("com.diffplug.spotless") version "7.2.1"
 }
 
 group = "co.bondspot"
@@ -66,11 +66,11 @@ kotlin {
     }
 }
 
-//spotless {
-//    kotlin {
-//        ktfmt("0.58").kotlinlangStyle()
-//    }
-//}
+spotless {
+    kotlin {
+        ktfmt("0.58").kotlinlangStyle()
+    }
+}
 
 tasks.withType<Test> {
     useJUnitPlatform()

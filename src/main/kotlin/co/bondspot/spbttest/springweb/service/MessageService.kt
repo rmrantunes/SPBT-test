@@ -4,5 +4,4 @@ import co.bondspot.spbttest.application.service.MessageApplicationService
 import co.bondspot.spbttest.domain.contract.IMessageRepository
 import org.springframework.stereotype.Service
 
-@Service
-class MessageService(repo: IMessageRepository) : MessageApplicationService(repo)
+@Service class MessageService(repo: IMessageRepository) : MessageApplicationService(repo)

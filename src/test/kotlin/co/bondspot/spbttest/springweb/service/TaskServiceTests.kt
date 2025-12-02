@@ -51,7 +51,8 @@ class TaskServiceTests {
             every { repository.getById(id) } returns existing.copy(createdById = "not_you")
 
             val ex = assertThrows<ApplicationServiceException> { service.getById(id, reqAccount) }
-            assertThat(ex.message).isEqualTo("Requested resource (Task: '$id') is not bonded to requester")
+            assertThat(ex.message)
+                .isEqualTo("Requested resource (Task: '$id') is not bonded to requester")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
         }
 
@@ -84,8 +85,12 @@ class TaskServiceTests {
 
             every { repository.getById(id) } returns existing.copy(createdById = "not_you")
 
-            val ex = assertThrows<ApplicationServiceException> { service.updateStatus(id, Task.Status.IN_PROGRESS, reqAccount) }
-            assertThat(ex.message).isEqualTo("Requested resource (Task: '$id') is not bonded to requester")
+            val ex =
+                assertThrows<ApplicationServiceException> {
+                    service.updateStatus(id, Task.Status.IN_PROGRESS, reqAccount)
+                }
+            assertThat(ex.message)
+                .isEqualTo("Requested resource (Task: '$id') is not bonded to requester")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
         }
 
@@ -103,7 +108,11 @@ class TaskServiceTests {
 
             Assertions.assertThat(result).isTrue()
 
-            verify { repository invoke "update" withArguments listOf(id, existing.copy(status = Task.Status.IN_PROGRESS)) }
+            verify {
+                repository invoke
+                    "update" withArguments
+                    listOf(id, existing.copy(status = Task.Status.IN_PROGRESS))
+            }
         }
     }
 
@@ -120,8 +129,12 @@ class TaskServiceTests {
 
             every { repository.getById(id) } returns existing.copy(createdById = "not_you")
 
-            val ex = assertThrows<ApplicationServiceException> { service.updateDetails(id, "Editado", reqAccount) }
-            assertThat(ex.message).isEqualTo("Requested resource (Task: '$id') is not bonded to requester")
+            val ex =
+                assertThrows<ApplicationServiceException> {
+                    service.updateDetails(id, "Editado", reqAccount)
+                }
+            assertThat(ex.message)
+                .isEqualTo("Requested resource (Task: '$id') is not bonded to requester")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
         }
 
@@ -139,7 +152,11 @@ class TaskServiceTests {
 
             Assertions.assertThat(result).isTrue()
 
-            verify { repository invoke "update" withArguments listOf(id, existing.copy(title = "Editado")) }
+            verify {
+                repository invoke
+                    "update" withArguments
+                    listOf(id, existing.copy(title = "Editado"))
+            }
         }
     }
 }

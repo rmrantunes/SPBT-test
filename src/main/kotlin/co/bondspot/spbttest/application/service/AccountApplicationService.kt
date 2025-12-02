@@ -10,45 +10,45 @@ import co.bondspot.spbttest.domain.entity.IAMAuthenticatedToken
 import co.bondspot.spbttest.domain.exception.IAMProviderException
 
 open class AccountApplicationService(
-    private val accountRepository: IAccountRepository, private val iamProvider: IIAMProvider
+    private val accountRepository: IAccountRepository,
+    private val iamProvider: IIAMProvider,
 ) : IAccountApplicationService {
     override fun register(account: Account, password: String) {
         val errorMessage = "Account already exists"
 
         var existingIAMAccount = iamProvider.getByUsername(account.username)
-        if (existingIAMAccount != null) throw ApplicationServiceException(errorMessage).setRelatedHttpStatusCode { CONFLICT }
+        if (existingIAMAccount != null)
+            throw ApplicationServiceException(errorMessage).setRelatedHttpStatusCode { CONFLICT }
 
         var existingAccount = accountRepository.getByUsername(account.username)
-        if (existingAccount != null) throw ApplicationServiceException(errorMessage).setRelatedHttpStatusCode { CONFLICT }
+        if (existingAccount != null)
+            throw ApplicationServiceException(errorMessage).setRelatedHttpStatusCode { CONFLICT }
 
         existingIAMAccount = iamProvider.getByEmail(account.email)
-        if (existingIAMAccount != null) throw ApplicationServiceException(errorMessage).setRelatedHttpStatusCode { CONFLICT }
+        if (existingIAMAccount != null)
+            throw ApplicationServiceException(errorMessage).setRelatedHttpStatusCode { CONFLICT }
 
         existingAccount = accountRepository.getByEmail(account.email)
-        if (existingAccount != null) throw ApplicationServiceException(errorMessage).setRelatedHttpStatusCode { CONFLICT }
+        if (existingAccount != null)
+            throw ApplicationServiceException(errorMessage).setRelatedHttpStatusCode { CONFLICT }
 
-        val iamAccount = iamProvider.register(
-            IAMAccount(
-                account.username,
-                account.email,
-                account.firstName,
-                account.lastName,
-            ), password
-        )
+        val iamAccount =
+            iamProvider.register(
+                IAMAccount(account.username, account.email, account.firstName, account.lastName),
+                password,
+            )
 
         val account = accountRepository.register(account.copy(iamAccountId = iamAccount.id))
         iamProvider.setExternalId(iamAccount.id!!, account.id!!)
     }
 
-    override fun obtainAccessToken(
-        username: String, password: String
-    ): IAMAuthenticatedToken {
+    override fun obtainAccessToken(username: String, password: String): IAMAuthenticatedToken {
         return try {
             iamProvider.obtainAccessToken(username, password)
         } catch (e: IAMProviderException) {
-            throw ApplicationServiceException(
-                e.message ?: ""
-            ).setRelatedHttpStatusCode { e.relatedHttpStatusCode }
+            throw ApplicationServiceException(e.message ?: "").setRelatedHttpStatusCode {
+                e.relatedHttpStatusCode
+            }
         }
     }
 }

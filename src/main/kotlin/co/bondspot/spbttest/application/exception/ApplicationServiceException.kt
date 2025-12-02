@@ -8,8 +8,8 @@ class ApplicationServiceException(errorMessage: String) : Exception(errorMessage
     var relatedHttpStatusCode: Int = 400
 
     /**
-     * In order to inform the user of the application layer the closest related HTTP status code
-     * to the thrown exception.
+     * In order to inform the user of the application layer the closest related HTTP status code to
+     * the thrown exception.
      */
     fun setRelatedHttpStatusCode(lambda: HttpStatusCode.() -> Int): ApplicationServiceException {
         this.relatedHttpStatusCode = lambda(HttpStatusCode)

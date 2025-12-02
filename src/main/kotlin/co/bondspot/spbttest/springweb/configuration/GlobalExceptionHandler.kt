@@ -13,22 +13,25 @@ data class ResponseDto(val errors: List<String> = emptyList())
 @RestControllerAdvice
 class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleValidationExceptions(ex: MethodArgumentNotValidException): ResponseEntity<ResponseDto> {
-        val errors = buildList {
-            ex.bindingResult.allErrors.forEach { error ->
-                if (error is FieldError) add("'${error.field}' ${error.defaultMessage ?: "invalid field"}")
-                else error.defaultMessage?.let { add(it) }
-            }
-        }.sorted()
+    fun handleValidationExceptions(
+        ex: MethodArgumentNotValidException
+    ): ResponseEntity<ResponseDto> {
+        val errors =
+            buildList {
+                    ex.bindingResult.allErrors.forEach { error ->
+                        if (error is FieldError)
+                            add("'${error.field}' ${error.defaultMessage ?: "invalid field"}")
+                        else error.defaultMessage?.let { add(it) }
+                    }
+                }
+                .sorted()
 
         return ResponseEntity.badRequest().body(ResponseDto(errors = errors))
     }
 
     @ExceptionHandler(ApplicationServiceException::class)
     fun handleExceptions(ex: ApplicationServiceException): ResponseEntity<ResponseDto> {
-        return ResponseEntity
-            .status(ex.relatedHttpStatusCode)
-            .body(ResponseDto(errors = ex.errors))
+        return ResponseEntity.status(ex.relatedHttpStatusCode).body(ResponseDto(errors = ex.errors))
     }
 
     @ExceptionHandler(IllegalArgumentException::class)
@@ -39,7 +42,8 @@ class GlobalExceptionHandler {
     @ExceptionHandler(SerializationException::class)
     fun handleSerializationExceptions(ex: SerializationException): ResponseEntity<ResponseDto> {
         val message =
-            (ex.message ?: "JSON deserialization failed (e.g., malformed JSON or type mismatch or missing field)")
+            (ex.message
+                    ?: "JSON deserialization failed (e.g., malformed JSON or type mismatch or missing field)")
                 // .replace(Regex("\\$.([\\w.]*)"), "\'$1\'")
                 .split("\nJSON input:")[0]
         val errors = listOf("$message. Please, check the docs for details.")
