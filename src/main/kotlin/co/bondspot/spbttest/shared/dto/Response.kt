@@ -8,4 +8,4 @@ enum class KnownErrorDtoType {
 
 data class ErrorDto(val message: String, val type: String)
 
-data class ResponseDto(val errors: List<ErrorDto> = emptyList(), val statusCode: Int = 500)
+data class ErrorResponseDto(val errors: List<ErrorDto> = emptyList(), val statusCode: Int = 500)
