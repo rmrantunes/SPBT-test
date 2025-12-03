@@ -9,11 +9,14 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.MediaType
 import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.AuthenticationFilter
 import org.springframework.web.filter.OncePerRequestFilter
@@ -40,7 +43,13 @@ class SecurityConfig {
                     .anyRequest()
                     .authenticated()
             }
-            .oauth2ResourceServer { oauth2Server -> oauth2Server.jwt(Customizer.withDefaults()) }
+            .oauth2ResourceServer { oauth2Server ->
+                oauth2Server.jwt(Customizer.withDefaults())
+                oauth2Server.authenticationEntryPoint(CustomAuthenticationEntryPoint())
+            }
+            .exceptionHandling { exceptionHandling ->
+                exceptionHandling.authenticationEntryPoint(CustomAuthenticationEntryPoint())
+            }
 
         http.addFilterAfter(
             CreateAccountFromJwtFilter(accountRepository),
@@ -72,5 +81,33 @@ class CreateAccountFromJwtFilter(private val accountRepository: AccountRepositor
         } finally {
             filterChain.doFilter(request, response)
         }
+    }
+}
+
+private class CustomAuthenticationEntryPoint : AuthenticationEntryPoint {
+    override fun commence(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        authException: AuthenticationException?,
+    ) {
+
+        response.status = HttpServletResponse.SC_UNAUTHORIZED
+        response.contentType = MediaType.APPLICATION_JSON_VALUE
+        response
+            .writer
+            .write(
+                """
+                    {
+                        "errors": [
+                            {
+                                "message": "Full authentication is required to access this resource. Check credentials validity. Check the available authentication methods in the docs.",
+                                "type": "INVALID_CREDENTIALS"
+                            }
+                        ],
+                        "statusCode": ${HttpServletResponse.SC_UNAUTHORIZED}
+                    }
+                """
+                    .trimIndent()
+            )
     }
 }
