@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import java.net.URI
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.*
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*
 @Tag(name = "Task")
 class TaskController(private val taskService: TaskService) {
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin')")
     fun create(
         @Valid @RequestBody body: CreateTaskReqDto,
         @AuthenticationPrincipal jwt: Jwt,
@@ -39,6 +41,7 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok().body(task)
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin')")
     @PatchMapping("/{id}/details")
     fun updateDetails(
         @PathVariable id: String,
@@ -49,6 +52,7 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok().body(UpdateTaskDetailsResDto(updated))
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin')")
     @PatchMapping("/{id}/status")
     fun updateStatus(
         @PathVariable id: String,
