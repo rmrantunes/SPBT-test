@@ -121,15 +121,28 @@ private class CustomAuthenticationEntryPoint : AuthenticationEntryPoint {
 
 @Component
 class CustomJwtAuthenticationConverter : Converter<Jwt, AbstractAuthenticationToken> {
+    private val keycloakRolesClaimName = "realm_access"
+    private val keycloakServicesRolesClaimName = "resource_access"
+
     private val defaultGrantedAuthoritiesConverter = JwtGrantedAuthoritiesConverter()
 
     override fun convert(jwt: Jwt): AbstractAuthenticationToken? {
         val grantedAuthorities = defaultGrantedAuthoritiesConverter.convert(jwt)
-        val kcRealmRolesMap = jwt.getClaim<Map<String, List<String>>>("realm_access")
-        kcRealmRolesMap["roles"]?.forEach {
-            grantedAuthorities?.add(SimpleGrantedAuthority("ROLE_$it"))
+        jwt.getClaim<Map<String, List<String>>>(keycloakRolesClaimName)?.run {
+            for (roleName in (this["roles"] ?: emptyList())) {
+                grantedAuthorities?.add(SimpleGrantedAuthority("ROLE_$roleName"))
+            }
         }
-        println("grantedAuthorities: $grantedAuthorities")
+        jwt.getClaim<Map<String, Map<String, List<String>>>>(keycloakServicesRolesClaimName)?.run {
+            for (serviceRoles in this) {
+                for (roleName in (serviceRoles.value["roles"] ?: emptyList())) {
+                    grantedAuthorities?.add(
+                        SimpleGrantedAuthority("ROLE_@${serviceRoles.key}:$roleName")
+                    )
+                }
+            }
+        }
+
         return JwtAuthenticationToken(jwt, grantedAuthorities, jwt.subject)
     }
 }

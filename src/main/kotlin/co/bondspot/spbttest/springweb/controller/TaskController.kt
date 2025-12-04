@@ -35,13 +35,14 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok().body(tasks)
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin', 'ROLE_@spbttest-api:testizin')")
     @GetMapping("/{id}")
     fun list(@PathVariable id: String, @AuthenticationPrincipal jwt: Jwt): ResponseEntity<Task?> {
         val task = taskService.getById(id, jwt.toAccount())
         return ResponseEntity.ok().body(task)
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin')")
+    @PreAuthorize("hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin', 'ROLE_@spbttest-api:testizin')")
     @PatchMapping("/{id}/details")
     fun updateDetails(
         @PathVariable id: String,
@@ -52,7 +53,7 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok().body(UpdateTaskDetailsResDto(updated))
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin')")
+    @PreAuthorize("hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin', 'ROLE_@spbttest-api:testizin')")
     @PatchMapping("/{id}/status")
     fun updateStatus(
         @PathVariable id: String,
