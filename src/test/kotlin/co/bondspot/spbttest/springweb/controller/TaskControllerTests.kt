@@ -4,6 +4,8 @@ import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.springweb.persistence.TaskRepository
 import co.bondspot.spbttest.testutils.AdminJwtMock
+import com.ninjasquad.springmockk.MockkBean
+import io.mockk.every
 import java.util.*
 import kotlin.test.Ignore
 import kotlin.test.assertTrue
@@ -13,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.AuditorAware
 import org.springframework.http.MediaType
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
 import org.springframework.test.annotation.DirtiesContext
@@ -44,6 +47,8 @@ class TaskControllerTests {
 
     @Autowired private lateinit var taskRepositoryImpl: ITaskRepository
 
+    @MockkBean private lateinit var auditorProvider: AuditorAware<String>
+
     @BeforeEach
     fun beforeEach() {
         mockMvc =
@@ -51,6 +56,8 @@ class TaskControllerTests {
                 .apply<DefaultMockMvcBuilder>(springSecurity())
                 .build()
         jpaTaskRepository.deleteAll()
+
+        every { auditorProvider.currentAuditor } returns Optional.of(AdminJwtMock.jwtMock.subject)
     }
 
     @AfterEach
@@ -74,7 +81,9 @@ class TaskControllerTests {
                 .andExpect(status().isCreated)
                 .andExpect(jsonPath("$.requested.task.id").isString)
                 .andExpect(jsonPath("$.requested.task.title").value("Uma tarefa qualquer"))
-                .andExpect(jsonPath("$.requested.task.createdById").value(AdminJwtMock.jwtMock.subject))
+                .andExpect(
+                    jsonPath("$.requested.task.createdById").value(AdminJwtMock.jwtMock.subject)
+                )
                 .andReturn()
                 .also {
                     assertTrue {
@@ -119,7 +128,9 @@ class TaskControllerTests {
         @Test
         fun `return list of created tasks`() {
             repeat(3) {
-                taskRepositoryImpl.create(Task("Task $it", createdById = AdminJwtMock.jwtMock.subject))
+                taskRepositoryImpl.create(
+                    Task("Task $it", createdById = AdminJwtMock.jwtMock.subject)
+                )
             }
 
             mockMvc
@@ -151,15 +162,9 @@ class TaskControllerTests {
 
         @Test
         fun `return task found with given id`() {
-            val created =
-                taskRepositoryImpl.create(
-                    Task(
-                        "Task 1",
-                        description = "alguma coisa aí",
-                        createdById = AdminJwtMock.jwtMock.subject,
-                    )
-                )
+            val created = taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí"))
 
+            created
             mockMvc
                 .perform(get("/task/${created.id}").with(AdminJwtMock.postProcessor))
                 .andExpect(status().isOk)
@@ -193,14 +198,7 @@ class TaskControllerTests {
 
         @Test
         fun `return success result for found task updated`() {
-            val created =
-                taskRepositoryImpl.create(
-                    Task(
-                        "Task 1",
-                        description = "alguma coisa aí",
-                        createdById = AdminJwtMock.jwtMock.subject,
-                    )
-                )
+            val created = taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí"))
             val id = created.id!!
 
             mockMvc
