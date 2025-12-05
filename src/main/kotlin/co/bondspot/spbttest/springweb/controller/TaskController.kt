@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*
 @Tag(name = "Task")
 class TaskController(private val taskService: TaskService) {
     @PostMapping
-    //@PreAuthorize("hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin')")
+    @PreAuthorize("hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin')")
     fun create(
         @Valid @RequestBody body: CreateTaskReqDto,
         @AuthenticationPrincipal jwt: Jwt,
@@ -36,9 +36,9 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok().body(ResponseDto(ListTasksResDto(tasks)))
     }
 
-    //    @PreAuthorize(
-    //        "hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin', 'ROLE_@spbttest-api:testizin')"
-    //    )
+    @PreAuthorize(
+        "hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin', 'ROLE_@spbttest-api:testizin')"
+    )
     @GetMapping("/{id}")
     fun list(
         @PathVariable id: String,
@@ -48,9 +48,9 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok().body(ResponseDto(GetTaskResDto(task)))
     }
 
-    //    @PreAuthorize(
-    //        "hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin', 'ROLE_@spbttest-api:testizin')"
-    //    )
+    @PreAuthorize(
+        "hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin', 'ROLE_@spbttest-api:testizin')"
+    )
     @PatchMapping("/{id}/details")
     fun updateDetails(
         @PathVariable id: String,
@@ -61,9 +61,9 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok().body(ResponseDto(UpdateTaskDetailsResDto(updated)))
     }
 
-    //    @PreAuthorize(
-    //        "hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin', 'ROLE_@spbttest-api:testizin')"
-    //    )
+    @PreAuthorize(
+        "hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin', 'ROLE_@spbttest-api:testizin')"
+    )
     @PatchMapping("/{id}/status")
     fun updateStatus(
         @PathVariable id: String,
