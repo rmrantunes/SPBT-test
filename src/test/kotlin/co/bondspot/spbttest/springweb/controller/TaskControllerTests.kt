@@ -3,6 +3,7 @@ package co.bondspot.spbttest.springweb.controller
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.springweb.persistence.TaskRepository
+import co.bondspot.spbttest.testutils.AdminJwtMock
 import java.util.*
 import kotlin.test.Ignore
 import kotlin.test.assertTrue
@@ -13,9 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.security.core.authority.SimpleGrantedAuthority
-import org.springframework.security.oauth2.jwt.Jwt
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
@@ -46,17 +44,6 @@ class TaskControllerTests {
 
     @Autowired private lateinit var taskRepositoryImpl: ITaskRepository
 
-    private val jwtMock =
-        Jwt.withTokenValue("token")
-            .header("alg", "none")
-            .claim("sub", UUID.randomUUID().toString())
-            .claim("preferred_username", "zezindaesquina")
-            .claim("email", "zedaesquina@example.com")
-            .build()
-
-    private val jwtPostProcessor =
-        jwt().authorities(listOf(SimpleGrantedAuthority("ROLE_admin"))).jwt(jwtMock)
-
     @BeforeEach
     fun beforeEach() {
         mockMvc =
@@ -82,12 +69,12 @@ class TaskControllerTests {
                     post("/task")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""{"title": "Uma tarefa qualquer"}""")
-                        .with(jwtPostProcessor)
+                        .with(AdminJwtMock.postProcessor)
                 )
                 .andExpect(status().isCreated)
                 .andExpect(jsonPath("$.requested.task.id").isString)
                 .andExpect(jsonPath("$.requested.task.title").value("Uma tarefa qualquer"))
-                .andExpect(jsonPath("$.requested.task.createdById").value(jwtMock.subject))
+                .andExpect(jsonPath("$.requested.task.createdById").value(AdminJwtMock.jwtMock.subject))
                 .andReturn()
                 .also {
                     assertTrue {
@@ -103,7 +90,7 @@ class TaskControllerTests {
                     post("/task")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""{}""")
-                        .with(jwtPostProcessor)
+                        .with(AdminJwtMock.postProcessor)
                 )
                 .andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.errors[0].message").value("'title' must be a string"))
@@ -116,7 +103,7 @@ class TaskControllerTests {
                     post("/task")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""{ "description": false, "title": false }""")
-                        .with(jwtPostProcessor)
+                        .with(AdminJwtMock.postProcessor)
                 )
                 .andExpect(status().isBadRequest)
                 .andExpect(
@@ -131,10 +118,12 @@ class TaskControllerTests {
     inner class ListTasks() {
         @Test
         fun `return list of created tasks`() {
-            repeat(3) { taskRepositoryImpl.create(Task("Task $it", createdById = jwtMock.subject)) }
+            repeat(3) {
+                taskRepositoryImpl.create(Task("Task $it", createdById = AdminJwtMock.jwtMock.subject))
+            }
 
             mockMvc
-                .perform(get("/task").with(jwtPostProcessor))
+                .perform(get("/task").with(AdminJwtMock.postProcessor))
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.requested.tasks").isArray)
                 .andExpect(jsonPath("$.requested.tasks.size()").value(3))
@@ -154,7 +143,7 @@ class TaskControllerTests {
         @Test
         fun `return 404 if no task found with given id`() {
             mockMvc
-                .perform(get("/task/${UUID.randomUUID()}").with(jwtPostProcessor))
+                .perform(get("/task/${UUID.randomUUID()}").with(AdminJwtMock.postProcessor))
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.errors[0].message").value("Task not found"))
                 .andExpect(jsonPath("$.errors[0].type").value("NOT_FOUND"))
@@ -164,11 +153,15 @@ class TaskControllerTests {
         fun `return task found with given id`() {
             val created =
                 taskRepositoryImpl.create(
-                    Task("Task 1", description = "alguma coisa aí", createdById = jwtMock.subject)
+                    Task(
+                        "Task 1",
+                        description = "alguma coisa aí",
+                        createdById = AdminJwtMock.jwtMock.subject,
+                    )
                 )
 
             mockMvc
-                .perform(get("/task/${created.id}").with(jwtPostProcessor))
+                .perform(get("/task/${created.id}").with(AdminJwtMock.postProcessor))
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.requested.task.id").value(created.id))
                 .andExpect(jsonPath("$.requested.task.title").value(created.title))
@@ -187,7 +180,7 @@ class TaskControllerTests {
                     patch("/task/${UUID.randomUUID()}/details")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""{"title":  "Task 1 updated"}""".trimIndent())
-                        .with(jwtPostProcessor)
+                        .with(AdminJwtMock.postProcessor)
                 )
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.errors[0].message").value("Task not found"))
@@ -202,7 +195,11 @@ class TaskControllerTests {
         fun `return success result for found task updated`() {
             val created =
                 taskRepositoryImpl.create(
-                    Task("Task 1", description = "alguma coisa aí", createdById = jwtMock.subject)
+                    Task(
+                        "Task 1",
+                        description = "alguma coisa aí",
+                        createdById = AdminJwtMock.jwtMock.subject,
+                    )
                 )
             val id = created.id!!
 
@@ -211,7 +208,7 @@ class TaskControllerTests {
                     patch("/task/$id/details")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""{"title":  "Task 1 updated"}""".trimIndent())
-                        .with(jwtPostProcessor)
+                        .with(AdminJwtMock.postProcessor)
                 )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.requested.updateSuccessful").value(true))
@@ -232,7 +229,7 @@ class TaskControllerTests {
                     patch("/task/${UUID.randomUUID()}/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""{"status":  "DOING"}""".trimIndent())
-                        .with(jwtPostProcessor)
+                        .with(AdminJwtMock.postProcessor)
                 )
                 .andExpect(status().isBadRequest)
                 // .andExpect(jsonPath("$.errors[0]")..messagevalue("'status' must be a string'"))
@@ -249,7 +246,7 @@ class TaskControllerTests {
                     patch("/task/${UUID.randomUUID()}/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""{"status":  "IN_PROGRESS"}""".trimIndent())
-                        .with(jwtPostProcessor)
+                        .with(AdminJwtMock.postProcessor)
                 )
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.errors[0].message").value("Task not found"))
@@ -259,7 +256,11 @@ class TaskControllerTests {
         fun `return success result for found task updated`() {
             val created =
                 taskRepositoryImpl.create(
-                    Task("Task 1", description = "alguma coisa aí", createdById = jwtMock.subject)
+                    Task(
+                        "Task 1",
+                        description = "alguma coisa aí",
+                        createdById = AdminJwtMock.jwtMock.subject,
+                    )
                 )
             val id = created.id!!
 
@@ -269,7 +270,7 @@ class TaskControllerTests {
                         patch("/task/$id/status")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""{"status":  "$value"}""".trimIndent())
-                            .with(jwtPostProcessor)
+                            .with(AdminJwtMock.postProcessor)
                     )
                     .andExpect(status().isOk)
                     .andExpect(jsonPath("$.requested.updateSuccessful").value(true))
