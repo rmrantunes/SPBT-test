@@ -22,6 +22,12 @@ data class CreateTaskReqDto(
     fun toDomainEntity(): Task = Task(title.dangerouslyForceCast(), description = description.value)
 }
 
+data class CreateTaskResDto(val task: Task)
+
+data class ListTasksResDto(val tasks: List<Task>)
+
+data class GetTaskResDto(val task: Task?)
+
 @Serializable
 data class UpdateTaskDetailsReqDto(
     @IsString(nullable = true, required = false)
@@ -36,7 +42,7 @@ data class UpdateTaskDetailsReqDto(
     fun toDomainEntity(): Task = Task(title.value ?: "", description = description.value)
 }
 
-@Serializable data class UpdateTaskDetailsResDto(val updated: Boolean?)
+@Serializable data class UpdateTaskDetailsResDto(val updateSuccessful: Boolean?)
 
 @Serializable
 data class UpdateTaskStatusReqDto(
@@ -49,4 +55,4 @@ data class UpdateTaskStatusReqDto(
     fun toDomainEntity() = Task(status = Task.Status.valueOf(status.dangerouslyForceCast()))
 }
 
-@Serializable data class UpdateTaskStatusResDto(val updated: Boolean?)
+@Serializable data class UpdateTaskStatusResDto(val updateSuccessful: Boolean?)

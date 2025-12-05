@@ -78,9 +78,9 @@ class TaskControllerTests {
                         .with(jwt().jwt(jwtMock))
                 )
                 .andExpect(status().isCreated)
-                .andExpect(jsonPath("$.id").isString)
-                .andExpect(jsonPath("$.title").value("Uma tarefa qualquer"))
-                .andExpect(jsonPath("$.createdById").value(JWT_SUB))
+                .andExpect(jsonPath("$.requested.task.id").isString)
+                .andExpect(jsonPath("$.requested.task.title").value("Uma tarefa qualquer"))
+                .andExpect(jsonPath("$.requested.task.createdById").value(JWT_SUB))
                 .andReturn()
                 .also {
                     assertTrue {
@@ -127,10 +127,10 @@ class TaskControllerTests {
             mockMvc
                 .perform(get("/task").with(jwt().jwt(jwtMock)))
                 .andExpect(status().isOk)
-                .andExpect(jsonPath("$").isArray)
-                .andExpect(jsonPath("$.size()").value(3))
+                .andExpect(jsonPath("$.requested.tasks").isArray)
+                .andExpect(jsonPath("$.requested.tasks.size()").value(3))
                 .also { m ->
-                    repeat(3) { m.andExpect(jsonPath("$[${it}].title").value("Task $it")) }
+                    repeat(3) { m.andExpect(jsonPath("$.requested.tasks[${it}].title").value("Task $it")) }
                 }
         }
 
@@ -159,10 +159,10 @@ class TaskControllerTests {
             mockMvc
                 .perform(get("/task/${created.id}").with(jwt().jwt(jwtMock)))
                 .andExpect(status().isOk)
-                .andExpect(jsonPath("$.id").value(created.id))
-                .andExpect(jsonPath("$.title").value(created.title))
-                .andExpect(jsonPath("$.description").value(created.description))
-                .andExpect(jsonPath("$.status").value("PENDING"))
+                .andExpect(jsonPath("$.requested.task.id").value(created.id))
+                .andExpect(jsonPath("$.requested.task.title").value(created.title))
+                .andExpect(jsonPath("$.requested.task.description").value(created.description))
+                .andExpect(jsonPath("$.requested.task.status").value("PENDING"))
         }
     }
 
@@ -203,7 +203,7 @@ class TaskControllerTests {
                         .with(jwt().jwt(jwtMock))
                 )
                 .andExpect(status().isOk)
-                .andExpect(jsonPath("$.updated").value(true))
+                .andExpect(jsonPath("$.requested.updateSuccessful").value(true))
 
             val updated = taskRepositoryImpl.getById(id)
 
@@ -261,7 +261,7 @@ class TaskControllerTests {
                             .with(jwt().jwt(jwtMock))
                     )
                     .andExpect(status().isOk)
-                    .andExpect(jsonPath("$.updated").value(true))
+                    .andExpect(jsonPath("$.requested.updateSuccessful").value(true))
 
                 val updated = taskRepositoryImpl.getById(id)
 
