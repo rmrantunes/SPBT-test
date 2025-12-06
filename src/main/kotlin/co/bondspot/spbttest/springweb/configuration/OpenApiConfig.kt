@@ -20,4 +20,4 @@ import org.springframework.context.annotation.Configuration
 //    name = "apiKey",
 //    type = SecuritySchemeType.APIKEY,
 //)
-class OpenApiConfiguration
+class OpenApiConfig

@@ -6,6 +6,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class ProviderBeanConfiguration {
+class ProviderBeanConfig {
     @Bean fun getIAMProvider(): IIAMProvider = KeycloakIAMProvider()
 }

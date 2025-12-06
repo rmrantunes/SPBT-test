@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.data.repository.findByIdOrNull
 
 @Configuration
-class RepositoryBeanConfiguration(
+class RepositoryBeanConfig(
     private val accountRepository: AccountRepository,
     private val messageRepository: MessageRepository,
     private val taskRepository: TaskRepository,
