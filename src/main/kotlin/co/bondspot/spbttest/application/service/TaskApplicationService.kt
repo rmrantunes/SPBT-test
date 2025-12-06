@@ -23,6 +23,7 @@ open class TaskApplicationService(
                     NOT_FOUND
                 }
 
+        // TODO implement FGA to check account relation to the object (task)
         if (task.createdById != reqAccount.id)
             throw ApplicationServiceException(
                     "Requested resource (Task: '$id') is not bonded to requester"
