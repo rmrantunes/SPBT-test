@@ -15,8 +15,14 @@ open class TaskApplicationService(
     private val fga: IFgaProvider,
 ) : ITaskApplicationService {
     override fun create(task: Task, reqAccount: Account): Task {
-        // We're considering the user exists in the Api DB. Right approach?
-        return repository.create(task.copy(createdById = reqAccount.id))
+        // We're considering the user exists in the Api DB. Right approach? Prolly no lol
+
+        return repository.create(task.copy(createdById = reqAccount.id)).also {
+            // TODO if error thrown, remove created task, since no action could be done from any account
+            fga.writeRelationships(
+                listOf(FgaRelationshipDef("user" to reqAccount.id!!, "owner", "task" to it.id!!))
+            )
+        }
     }
 
     override fun getById(id: String, reqAccount: Account): Task {

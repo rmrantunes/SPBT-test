@@ -40,13 +40,27 @@ private class TaskServiceTests {
         fun `should create and return task`() {
             val repository = mockk<ITaskRepository>()
             val task = Task("Text", id = "Some ID")
-            val createdTask = task.copy(createdById = task.id)
+            val createdTask = task.copy(createdById = reqAccount.id)
             every { repository.create(any()) } returns createdTask
             val service = TaskService(repository, accountRepository, fga)
 
             val result = service.create(task, reqAccount = reqAccount)
 
             assertThat(result).isEqualTo(createdTask)
+
+            verify {
+                fga invoke
+                    "writeRelationships" withArguments
+                    listOf(
+                        listOf(
+                            FgaRelationshipDef(
+                                "user" to reqAccount.id!!,
+                                "owner",
+                                "task" to createdTask.id!!,
+                            )
+                        )
+                    )
+            }
         }
     }
 
@@ -255,9 +269,7 @@ private class TaskServiceTests {
                 fga invoke
                     "writeRelationships" withArguments
                     listOf(
-                        listOf(
-                            FgaRelationshipDef("user" to account2.id!!, "viewer", "task" to id)
-                        )
+                        listOf(FgaRelationshipDef("user" to account2.id!!, "viewer", "task" to id))
                     )
             }
         }
