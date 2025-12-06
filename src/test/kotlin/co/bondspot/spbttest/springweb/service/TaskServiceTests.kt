@@ -177,30 +177,49 @@ private class TaskServiceTests {
             val id = "some_id"
             every { taskRepository.getById(id) } returns null
             val service = TaskService(taskRepository, accountRepository)
-            val ex = assertThrows<ApplicationServiceException> { service.shareViewWith(id, accountId2, reqAccount) }
+            val ex =
+                assertThrows<ApplicationServiceException> {
+                    service.shareViewWith(id, accountId2, reqAccount)
+                }
             assertThat(ex.message).isEqualTo("Task not found")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.NOT_FOUND)
         }
 
         @Test
-        fun `throw forbidden if req user is not bonded to task`() {
+        fun `throw forbidden if req user is not bonded to task as admin`() {
             val id = "some_id"
             val existing = Task("Text", id = id, createdById = "some_id_nada_a_ver")
             every { taskRepository.create(any()) } returns existing
             every { taskRepository.getById(id) } returns existing
 
             val service = TaskService(taskRepository, accountRepository)
-            val ex = assertThrows<ApplicationServiceException> { service.shareViewWith(id, accountId2, reqAccount) }
+            val ex =
+                assertThrows<ApplicationServiceException> {
+                    service.shareViewWith(id, accountId2, reqAccount)
+                }
 
             assertThat(ex.message)
                 .isEqualTo("Requested resource (Task: '$id') is not bonded to requester")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
         }
 
-
         @Test
         fun `throw not found if account to share with does not exist`() {
-            TODO()
+            val id = "some_id"
+            val existing = Task("Text", id = id, createdById = accountId)
+            every { taskRepository.create(any()) } returns existing
+            every { taskRepository.getById(id) } returns existing
+            every { accountRepository.getById(accountId2) } returns null
+
+            val service = TaskService(taskRepository, accountRepository)
+            val ex =
+                assertThrows<ApplicationServiceException> {
+                    service.shareViewWith(id, accountId2, reqAccount)
+                }
+
+            assertThat(ex.message)
+                .isEqualTo("Account to share with not found")
+            assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.NOT_FOUND)
         }
 
         @Test

@@ -37,5 +37,5 @@ interface ITaskApplicationService {
     /** Lists the tasks that the requester account is bonded to in any way. */
     fun list(reqAccount: Account): List<Task>
 
-    fun shareViewWith(id: String, accountToShareWith: String, reqAccount: Account): Boolean?
+    fun shareViewWith(id: String, accountToShareWithId: String, reqAccount: Account): Boolean?
 }

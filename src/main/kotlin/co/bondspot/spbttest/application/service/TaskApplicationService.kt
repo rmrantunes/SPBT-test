@@ -7,8 +7,10 @@ import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.Task
 
-open class TaskApplicationService(private val repository: ITaskRepository, private val accountRepository: IAccountRepository) :
-    ITaskApplicationService {
+open class TaskApplicationService(
+    private val repository: ITaskRepository,
+    private val accountRepository: IAccountRepository,
+) : ITaskApplicationService {
     override fun create(task: Task, reqAccount: Account): Task {
         // We're considering the user exists in the Api DB. Right approach?
         return repository.create(task.copy(createdById = reqAccount.id))
@@ -45,10 +47,16 @@ open class TaskApplicationService(private val repository: ITaskRepository, priva
 
     override fun shareViewWith(
         id: String,
-        accountToShareWith: String,
-        reqAccount: Account
+        accountToShareWithId: String,
+        reqAccount: Account,
     ): Boolean? {
-        val existing = getById(id, reqAccount) ?: return null
+        getById(id, reqAccount) ?: return null
+
+        // Here we're considering only accounts that already authenticated into the application
+        accountRepository.getById(accountToShareWithId)
+            ?: throw ApplicationServiceException("Account to share with not found")
+                .setRelatedHttpStatusCode { NOT_FOUND }
+
         return true
     }
 }
