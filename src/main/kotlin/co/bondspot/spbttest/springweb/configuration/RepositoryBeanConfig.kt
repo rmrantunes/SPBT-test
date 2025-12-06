@@ -10,6 +10,7 @@ import co.bondspot.spbttest.springweb.persistence.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.repository.findByIdOrNull
+import kotlin.jvm.optionals.getOrNull
 
 @Configuration
 class RepositoryBeanConfig(
@@ -61,5 +62,8 @@ class RepositoryBeanConfig(
 
             override fun getByUsername(username: String): Account? =
                 accountRepository.findByUsername(username)?.toDomain()
+
+            override fun getById(id: String): Account? =
+                accountRepository.findById(id).getOrNull()?.toDomain()
         }
 }

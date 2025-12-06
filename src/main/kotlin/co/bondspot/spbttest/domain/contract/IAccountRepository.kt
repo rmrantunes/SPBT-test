@@ -8,4 +8,7 @@ interface IAccountRepository {
     fun getByEmail(email: String): Account?
 
     fun getByUsername(username: String): Account?
+
+    fun getById(id: String): Account?
+
 }
