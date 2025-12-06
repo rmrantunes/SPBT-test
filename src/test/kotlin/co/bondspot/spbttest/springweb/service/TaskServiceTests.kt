@@ -5,6 +5,7 @@ import co.bondspot.spbttest.domain.contract.IAccountRepository
 import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
+import co.bondspot.spbttest.domain.entity.FgaRelationshipDef
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import io.mockk.every
@@ -173,7 +174,7 @@ private class TaskServiceTests {
     }
 
     @Nested
-    @DisplayName("when sharing task to another account...")
+    @DisplayName("when sharing task with another account...")
     inner class ShareTaskForView() {
         @Test
         fun `throw 500 if not supported relation is passed`() {
@@ -239,7 +240,7 @@ private class TaskServiceTests {
         }
 
         @Test
-        fun `enable task for view to another user`() {
+        fun `share viewer permission to an account`() {
             val id = "some_id"
             val existing = Task("Text", id = id, createdById = reqAccount.id)
             every { taskRepository.create(any()) } returns existing
@@ -252,8 +253,12 @@ private class TaskServiceTests {
             Assertions.assertThat(result).isTrue()
             verify {
                 fga invoke
-                    "writeRelationship" withArguments
-                    listOf("user" to account2.id, "viewer", "task" to id)
+                    "writeRelationships" withArguments
+                    listOf(
+                        listOf(
+                            FgaRelationshipDef("user" to account2.id!!, "viewer", "task" to id)
+                        )
+                    )
             }
         }
     }

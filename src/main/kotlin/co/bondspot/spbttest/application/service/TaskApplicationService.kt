@@ -6,6 +6,7 @@ import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.ITaskApplicationService
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
+import co.bondspot.spbttest.domain.entity.FgaRelationshipDef
 import co.bondspot.spbttest.domain.entity.Task
 
 open class TaskApplicationService(
@@ -68,7 +69,9 @@ open class TaskApplicationService(
 
         // TODO catch and throw normalized 5xx error
         // TODO if error thrown from FGA provider, register and alert
-        fga.writeRelationship("user" to accountToShareWithId, "viewer", "task" to id)
+        fga.writeRelationships(
+            listOf(FgaRelationshipDef("user" to accountToShareWithId, "viewer", "task" to id))
+        )
 
         return true
     }
