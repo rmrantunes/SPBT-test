@@ -48,11 +48,17 @@ open class TaskApplicationService(
 
     override fun list(reqAccount: Account): List<Task> = repository.list()
 
-    override fun shareViewWith(
+    override fun shareWith(
         id: String,
         accountToShareWithId: String,
+        relation: String?,
         reqAccount: Account,
     ): Boolean? {
+        if (relation != "viewer" && relation != "editor") {
+            throw ApplicationServiceException("Internal message: Unsupported relation for sharing")
+                .setRelatedHttpStatusCode { INTERNAL_SERVER_ERROR }
+        }
+
         getById(id, reqAccount)
 
         // Here we're considering only accounts that already authenticated into the application
@@ -61,7 +67,7 @@ open class TaskApplicationService(
                 .setRelatedHttpStatusCode { NOT_FOUND }
 
         // TODO catch and throw normalized 5xx error
-        // TODO if error thrown from FGA provider, register it and alert
+        // TODO if error thrown from FGA provider, register and alert
         fga.writeRelationship("user" to accountToShareWithId, "viewer", "task" to id)
 
         return true

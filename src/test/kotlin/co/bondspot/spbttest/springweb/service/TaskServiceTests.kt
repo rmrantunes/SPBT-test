@@ -173,8 +173,22 @@ private class TaskServiceTests {
     }
 
     @Nested
-    @DisplayName("when sharing task for view...")
+    @DisplayName("when sharing task to another account...")
     inner class ShareTaskForView() {
+        @Test
+        fun `throw 500 if not supported relation is passed`() {
+
+            val service = TaskService(taskRepository, accountRepository, fga)
+
+            val ex =
+                assertThrows<ApplicationServiceException> {
+                    service.shareWith("someid", accountId2, "admin", reqAccount)
+                }
+
+            assertThat(ex.message).isEqualTo("Internal message: Unsupported relation for sharing")
+            assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR)
+        }
+
         @Test
         fun `throw not found if task does not exist`() {
             val id = "some_id"
@@ -182,7 +196,7 @@ private class TaskServiceTests {
             val service = TaskService(taskRepository, accountRepository, fga)
             val ex =
                 assertThrows<ApplicationServiceException> {
-                    service.shareViewWith(id, accountId2, reqAccount)
+                    service.shareWith(id, accountId2, reqAccount = reqAccount)
                 }
             assertThat(ex.message).isEqualTo("Task not found")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.NOT_FOUND)
@@ -198,7 +212,7 @@ private class TaskServiceTests {
             val service = TaskService(taskRepository, accountRepository, fga)
             val ex =
                 assertThrows<ApplicationServiceException> {
-                    service.shareViewWith(id, accountId2, reqAccount)
+                    service.shareWith(id, accountId2, reqAccount = reqAccount)
                 }
 
             assertThat(ex.message)
@@ -217,7 +231,7 @@ private class TaskServiceTests {
             val service = TaskService(taskRepository, accountRepository, fga)
             val ex =
                 assertThrows<ApplicationServiceException> {
-                    service.shareViewWith(id, accountId2, reqAccount)
+                    service.shareWith(id, accountId2, reqAccount = reqAccount)
                 }
 
             assertThat(ex.message).isEqualTo("Account to share with not found")
@@ -233,7 +247,7 @@ private class TaskServiceTests {
             every { accountRepository.getById(accountId2) } returns account2
 
             val service = TaskService(taskRepository, accountRepository, fga)
-            val result = service.shareViewWith(id, accountId2, reqAccount)
+            val result = service.shareWith(id, accountId2, "viewer", reqAccount)
 
             Assertions.assertThat(result).isTrue()
             verify {
