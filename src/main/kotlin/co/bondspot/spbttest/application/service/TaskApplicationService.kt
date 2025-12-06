@@ -2,6 +2,7 @@ package co.bondspot.spbttest.application.service
 
 import co.bondspot.spbttest.application.exception.ApplicationServiceException
 import co.bondspot.spbttest.domain.contract.IAccountRepository
+import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.ITaskApplicationService
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
@@ -10,13 +11,14 @@ import co.bondspot.spbttest.domain.entity.Task
 open class TaskApplicationService(
     private val repository: ITaskRepository,
     private val accountRepository: IAccountRepository,
+    private val fga: IFgaProvider,
 ) : ITaskApplicationService {
     override fun create(task: Task, reqAccount: Account): Task {
         // We're considering the user exists in the Api DB. Right approach?
         return repository.create(task.copy(createdById = reqAccount.id))
     }
 
-    override fun getById(id: String, reqAccount: Account): Task? {
+    override fun getById(id: String, reqAccount: Account): Task {
         val task =
             repository.getById(id)
                 ?: throw ApplicationServiceException("Task not found").setRelatedHttpStatusCode {
@@ -33,13 +35,13 @@ open class TaskApplicationService(
     }
 
     override fun updateDetails(id: String, title: String?, reqAccount: Account): Boolean? {
-        val existing = getById(id, reqAccount) ?: return null
+        val existing = getById(id, reqAccount)
         repository.update(id, existing.copy(title = title ?: existing.title))
         return true
     }
 
     override fun updateStatus(id: String, status: Task.Status, reqAccount: Account): Boolean? {
-        val existing = getById(id, reqAccount) ?: return null
+        val existing = getById(id, reqAccount)
         repository.update(id, existing.copy(status = status))
         return true
     }
@@ -51,12 +53,16 @@ open class TaskApplicationService(
         accountToShareWithId: String,
         reqAccount: Account,
     ): Boolean? {
-        getById(id, reqAccount) ?: return null
+        getById(id, reqAccount)
 
         // Here we're considering only accounts that already authenticated into the application
         accountRepository.getById(accountToShareWithId)
             ?: throw ApplicationServiceException("Account to share with not found")
                 .setRelatedHttpStatusCode { NOT_FOUND }
+
+        // TODO catch and throw normalized 5xx error
+        // TODO if error thrown from FGA provider, register it and alert
+        fga.writeRelationship("user" to accountToShareWithId, "viewer", "task" to id)
 
         return true
     }

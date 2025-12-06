@@ -2,6 +2,7 @@ package co.bondspot.spbttest.springweb.service
 
 import co.bondspot.spbttest.application.exception.ApplicationServiceException
 import co.bondspot.spbttest.domain.contract.IAccountRepository
+import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.Task
@@ -22,11 +23,13 @@ private class TaskServiceTests {
 
     private lateinit var accountRepository: IAccountRepository
     private lateinit var taskRepository: ITaskRepository
+    private lateinit var fga: IFgaProvider
 
     @BeforeEach
     fun setUp() {
         accountRepository = mockk<IAccountRepository>()
         taskRepository = mockk<ITaskRepository>()
+        fga = spyk<IFgaProvider>(recordPrivateCalls = true)
     }
 
     @Nested
@@ -38,7 +41,7 @@ private class TaskServiceTests {
             val task = Task("Text", id = "Some ID")
             val createdTask = task.copy(createdById = task.id)
             every { repository.create(any()) } returns createdTask
-            val service = TaskService(repository, accountRepository)
+            val service = TaskService(repository, accountRepository, fga)
 
             val result = service.create(task, reqAccount = reqAccount)
 
@@ -55,7 +58,7 @@ private class TaskServiceTests {
             val id = "some_id"
             val existing = Task("Text", id = id)
             every { repository.create(any()) } returns existing.copy(id = accountId)
-            val service = TaskService(repository, accountRepository)
+            val service = TaskService(repository, accountRepository, fga)
 
             every { repository.getById(id) } returns existing.copy(createdById = "not_you")
 
@@ -72,7 +75,7 @@ private class TaskServiceTests {
             val existing = Task("Text", id = id)
             val createdTask = existing.copy(createdById = reqAccount.id)
             every { repository.create(any()) } returns createdTask
-            val service = TaskService(repository, accountRepository)
+            val service = TaskService(repository, accountRepository, fga)
 
             every { repository.getById(id) } returns createdTask
 
@@ -90,7 +93,7 @@ private class TaskServiceTests {
             val id = "some_id"
             val existing = Task("Text", id = id)
             every { repository.create(any()) } returns existing.copy(id = accountId)
-            val service = TaskService(repository, accountRepository)
+            val service = TaskService(repository, accountRepository, fga)
 
             every { repository.getById(id) } returns existing.copy(createdById = "not_you")
 
@@ -109,7 +112,7 @@ private class TaskServiceTests {
             val id = "some_id"
             val existing = Task("Text", id = id, createdById = reqAccount.id)
             every { repository.create(any()) } returns existing
-            val service = TaskService(repository, accountRepository)
+            val service = TaskService(repository, accountRepository, fga)
 
             every { repository.getById(id) } returns existing
 
@@ -134,7 +137,7 @@ private class TaskServiceTests {
             val id = "some_id"
             val existing = Task("Text", id = id)
             every { repository.create(any()) } returns existing.copy(id = accountId)
-            val service = TaskService(repository, accountRepository)
+            val service = TaskService(repository, accountRepository, fga)
 
             every { repository.getById(id) } returns existing.copy(createdById = "not_you")
 
@@ -153,7 +156,7 @@ private class TaskServiceTests {
             val id = "some_id"
             val existing = Task("Text", id = id, createdById = reqAccount.id)
             every { repository.create(any()) } returns existing
-            val service = TaskService(repository, accountRepository)
+            val service = TaskService(repository, accountRepository, fga)
 
             every { repository.getById(id) } returns existing
 
@@ -176,7 +179,7 @@ private class TaskServiceTests {
         fun `throw not found if task does not exist`() {
             val id = "some_id"
             every { taskRepository.getById(id) } returns null
-            val service = TaskService(taskRepository, accountRepository)
+            val service = TaskService(taskRepository, accountRepository, fga)
             val ex =
                 assertThrows<ApplicationServiceException> {
                     service.shareViewWith(id, accountId2, reqAccount)
@@ -192,7 +195,7 @@ private class TaskServiceTests {
             every { taskRepository.create(any()) } returns existing
             every { taskRepository.getById(id) } returns existing
 
-            val service = TaskService(taskRepository, accountRepository)
+            val service = TaskService(taskRepository, accountRepository, fga)
             val ex =
                 assertThrows<ApplicationServiceException> {
                     service.shareViewWith(id, accountId2, reqAccount)
@@ -211,14 +214,13 @@ private class TaskServiceTests {
             every { taskRepository.getById(id) } returns existing
             every { accountRepository.getById(accountId2) } returns null
 
-            val service = TaskService(taskRepository, accountRepository)
+            val service = TaskService(taskRepository, accountRepository, fga)
             val ex =
                 assertThrows<ApplicationServiceException> {
                     service.shareViewWith(id, accountId2, reqAccount)
                 }
 
-            assertThat(ex.message)
-                .isEqualTo("Account to share with not found")
+            assertThat(ex.message).isEqualTo("Account to share with not found")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.NOT_FOUND)
         }
 
@@ -227,12 +229,18 @@ private class TaskServiceTests {
             val id = "some_id"
             val existing = Task("Text", id = id, createdById = reqAccount.id)
             every { taskRepository.create(any()) } returns existing
+            every { taskRepository.getById(id) } returns existing
             every { accountRepository.getById(accountId2) } returns account2
 
-            val service = TaskService(taskRepository, accountRepository)
+            val service = TaskService(taskRepository, accountRepository, fga)
             val result = service.shareViewWith(id, accountId2, reqAccount)
 
             Assertions.assertThat(result).isTrue()
+            verify {
+                fga invoke
+                    "writeRelationship" withArguments
+                    listOf("user" to account2.id, "viewer", "task" to id)
+            }
         }
     }
 }
