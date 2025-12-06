@@ -173,14 +173,20 @@ private class TaskServiceTests {
     @DisplayName("when sharing task for view...")
     inner class ShareTaskForView() {
         @Test
+        fun `throw not found if task does not exists`() {
+            val id = "some_id"
+            every { taskRepository.getById(id) } returns null
+            val service = TaskService(taskRepository, accountRepository)
+            val ex = assertThrows<ApplicationServiceException> { service.shareViewWith(id, accountId2, reqAccount) }
+            assertThat(ex.message).isEqualTo("Task not found")
+            assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.NOT_FOUND)
+        }
+
+        @Test
         fun `throw forbidden if req user is not bonded to task`() {
             TODO()
         }
 
-        @Test
-        fun `throw not found if task does not exists`() {
-            TODO()
-        }
 
         @Test
         fun `throw not found if account to share with does not exists`() {

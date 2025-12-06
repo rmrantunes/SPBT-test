@@ -48,6 +48,7 @@ open class TaskApplicationService(private val repository: ITaskRepository, priva
         accountToShareWith: String,
         reqAccount: Account
     ): Boolean? {
+        val existing = getById(id, reqAccount) ?: return null
         return true
     }
 }
