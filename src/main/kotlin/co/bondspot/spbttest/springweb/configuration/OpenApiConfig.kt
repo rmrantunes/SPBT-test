@@ -7,17 +7,15 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-@OpenAPIDefinition(
-    info = Info("My API", version = "v1"),
-)
+@OpenAPIDefinition(info = Info("My API", version = "v1"))
 @SecurityScheme(
     name = "bearerJwt",
     bearerFormat = "JWT",
     scheme = "bearer",
     type = SecuritySchemeType.HTTP,
 )
-//@SecurityScheme(
+// @SecurityScheme(
 //    name = "apiKey",
 //    type = SecuritySchemeType.APIKEY,
-//)
+// )
 class OpenApiConfig

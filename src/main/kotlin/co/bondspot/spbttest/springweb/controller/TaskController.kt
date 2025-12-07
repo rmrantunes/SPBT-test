@@ -7,20 +7,18 @@ import co.bondspot.spbttest.springweb.util.security.toAccount
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import java.net.URI
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.*
-import java.net.URI
 
 @RestController
 @RequestMapping("/task")
 @SecurityRequirement(name = "bearerJwt")
 @Tag(name = "Task")
-class TaskController(
-    private val taskService: TaskService
-) {
+class TaskController(private val taskService: TaskService) {
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin')")
     fun create(

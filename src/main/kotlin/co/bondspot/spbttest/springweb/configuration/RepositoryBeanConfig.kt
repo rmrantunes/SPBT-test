@@ -8,10 +8,10 @@ import co.bondspot.spbttest.springweb.persistence.AccountEntity
 import co.bondspot.spbttest.springweb.persistence.AccountRepository
 import co.bondspot.spbttest.springweb.persistence.TaskEntity
 import co.bondspot.spbttest.springweb.persistence.TaskRepository
+import kotlin.jvm.optionals.getOrNull
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.repository.findByIdOrNull
-import kotlin.jvm.optionals.getOrNull
 
 @Configuration
 class RepositoryBeanConfig(
