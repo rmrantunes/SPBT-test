@@ -6,7 +6,7 @@ import co.bondspot.spbttest.domain.contract.IAccountRepository
 import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
-import co.bondspot.spbttest.domain.entity.FgaRelationshipDef
+import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import io.mockk.every
@@ -54,7 +54,7 @@ private class TaskServiceTests {
                     "writeRelationships" withArguments
                     listOf(
                         listOf(
-                            FgaRelationshipDef(
+                            FgaRelTuple(
                                 "user" to reqAccount.id!!,
                                 Task.FgaRelations.OWNER,
                                 "task" to createdTask.id!!,
@@ -114,7 +114,7 @@ private class TaskServiceTests {
             every { taskRepository.getById(id) } returns existing.copy(createdById = "not_you")
             every {
                 fga.checkRelationship(
-                    FgaRelationshipDef(
+                    FgaRelTuple(
                         "user" to reqAccount.id!!,
                         Task.FgaRelations.VIEWER,
                         "task" to id,
@@ -124,7 +124,7 @@ private class TaskServiceTests {
 
             every {
                 fga.checkRelationship(
-                    FgaRelationshipDef(
+                    FgaRelTuple(
                         "user" to reqAccount.id!!,
                         Task.FgaRelations.CAN_EDIT_DETAILS,
                         "task" to id,
@@ -179,7 +179,7 @@ private class TaskServiceTests {
 
             every {
                 fga.checkRelationship(
-                    FgaRelationshipDef(
+                    FgaRelTuple(
                         "user" to reqAccount.id!!,
                         Task.FgaRelations.VIEWER,
                         "task" to id,
@@ -189,7 +189,7 @@ private class TaskServiceTests {
 
             every {
                 fga.checkRelationship(
-                    FgaRelationshipDef(
+                    FgaRelTuple(
                         "user" to reqAccount.id!!,
                         Task.FgaRelations.CAN_EDIT_DETAILS,
                         "task" to id,
@@ -267,7 +267,7 @@ private class TaskServiceTests {
             every { taskRepository.getById(id) } returns existing
             every {
                 fga.checkRelationship(
-                    FgaRelationshipDef(
+                    FgaRelTuple(
                         "user" to reqAccount.id!!,
                         Task.FgaRelations.VIEWER,
                         "task" to id,
@@ -276,7 +276,7 @@ private class TaskServiceTests {
             } returns true
             every {
                 fga.checkRelationship(
-                    FgaRelationshipDef(
+                    FgaRelTuple(
                         "user" to reqAccount.id!!,
                         Task.FgaRelations.OWNER,
                         "task" to id,
@@ -320,7 +320,7 @@ private class TaskServiceTests {
             every { accountRepository.getById(accountId2) } returns account2
             every {
                 fga.checkRelationship(
-                    FgaRelationshipDef(
+                    FgaRelTuple(
                         "user" to reqAccount.id!!,
                         Task.FgaRelations.VIEWER,
                         "task" to id,
@@ -329,7 +329,7 @@ private class TaskServiceTests {
             } returns true
             every {
                 fga.checkRelationship(
-                    FgaRelationshipDef(
+                    FgaRelTuple(
                         "user" to reqAccount.id!!,
                         Task.FgaRelations.OWNER,
                         "task" to id,
@@ -345,7 +345,7 @@ private class TaskServiceTests {
                     "writeRelationships" withArguments
                     listOf(
                         listOf(
-                            FgaRelationshipDef(
+                            FgaRelTuple(
                                 "user" to account2.id!!,
                                 Task.FgaRelations.VIEWER,
                                 "task" to id,
@@ -365,7 +365,7 @@ private class TaskServiceTests {
         every { accountRepository.getById(accountId2) } returns account2
         every {
             fga.checkRelationship(
-                FgaRelationshipDef(
+                FgaRelTuple(
                     "user" to reqAccount.id!!,
                     Task.FgaRelations.VIEWER,
                     "task" to id,
@@ -374,7 +374,7 @@ private class TaskServiceTests {
         } returns true
         every {
             fga.checkRelationship(
-                FgaRelationshipDef("user" to reqAccount.id!!, Task.FgaRelations.OWNER, "task" to id)
+                FgaRelTuple("user" to reqAccount.id!!, Task.FgaRelations.OWNER, "task" to id)
             )
         } returns true
         val service = TaskService(taskRepository, accountRepository, fga)
@@ -386,7 +386,7 @@ private class TaskServiceTests {
                 "writeRelationships" withArguments
                 listOf(
                     listOf(
-                        FgaRelationshipDef(
+                        FgaRelTuple(
                             "user" to account2.id!!,
                             Task.FgaRelations.EDITOR,
                             "task" to id,

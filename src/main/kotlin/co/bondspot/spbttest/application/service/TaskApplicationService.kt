@@ -7,7 +7,7 @@ import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.ITaskApplicationService
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
-import co.bondspot.spbttest.domain.entity.FgaRelationshipDef
+import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
 
 open class TaskApplicationService(
@@ -23,7 +23,7 @@ open class TaskApplicationService(
             // account
             fga.writeRelationships(
                 listOf(
-                    FgaRelationshipDef(
+                    FgaRelTuple(
                         "user" to reqAccount.id!!,
                         Task.FgaRelations.OWNER,
                         "task" to it.id!!,
@@ -42,7 +42,7 @@ open class TaskApplicationService(
 
         if (
             !fga.checkRelationship(
-                FgaRelationshipDef(
+                FgaRelTuple(
                     "user" to reqAccount.id!!,
                     Task.FgaRelations.VIEWER,
                     "task" to task.id!!,
@@ -63,7 +63,7 @@ open class TaskApplicationService(
 
         if (
             !fga.checkRelationship(
-                FgaRelationshipDef(
+                FgaRelTuple(
                     "user" to reqAccount.id!!,
                     Task.FgaRelations.CAN_EDIT_DETAILS,
                     "task" to existing.id!!,
@@ -85,7 +85,7 @@ open class TaskApplicationService(
 
         if (
             !fga.checkRelationship(
-                FgaRelationshipDef(
+                FgaRelTuple(
                     "user" to reqAccount.id!!,
                     Task.FgaRelations.CAN_EDIT_STATUS,
                     "task" to existing.id!!,
@@ -118,7 +118,7 @@ open class TaskApplicationService(
 
         if (
             !fga.checkRelationship(
-                FgaRelationshipDef(
+                FgaRelTuple(
                     "user" to reqAccount.id!!,
                     Task.FgaRelations.OWNER,
                     "task" to item.id!!,
@@ -137,7 +137,7 @@ open class TaskApplicationService(
         // TODO catch and throw normalized 5xx error
         // TODO if error thrown from FGA provider, register and alert
         fga.writeRelationships(
-            listOf(FgaRelationshipDef("user" to accountToShareWithId, relation, "task" to id))
+            listOf(FgaRelTuple("user" to accountToShareWithId, relation, "task" to id))
         )
 
         return true
