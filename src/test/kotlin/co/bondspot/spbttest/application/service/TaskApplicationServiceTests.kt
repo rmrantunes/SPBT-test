@@ -237,7 +237,7 @@ private class TaskApplicationServiceTests {
                 }
 
             assertThat(ex.message)
-                .isEqualTo("This should NOT be happening at all: Unsupported relation for sharing")
+                .isEqualTo("${ApplicationServiceInternalException.MESSAGE_HEAD} Unsupported relation for sharing")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR)
         }
 

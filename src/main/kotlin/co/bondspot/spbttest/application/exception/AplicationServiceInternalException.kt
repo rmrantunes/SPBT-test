@@ -7,8 +7,12 @@ import co.bondspot.spbttest.shared.enumeration.HttpStatusCode5xx
  * directed to the developer about NEVER cases.
  */
 class ApplicationServiceInternalException(errorMessage: String) :
-    Exception("This should NOT be happening at all: $errorMessage") {
+    Exception("$MESSAGE_HEAD $errorMessage") {
     var relatedHttpStatusCode: Int = 500
+
+    companion object {
+        const val MESSAGE_HEAD = "Dear developer, this should NOT be happening at all:"
+    }
 
     /**
      * In order to inform the user of the application layer the closest related HTTP status code to
