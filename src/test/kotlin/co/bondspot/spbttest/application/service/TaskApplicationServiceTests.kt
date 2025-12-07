@@ -80,7 +80,7 @@ private class TaskApplicationServiceTests {
 
             val ex = assertThrows<ApplicationServiceException> { service.getById(id, reqAccount) }
             assertThat(ex.message)
-                .isEqualTo("Requested resource (Task: '$id') is not bonded to requester")
+                .isEqualTo("Requested resource is not bonded to requester")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
         }
 

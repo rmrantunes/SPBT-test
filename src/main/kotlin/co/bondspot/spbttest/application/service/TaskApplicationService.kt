@@ -50,7 +50,7 @@ open class TaskApplicationService(
             )
         ) {
             throw ApplicationServiceException(
-                    "Requested resource (Task: '$id') is not bonded to requester"
+                    "Requested resource is not bonded to requester"
                 )
                 .setRelatedHttpStatusCode { FORBIDDEN }
         }
