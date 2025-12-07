@@ -1,4 +1,4 @@
-package co.bondspot.spbttest.springweb.service
+package co.bondspot.spbttest.application.service
 
 import co.bondspot.spbttest.application.exception.ApplicationServiceException
 import co.bondspot.spbttest.domain.contract.IAccountRepository
@@ -7,6 +7,7 @@ import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.IAMAccount
 import co.bondspot.spbttest.domain.exception.IAMProviderException
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
+import co.bondspot.spbttest.springweb.service.AccountService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
