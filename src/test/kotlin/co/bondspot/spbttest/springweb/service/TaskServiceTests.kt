@@ -30,7 +30,7 @@ private class TaskServiceTests {
     @BeforeEach
     fun setUp() {
         accountRepository = mockk<IAccountRepository>()
-        taskRepository = mockk<ITaskRepository>()
+        taskRepository = spyk<ITaskRepository>(recordPrivateCalls = true)
         fga = spyk<IFgaProvider>(recordPrivateCalls = true)
         every { fga.checkRelationship(any()) } returns false
     }
@@ -40,11 +40,10 @@ private class TaskServiceTests {
     inner class CreateTask {
         @Test
         fun `should create and return task`() {
-            val repository = mockk<ITaskRepository>()
             val task = Task("Text", id = "Some ID")
             val createdTask = task.copy(createdById = reqAccount.id)
-            every { repository.create(any()) } returns createdTask
-            val service = TaskService(repository, accountRepository, fga)
+            every { taskRepository.create(any()) } returns createdTask
+            val service = TaskService(taskRepository, accountRepository, fga)
 
             val result = service.create(task, reqAccount = reqAccount)
 
@@ -71,14 +70,13 @@ private class TaskServiceTests {
     inner class GetTask {
         @Test
         fun `throw forbidden if req user is not bonded to task`() {
-            val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
             val id = "some_id"
             val existing = Task("Text", id = id)
-            every { repository.create(any()) } returns existing.copy(id = accountId)
+            every { taskRepository.create(any()) } returns existing.copy(id = accountId)
             every { fga.checkRelationship(any()) } returns false
-            val service = TaskService(repository, accountRepository, fga)
+            val service = TaskService(taskRepository, accountRepository, fga)
 
-            every { repository.getById(id) } returns existing.copy(createdById = "not_you")
+            every { taskRepository.getById(id) } returns existing.copy(createdById = "not_you")
 
             val ex = assertThrows<ApplicationServiceException> { service.getById(id, reqAccount) }
             assertThat(ex.message)
@@ -88,15 +86,14 @@ private class TaskServiceTests {
 
         @Test
         fun `return task bonded to requester`() {
-            val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
             val id = "some_id"
             val existing = Task("Text", id = id)
             val createdTask = existing.copy(createdById = reqAccount.id)
-            every { repository.create(any()) } returns createdTask
+            every { taskRepository.create(any()) } returns createdTask
             every { fga.checkRelationship(any()) } returns true
-            val service = TaskService(repository, accountRepository, fga)
+            val service = TaskService(taskRepository, accountRepository, fga)
 
-            every { repository.getById(id) } returns createdTask
+            every { taskRepository.getById(id) } returns createdTask
 
             val task = service.getById(id, reqAccount)
             assertThat(task).isEqualTo(createdTask)
@@ -108,14 +105,13 @@ private class TaskServiceTests {
     inner class UpdateStatus {
         @Test
         fun `throw forbidden if req user is not bonded to task`() {
-            val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
             val id = "some_id"
             val existing = Task("Text", id = id)
-            every { repository.create(any()) } returns existing.copy(id = accountId)
+            every { taskRepository.create(any()) } returns existing.copy(id = accountId)
             every { fga.checkRelationship(any()) } returns false
-            val service = TaskService(repository, accountRepository, fga)
+            val service = TaskService(taskRepository, accountRepository, fga)
 
-            every { repository.getById(id) } returns existing.copy(createdById = "not_you")
+            every { taskRepository.getById(id) } returns existing.copy(createdById = "not_you")
 
             val ex =
                 assertThrows<ApplicationServiceException> {
@@ -128,21 +124,20 @@ private class TaskServiceTests {
 
         @Test
         fun `should update successfully`() {
-            val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
             val id = "some_id"
             val existing = Task("Text", id = id, createdById = reqAccount.id)
-            every { repository.create(any()) } returns existing
+            every { taskRepository.create(any()) } returns existing
             every { fga.checkRelationship(any()) } returns true
-            val service = TaskService(repository, accountRepository, fga)
+            val service = TaskService(taskRepository, accountRepository, fga)
 
-            every { repository.getById(id) } returns existing
+            every { taskRepository.getById(id) } returns existing
 
             val result = service.updateStatus(id, Task.Status.IN_PROGRESS, reqAccount)
 
             Assertions.assertThat(result).isTrue()
 
             verify {
-                repository invoke
+                taskRepository invoke
                     "update" withArguments
                     listOf(id, existing.copy(status = Task.Status.IN_PROGRESS))
             }
@@ -154,14 +149,13 @@ private class TaskServiceTests {
     inner class UpdateDetails {
         @Test
         fun `throw forbidden if req user is not bonded to task`() {
-            val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
             val id = "some_id"
             val existing = Task("Text", id = id)
-            every { repository.create(any()) } returns existing.copy(id = accountId)
+            every { taskRepository.create(any()) } returns existing.copy(id = accountId)
             every { fga.checkRelationship(any()) } returns false
-            val service = TaskService(repository, accountRepository, fga)
+            val service = TaskService(taskRepository, accountRepository, fga)
 
-            every { repository.getById(id) } returns existing.copy(createdById = "not_you")
+            every { taskRepository.getById(id) } returns existing.copy(createdById = "not_you")
 
             val ex =
                 assertThrows<ApplicationServiceException> {
@@ -174,21 +168,20 @@ private class TaskServiceTests {
 
         @Test
         fun `should update successfully`() {
-            val repository = spyk<ITaskRepository>(recordPrivateCalls = true)
             val id = "some_id"
             val existing = Task("Text", id = id, createdById = reqAccount.id)
-            every { repository.create(any()) } returns existing
+            every { taskRepository.create(any()) } returns existing
             every { fga.checkRelationship(any()) } returns true
-            val service = TaskService(repository, accountRepository, fga)
+            val service = TaskService(taskRepository, accountRepository, fga)
 
-            every { repository.getById(id) } returns existing
+            every { taskRepository.getById(id) } returns existing
 
             val result = service.updateDetails(id, "Editado", reqAccount)
 
             Assertions.assertThat(result).isTrue()
 
             verify {
-                repository invoke
+                taskRepository invoke
                     "update" withArguments
                     listOf(id, existing.copy(title = "Editado"))
             }
@@ -208,7 +201,8 @@ private class TaskServiceTests {
                     service.shareWith("someid", accountId2, "admin", reqAccount)
                 }
 
-            assertThat(ex.message).isEqualTo("This should NOT be happening at all: Unsupported relation for sharing")
+            assertThat(ex.message)
+                .isEqualTo("This should NOT be happening at all: Unsupported relation for sharing")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR)
         }
 
@@ -340,11 +334,7 @@ private class TaskServiceTests {
         } returns true
         every {
             fga.checkRelationship(
-                FgaRelationshipDef(
-                    "user" to reqAccount.id!!,
-                    Task.FgaRelations.OWNER,
-                    "task" to id,
-                )
+                FgaRelationshipDef("user" to reqAccount.id!!, Task.FgaRelations.OWNER, "task" to id)
             )
         } returns true
         val service = TaskService(taskRepository, accountRepository, fga)
@@ -353,16 +343,16 @@ private class TaskServiceTests {
         Assertions.assertThat(result).isTrue()
         verify {
             fga invoke
-                    "writeRelationships" withArguments
+                "writeRelationships" withArguments
+                listOf(
                     listOf(
-                        listOf(
-                            FgaRelationshipDef(
-                                "user" to account2.id!!,
-                                Task.FgaRelations.EDITOR,
-                                "task" to id,
-                            )
+                        FgaRelationshipDef(
+                            "user" to account2.id!!,
+                            Task.FgaRelations.EDITOR,
+                            "task" to id,
                         )
                     )
+                )
         }
     }
 }
