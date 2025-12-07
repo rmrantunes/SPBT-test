@@ -1,12 +1,13 @@
 package co.bondspot.spbttest.springweb.configuration
 
 import co.bondspot.spbttest.domain.contract.IAccountRepository
-import co.bondspot.spbttest.domain.contract.IMessageRepository
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
-import co.bondspot.spbttest.domain.entity.Message
 import co.bondspot.spbttest.domain.entity.Task
-import co.bondspot.spbttest.springweb.persistence.*
+import co.bondspot.spbttest.springweb.persistence.AccountEntity
+import co.bondspot.spbttest.springweb.persistence.AccountRepository
+import co.bondspot.spbttest.springweb.persistence.TaskEntity
+import co.bondspot.spbttest.springweb.persistence.TaskRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.repository.findByIdOrNull
@@ -15,22 +16,8 @@ import kotlin.jvm.optionals.getOrNull
 @Configuration
 class RepositoryBeanConfig(
     private val accountRepository: AccountRepository,
-    private val messageRepository: MessageRepository,
     private val taskRepository: TaskRepository,
 ) {
-
-    @Bean
-    fun getMessageRepository(): IMessageRepository =
-        object : IMessageRepository {
-            override fun find(): List<Message> = messageRepository.findAll().map { it.toDomain() }
-
-            override fun findById(id: String): Message? =
-                messageRepository.findByIdOrNull(id)?.toDomain()
-
-            override fun save(message: Message): Message =
-                messageRepository.save(MessageEntity.fromDomain(message)).toDomain()
-        }
-
     @Bean
     fun getTaskRepository(): ITaskRepository =
         object : ITaskRepository {
