@@ -112,13 +112,32 @@ private class TaskServiceTests {
             val service = TaskService(taskRepository, accountRepository, fga)
 
             every { taskRepository.getById(id) } returns existing.copy(createdById = "not_you")
+            every {
+                fga.checkRelationship(
+                    FgaRelationshipDef(
+                        "user" to reqAccount.id!!,
+                        Task.FgaRelations.VIEWER,
+                        "task" to id,
+                    )
+                )
+            } returns true
+
+            every {
+                fga.checkRelationship(
+                    FgaRelationshipDef(
+                        "user" to reqAccount.id!!,
+                        Task.FgaRelations.CAN_EDIT_DETAILS,
+                        "task" to id,
+                    )
+                )
+            } returns false
 
             val ex =
                 assertThrows<ApplicationServiceException> {
                     service.updateStatus(id, Task.Status.IN_PROGRESS, reqAccount)
                 }
             assertThat(ex.message)
-                .isEqualTo("Requested resource (Task: '$id') is not bonded to requester")
+                .isEqualTo("Requester does not have sufficient permission to perform this action")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
         }
 
@@ -131,6 +150,7 @@ private class TaskServiceTests {
             val service = TaskService(taskRepository, accountRepository, fga)
 
             every { taskRepository.getById(id) } returns existing
+            every { fga.checkRelationship(any()) } returns true
 
             val result = service.updateStatus(id, Task.Status.IN_PROGRESS, reqAccount)
 
@@ -157,12 +177,32 @@ private class TaskServiceTests {
 
             every { taskRepository.getById(id) } returns existing.copy(createdById = "not_you")
 
+            every {
+                fga.checkRelationship(
+                    FgaRelationshipDef(
+                        "user" to reqAccount.id!!,
+                        Task.FgaRelations.VIEWER,
+                        "task" to id,
+                    )
+                )
+            } returns true
+
+            every {
+                fga.checkRelationship(
+                    FgaRelationshipDef(
+                        "user" to reqAccount.id!!,
+                        Task.FgaRelations.CAN_EDIT_DETAILS,
+                        "task" to id,
+                    )
+                )
+            } returns false
+
             val ex =
                 assertThrows<ApplicationServiceException> {
                     service.updateDetails(id, "Editado", reqAccount)
                 }
             assertThat(ex.message)
-                .isEqualTo("Requested resource (Task: '$id') is not bonded to requester")
+                .isEqualTo("Requester does not have sufficient permission to perform this action")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
         }
 

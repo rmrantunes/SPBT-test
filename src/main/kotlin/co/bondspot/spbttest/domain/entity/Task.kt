@@ -7,6 +7,7 @@ object TaskFgaRelations {
     const val VIEWER = "viewer"
     const val EDITOR = "editor"
     const val CAN_EDIT_DETAILS = "can_edit_details"
+    const val CAN_EDIT_STATUS = "can_edit_status"
 }
 
 data class Task(

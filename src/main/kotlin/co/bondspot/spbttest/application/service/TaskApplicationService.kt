@@ -55,22 +55,49 @@ open class TaskApplicationService(
                 .setRelatedHttpStatusCode { FORBIDDEN }
         }
 
-        //        if (task.createdById != reqAccount.id)
-        //            throw ApplicationServiceException(
-        //                    "Requested resource (Task: '$id') is not bonded to requester"
-        //                )
-        //                .setRelatedHttpStatusCode { FORBIDDEN }
         return task
     }
 
     override fun updateDetails(id: String, title: String?, reqAccount: Account): Boolean? {
         val existing = getById(id, reqAccount)
+
+        if (
+            !fga.checkRelationship(
+                FgaRelationshipDef(
+                    "user" to reqAccount.id!!,
+                    Task.FgaRelations.CAN_EDIT_DETAILS,
+                    "task" to existing.id!!,
+                )
+            )
+        ) {
+            throw ApplicationServiceException(
+                    "Requester does not have sufficient permission to perform this action"
+                )
+                .setRelatedHttpStatusCode { FORBIDDEN }
+        }
+
         repository.update(id, existing.copy(title = title ?: existing.title))
         return true
     }
 
     override fun updateStatus(id: String, status: Task.Status, reqAccount: Account): Boolean? {
         val existing = getById(id, reqAccount)
+
+        if (
+            !fga.checkRelationship(
+                FgaRelationshipDef(
+                    "user" to reqAccount.id!!,
+                    Task.FgaRelations.CAN_EDIT_STATUS,
+                    "task" to existing.id!!,
+                )
+            )
+        ) {
+            throw ApplicationServiceException(
+                    "Requester does not have sufficient permission to perform this action"
+                )
+                .setRelatedHttpStatusCode { FORBIDDEN }
+        }
+
         repository.update(id, existing.copy(status = status))
         return true
     }
