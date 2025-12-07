@@ -18,7 +18,8 @@ open class TaskApplicationService(
         // We're considering the user exists in the Api DB. Right approach? Prolly no lol
 
         return repository.create(task.copy(createdById = reqAccount.id)).also {
-            // TODO if error thrown, remove created task, since no action could be done from any account
+            // TODO if error thrown, remove created task, since no action could be done from any
+            // account
             fga.writeRelationships(
                 listOf(FgaRelationshipDef("user" to reqAccount.id!!, "owner", "task" to it.id!!))
             )
@@ -32,12 +33,22 @@ open class TaskApplicationService(
                     NOT_FOUND
                 }
 
-        // TODO implement FGA to check account relation to the object (task)
-        if (task.createdById != reqAccount.id)
+        if (
+            !fga.checkRelationship(
+                FgaRelationshipDef("user" to reqAccount.id!!, "viewer", "task" to task.id!!)
+            )
+        ) {
             throw ApplicationServiceException(
                     "Requested resource (Task: '$id') is not bonded to requester"
                 )
                 .setRelatedHttpStatusCode { FORBIDDEN }
+        }
+
+        //        if (task.createdById != reqAccount.id)
+        //            throw ApplicationServiceException(
+        //                    "Requested resource (Task: '$id') is not bonded to requester"
+        //                )
+        //                .setRelatedHttpStatusCode { FORBIDDEN }
         return task
     }
 
@@ -66,7 +77,16 @@ open class TaskApplicationService(
                 .setRelatedHttpStatusCode { INTERNAL_SERVER_ERROR }
         }
 
-        getById(id, reqAccount)
+        val item = getById(id, reqAccount)
+
+        if (
+            !fga.checkRelationship(
+                FgaRelationshipDef("user" to reqAccount.id!!, "owner", "task" to item.id!!)
+            )
+        ) {
+            throw ApplicationServiceException("Requester missing owner relation to task")
+                .setRelatedHttpStatusCode { FORBIDDEN }
+        }
 
         // Here we're considering only accounts that already authenticated into the application
         accountRepository.getById(accountToShareWithId)

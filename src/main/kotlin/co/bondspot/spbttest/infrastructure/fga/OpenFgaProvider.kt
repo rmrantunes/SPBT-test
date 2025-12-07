@@ -11,4 +11,8 @@ class OpenFgaProvider : IFgaProvider {
     override fun deleteRelationships(relationships: List<FgaRelationshipDef>) {
         TODO("Not yet implemented")
     }
+
+    override fun checkRelationship(relationship: FgaRelationshipDef): Boolean {
+        TODO("Not yet implemented")
+    }
 }

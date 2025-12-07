@@ -6,4 +6,6 @@ import co.bondspot.spbttest.domain.entity.FgaRelationshipDef
 interface IFgaProvider {
     fun writeRelationships(relationships: List<FgaRelationshipDef>)
     fun deleteRelationships(relationships: List<FgaRelationshipDef>)
+    /** If you want to check many at once use `batchCheckRelationships` */
+    fun checkRelationship(relationship: FgaRelationshipDef): Boolean
 }
