@@ -18,6 +18,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 
 private class TaskApplicationServiceTests {
+    private val id = "some_id"
     private val accountId = "accountId"
     private val accountId2 = "accountId2"
     private val reqAccount = Account("some_account", "some_email@example.com", id = accountId)
@@ -70,7 +71,6 @@ private class TaskApplicationServiceTests {
     inner class GetTask {
         @Test
         fun `throw forbidden if req user is not bonded to task`() {
-            val id = "some_id"
             val existing = Task("Text", id = id)
             every { taskRepository.create(any()) } returns existing.copy(id = accountId)
             every { fga.checkRelationship(any()) } returns false
@@ -86,7 +86,6 @@ private class TaskApplicationServiceTests {
 
         @Test
         fun `return task bonded to requester`() {
-            val id = "some_id"
             val existing = Task("Text", id = id)
             val createdTask = existing.copy(createdById = reqAccount.id)
             every { taskRepository.create(any()) } returns createdTask
@@ -105,7 +104,6 @@ private class TaskApplicationServiceTests {
     inner class UpdateStatus {
         @Test
         fun `throw forbidden if req user is not bonded to task`() {
-            val id = "some_id"
             val existing = Task("Text", id = id)
             every { taskRepository.create(any()) } returns existing.copy(id = accountId)
             every { fga.checkRelationship(any()) } returns false
@@ -143,7 +141,6 @@ private class TaskApplicationServiceTests {
 
         @Test
         fun `should update successfully`() {
-            val id = "some_id"
             val existing = Task("Text", id = id, createdById = reqAccount.id)
             every { taskRepository.create(any()) } returns existing
             every { fga.checkRelationship(any()) } returns true
@@ -169,7 +166,6 @@ private class TaskApplicationServiceTests {
     inner class UpdateDetails {
         @Test
         fun `throw forbidden if req user is not bonded to task`() {
-            val id = "some_id"
             val existing = Task("Text", id = id)
             every { taskRepository.create(any()) } returns existing.copy(id = accountId)
             every { fga.checkRelationship(any()) } returns false
@@ -208,7 +204,6 @@ private class TaskApplicationServiceTests {
 
         @Test
         fun `should update successfully`() {
-            val id = "some_id"
             val existing = Task("Text", id = id, createdById = reqAccount.id)
             every { taskRepository.create(any()) } returns existing
             every { fga.checkRelationship(any()) } returns true
@@ -248,7 +243,6 @@ private class TaskApplicationServiceTests {
 
         @Test
         fun `throw not found if task does not exist`() {
-            val id = "some_id"
             every { taskRepository.getById(id) } returns null
             val service = TaskApplicationService(taskRepository, accountRepository, fga)
             val ex =
@@ -261,7 +255,6 @@ private class TaskApplicationServiceTests {
 
         @Test
         fun `throw forbidden if req user is not bonded to task as admin`() {
-            val id = "some_id"
             val existing = Task("Text", id = id, createdById = "some_id_nada_a_ver")
             every { taskRepository.create(any()) } returns existing
             every { taskRepository.getById(id) } returns existing
@@ -295,7 +288,6 @@ private class TaskApplicationServiceTests {
 
         @Test
         fun `throw not found if account to share with does not exist`() {
-            val id = "some_id"
             val existing = Task("Text", id = id, createdById = accountId)
             every { taskRepository.create(any()) } returns existing
             every { taskRepository.getById(id) } returns existing
@@ -313,7 +305,6 @@ private class TaskApplicationServiceTests {
 
         @Test
         fun `share viewer permission to an account`() {
-            val id = "some_id"
             val existing = Task("Text", id = id, createdById = reqAccount.id)
             every { taskRepository.create(any()) } returns existing
             every { taskRepository.getById(id) } returns existing
@@ -358,7 +349,6 @@ private class TaskApplicationServiceTests {
 
     @Test
     fun `share editor permission to an account`() {
-        val id = "some_id"
         val existing = Task("Text", id = id, createdById = reqAccount.id)
         every { taskRepository.create(any()) } returns existing
         every { taskRepository.getById(id) } returns existing
