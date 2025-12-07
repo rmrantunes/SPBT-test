@@ -4,6 +4,8 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+/data/testdb2.mv.db
+/data/testdb2.trace.db
 
 ### STS ###
 .apt_generated
@@ -38,3 +40,4 @@ out/
 
 ### Kotlin ###
 .kotlin
+
