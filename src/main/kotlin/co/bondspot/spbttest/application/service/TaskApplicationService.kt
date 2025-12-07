@@ -21,7 +21,13 @@ open class TaskApplicationService(
             // TODO if error thrown, remove created task, since no action could be done from any
             // account
             fga.writeRelationships(
-                listOf(FgaRelationshipDef("user" to reqAccount.id!!, "owner", "task" to it.id!!))
+                listOf(
+                    FgaRelationshipDef(
+                        "user" to reqAccount.id!!,
+                        Task.FgaRelations.OWNER,
+                        "task" to it.id!!,
+                    )
+                )
             )
         }
     }
@@ -35,7 +41,11 @@ open class TaskApplicationService(
 
         if (
             !fga.checkRelationship(
-                FgaRelationshipDef("user" to reqAccount.id!!, "viewer", "task" to task.id!!)
+                FgaRelationshipDef(
+                    "user" to reqAccount.id!!,
+                    Task.FgaRelations.VIEWER,
+                    "task" to task.id!!,
+                )
             )
         ) {
             throw ApplicationServiceException(
@@ -81,7 +91,11 @@ open class TaskApplicationService(
 
         if (
             !fga.checkRelationship(
-                FgaRelationshipDef("user" to reqAccount.id!!, "owner", "task" to item.id!!)
+                FgaRelationshipDef(
+                    "user" to reqAccount.id!!,
+                    Task.FgaRelations.OWNER,
+                    "task" to item.id!!,
+                )
             )
         ) {
             throw ApplicationServiceException("Requester missing owner relation to task")
@@ -96,7 +110,13 @@ open class TaskApplicationService(
         // TODO catch and throw normalized 5xx error
         // TODO if error thrown from FGA provider, register and alert
         fga.writeRelationships(
-            listOf(FgaRelationshipDef("user" to accountToShareWithId, "viewer", "task" to id))
+            listOf(
+                FgaRelationshipDef(
+                    "user" to accountToShareWithId,
+                    Task.FgaRelations.VIEWER,
+                    "task" to id,
+                )
+            )
         )
 
         return true

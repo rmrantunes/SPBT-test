@@ -56,7 +56,7 @@ private class TaskServiceTests {
                         listOf(
                             FgaRelationshipDef(
                                 "user" to reqAccount.id!!,
-                                "owner",
+                                Task.FgaRelations.OWNER,
                                 "task" to createdTask.id!!,
                             )
                         )
@@ -232,12 +232,20 @@ private class TaskServiceTests {
             every { taskRepository.getById(id) } returns existing
             every {
                 fga.checkRelationship(
-                    FgaRelationshipDef("user" to reqAccount.id!!, "viewer", "task" to id)
+                    FgaRelationshipDef(
+                        "user" to reqAccount.id!!,
+                        Task.FgaRelations.VIEWER,
+                        "task" to id,
+                    )
                 )
             } returns true
             every {
                 fga.checkRelationship(
-                    FgaRelationshipDef("user" to reqAccount.id!!, "owner", "task" to id)
+                    FgaRelationshipDef(
+                        "user" to reqAccount.id!!,
+                        Task.FgaRelations.OWNER,
+                        "task" to id,
+                    )
                 )
             } returns false
             val service = TaskService(taskRepository, accountRepository, fga)
@@ -246,8 +254,7 @@ private class TaskServiceTests {
                     service.shareWith(id, accountId2, reqAccount = reqAccount)
                 }
 
-            assertThat(ex.message)
-                .isEqualTo("Requester missing owner relation to task")
+            assertThat(ex.message).isEqualTo("Requester missing owner relation to task")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
         }
 
@@ -278,23 +285,37 @@ private class TaskServiceTests {
             every { accountRepository.getById(accountId2) } returns account2
             every {
                 fga.checkRelationship(
-                    FgaRelationshipDef("user" to reqAccount.id!!, "viewer", "task" to id)
+                    FgaRelationshipDef(
+                        "user" to reqAccount.id!!,
+                        Task.FgaRelations.VIEWER,
+                        "task" to id,
+                    )
                 )
             } returns true
             every {
                 fga.checkRelationship(
-                    FgaRelationshipDef("user" to reqAccount.id!!, "owner", "task" to id)
+                    FgaRelationshipDef(
+                        "user" to reqAccount.id!!,
+                        Task.FgaRelations.OWNER,
+                        "task" to id,
+                    )
                 )
             } returns true
             val service = TaskService(taskRepository, accountRepository, fga)
-            val result = service.shareWith(id, accountId2, "viewer", reqAccount)
+            val result = service.shareWith(id, accountId2, Task.FgaRelations.VIEWER, reqAccount)
 
             Assertions.assertThat(result).isTrue()
             verify {
                 fga invoke
                     "writeRelationships" withArguments
                     listOf(
-                        listOf(FgaRelationshipDef("user" to account2.id!!, "viewer", "task" to id))
+                        listOf(
+                            FgaRelationshipDef(
+                                "user" to account2.id!!,
+                                Task.FgaRelations.VIEWER,
+                                "task" to id,
+                            )
+                        )
                     )
             }
         }

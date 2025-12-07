@@ -2,6 +2,13 @@ package co.bondspot.spbttest.domain.entity
 
 import java.time.LocalDateTime
 
+object TaskFgaRelations {
+    const val OWNER = "owner"
+    const val VIEWER = "viewer"
+    const val EDITOR = "editor"
+    const val CAN_EDIT_DETAILS = "can_edit_details"
+}
+
 data class Task(
     val title: String = "",
     val status: Status = Status.PENDING,
@@ -16,5 +23,9 @@ data class Task(
         PENDING,
         IN_PROGRESS,
         COMPLETED,
+    }
+
+    companion object {
+        val FgaRelations = TaskFgaRelations
     }
 }
