@@ -1,6 +1,7 @@
 package co.bondspot.spbttest.springweb.service
 
 import co.bondspot.spbttest.application.exception.ApplicationServiceException
+import co.bondspot.spbttest.application.exception.ApplicationServiceInternalException
 import co.bondspot.spbttest.domain.contract.IAccountRepository
 import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.ITaskRepository
@@ -203,11 +204,11 @@ private class TaskServiceTests {
             val service = TaskService(taskRepository, accountRepository, fga)
 
             val ex =
-                assertThrows<ApplicationServiceException> {
+                assertThrows<ApplicationServiceInternalException> {
                     service.shareWith("someid", accountId2, "admin", reqAccount)
                 }
 
-            assertThat(ex.message).isEqualTo("Internal message: Unsupported relation for sharing")
+            assertThat(ex.message).isEqualTo("This should NOT be happening at all: Unsupported relation for sharing")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR)
         }
 

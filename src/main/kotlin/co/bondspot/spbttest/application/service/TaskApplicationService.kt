@@ -1,6 +1,7 @@
 package co.bondspot.spbttest.application.service
 
 import co.bondspot.spbttest.application.exception.ApplicationServiceException
+import co.bondspot.spbttest.application.exception.ApplicationServiceInternalException
 import co.bondspot.spbttest.domain.contract.IAccountRepository
 import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.ITaskApplicationService
@@ -83,9 +84,7 @@ open class TaskApplicationService(
         reqAccount: Account,
     ): Boolean? {
         if (relation != Task.FgaRelations.VIEWER && relation != Task.FgaRelations.EDITOR) {
-            // InternalApplicationServiceException
-            throw ApplicationServiceException("Internal message: Unsupported relation for sharing")
-                .setRelatedHttpStatusCode { INTERNAL_SERVER_ERROR }
+            throw ApplicationServiceInternalException("Unsupported relation for sharing")
         }
 
         val item = getById(id, reqAccount)
@@ -111,13 +110,7 @@ open class TaskApplicationService(
         // TODO catch and throw normalized 5xx error
         // TODO if error thrown from FGA provider, register and alert
         fga.writeRelationships(
-            listOf(
-                FgaRelationshipDef(
-                    "user" to accountToShareWithId,
-                    relation,
-                    "task" to id,
-                )
-            )
+            listOf(FgaRelationshipDef("user" to accountToShareWithId, relation, "task" to id))
         )
 
         return true
