@@ -320,4 +320,48 @@ private class TaskServiceTests {
             }
         }
     }
+
+    @Test
+    fun `share editor permission to an account`() {
+        val id = "some_id"
+        val existing = Task("Text", id = id, createdById = reqAccount.id)
+        every { taskRepository.create(any()) } returns existing
+        every { taskRepository.getById(id) } returns existing
+        every { accountRepository.getById(accountId2) } returns account2
+        every {
+            fga.checkRelationship(
+                FgaRelationshipDef(
+                    "user" to reqAccount.id!!,
+                    Task.FgaRelations.VIEWER,
+                    "task" to id,
+                )
+            )
+        } returns true
+        every {
+            fga.checkRelationship(
+                FgaRelationshipDef(
+                    "user" to reqAccount.id!!,
+                    Task.FgaRelations.OWNER,
+                    "task" to id,
+                )
+            )
+        } returns true
+        val service = TaskService(taskRepository, accountRepository, fga)
+        val result = service.shareWith(id, accountId2, Task.FgaRelations.EDITOR, reqAccount)
+
+        Assertions.assertThat(result).isTrue()
+        verify {
+            fga invoke
+                    "writeRelationships" withArguments
+                    listOf(
+                        listOf(
+                            FgaRelationshipDef(
+                                "user" to account2.id!!,
+                                Task.FgaRelations.EDITOR,
+                                "task" to id,
+                            )
+                        )
+                    )
+        }
+    }
 }

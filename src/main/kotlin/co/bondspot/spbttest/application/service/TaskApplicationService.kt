@@ -82,7 +82,8 @@ open class TaskApplicationService(
         relation: String?,
         reqAccount: Account,
     ): Boolean? {
-        if (relation != "viewer" && relation != "editor") {
+        if (relation != Task.FgaRelations.VIEWER && relation != Task.FgaRelations.EDITOR) {
+            // InternalApplicationServiceException
             throw ApplicationServiceException("Internal message: Unsupported relation for sharing")
                 .setRelatedHttpStatusCode { INTERNAL_SERVER_ERROR }
         }
@@ -113,7 +114,7 @@ open class TaskApplicationService(
             listOf(
                 FgaRelationshipDef(
                     "user" to accountToShareWithId,
-                    Task.FgaRelations.VIEWER,
+                    relation,
                     "task" to id,
                 )
             )
