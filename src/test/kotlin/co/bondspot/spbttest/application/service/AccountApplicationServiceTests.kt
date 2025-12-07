@@ -7,18 +7,17 @@ import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.IAMAccount
 import co.bondspot.spbttest.domain.exception.IAMProviderException
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
-import co.bondspot.spbttest.springweb.service.AccountService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.util.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.util.*
 
-class AccountServiceTests {
+class AccountApplicationServiceTests {
     @Nested
     @DisplayName("when registering an account...")
     inner class RegisterAccount {
@@ -26,7 +25,7 @@ class AccountServiceTests {
         fun `return CONFLICT if user with same username or email already exists in IAM or DB`() {
             val iamProvider = mockk<IIAMProvider>()
             val accountRepository = mockk<IAccountRepository>()
-            val service = AccountService(accountRepository, iamProvider)
+            val service = AccountApplicationService(accountRepository, iamProvider)
 
             val account = Account("user1", "haha@email.com", "Haha", "O Monstro")
             val iamAccount = IAMAccount("user1", "haha@email.com", "Haha", "O Monstro")
@@ -68,7 +67,7 @@ class AccountServiceTests {
         fun `if valid should register to DB with IAM integration`() {
             val iamProvider = mockk<IIAMProvider>()
             val accountRepository = mockk<IAccountRepository>()
-            val service = AccountService(accountRepository, iamProvider)
+            val service = AccountApplicationService(accountRepository, iamProvider)
 
             val accountId = UUID.randomUUID().toString()
             val iamAccountId = UUID.randomUUID().toString()
@@ -104,7 +103,7 @@ class AccountServiceTests {
         fun `if invalid throw ApplicationServiceException`() {
             val iamProvider = mockk<IIAMProvider>()
             val accountRepository = mockk<IAccountRepository>()
-            val service = AccountService(accountRepository, iamProvider)
+            val service = AccountApplicationService(accountRepository, iamProvider)
 
             every { iamProvider.obtainAccessToken(any(), any()) } throws
                 IAMProviderException("Invalid account credentials", HttpStatusCode.UNAUTHORIZED)
