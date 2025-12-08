@@ -381,7 +381,9 @@ private class TaskApplicationServiceTests {
                 tasks.filter { it.createdById == reqAccount.id || Random.nextBoolean() }
             val relatedObjects = relatedTasks.map { "task:${it.id}" }
 
-            // list FGA objects related to user
+            // List FGA objects related to user.
+            // This approach is valid for small applications (~1000 objects returned)
+            // To handle more, see https://openfga.dev/docs/interacting/search-with-permissions
             every {
                 fga.listObjects(
                     "user" to reqAccount.id!!,
@@ -389,6 +391,12 @@ private class TaskApplicationServiceTests {
                     Task.ENTITY_NAME,
                 )
             } returns relatedObjects
+
+
+            // Considering using fga.listObjects() approach:
+            // In cases of full-text search, grab the intersection between user-related objects and
+            // the full-text search provider response.
+            // Or full-text search passing the user-related objects ids.
 
             // query by retrieved ids the tasks
             every { taskRepository.listByIds(relatedTasks.map { it.id!! }) } returns relatedTasks
