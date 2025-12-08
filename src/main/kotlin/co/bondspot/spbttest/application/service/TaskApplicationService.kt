@@ -94,7 +94,14 @@ open class TaskApplicationService(
         return true
     }
 
-    override fun list(reqAccount: Account): List<Task> = repository.list()
+    override fun list(reqAccount: Account): List<Task> {
+        val relatedObjects =
+            fga.listObjects("user" to reqAccount.id!!, Task.FgaRelations.VIEWER, Task.ENTITY_NAME)
+
+        if (relatedObjects.isEmpty()) return emptyList()
+
+        return repository.listByIds(relatedObjects.map { it.split(":")[1] })
+    }
 
     override fun shareWith(
         id: String,

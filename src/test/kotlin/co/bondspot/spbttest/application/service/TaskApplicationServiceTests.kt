@@ -9,12 +9,16 @@ import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
+import co.bondspot.spbttest.testutils.KSelect
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import java.util.UUID
+import kotlin.random.Random
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
+import org.instancio.Instancio
 import org.junit.jupiter.api.*
 
 private class TaskApplicationServiceTests {
@@ -27,6 +31,14 @@ private class TaskApplicationServiceTests {
     private lateinit var accountRepository: IAccountRepository
     private lateinit var taskRepository: ITaskRepository
     private lateinit var fga: IFgaProvider
+
+    private fun generateTask() =
+        Instancio.of(Task::class.java)
+            .set(KSelect.field(Task::id), UUID.randomUUID().toString())
+            .set(KSelect.field(Task::createdById), listOf(accountId, accountId2).random())
+            .generate(KSelect.field(Task::title)) { it.text().word().adjective().noun() }
+            .generate(KSelect.field(Task::description)) { it.text().word().adjective().noun() }
+            .create()
 
     @BeforeEach
     fun setUp() {
@@ -347,13 +359,45 @@ private class TaskApplicationServiceTests {
     @DisplayName("when listing tasks...")
     inner class ListTasks {
         @Test
-        fun `should return an empty list if none is related to requester`() {
-            every { taskRepository.list() } returns emptyList()
+        fun `should return an empty list if NONE is related to requester`() {
+            every {
+                fga.listObjects(
+                    "user" to reqAccount.id!!,
+                    Task.FgaRelations.VIEWER,
+                    Task.ENTITY_NAME,
+                )
+            } returns emptyList()
 
             val service = TaskApplicationService(taskRepository, accountRepository, fga)
             val result = service.list(reqAccount)
             Assertions.assertThat(result).isEmpty()
+        }
 
+        @Test
+        fun `should return a list of tasks related to requester`() {
+            val tasks = buildList { repeat(30) { add(generateTask()) } }
+
+            val relatedTasks =
+                tasks.filter { it.createdById == reqAccount.id || Random.nextBoolean() }
+            val relatedObjects = relatedTasks.map { "task:${it.id}" }
+
+            // list FGA objects related to user
+            every {
+                fga.listObjects(
+                    "user" to reqAccount.id!!,
+                    Task.FgaRelations.VIEWER,
+                    Task.ENTITY_NAME,
+                )
+            } returns relatedObjects
+
+            // query by retrieved ids the tasks
+            every { taskRepository.listByIds(relatedTasks.map { it.id!! }) } returns relatedTasks
+
+            // return the tasks
+
+            val service = TaskApplicationService(taskRepository, accountRepository, fga)
+            val result = service.list(reqAccount)
+            Assertions.assertThat(result).isEqualTo(relatedTasks)
         }
     }
 }

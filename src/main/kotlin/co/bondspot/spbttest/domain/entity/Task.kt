@@ -28,5 +28,6 @@ data class Task(
 
     companion object {
         val FgaRelations = TaskFgaRelations
+        const val ENTITY_NAME = "task"
     }
 }

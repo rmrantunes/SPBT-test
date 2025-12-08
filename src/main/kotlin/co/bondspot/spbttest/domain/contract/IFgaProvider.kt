@@ -1,6 +1,8 @@
 package co.bondspot.spbttest.domain.contract
 
+import co.bondspot.spbttest.domain.entity.EntityName
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
+import co.bondspot.spbttest.domain.entity.ID
 
 // For OpenFGA implementation
 interface IFgaProvider {
@@ -12,4 +14,6 @@ interface IFgaProvider {
 
     /** If you want to check many at once use `batchCheckRelationships` */
     fun checkRelationship(relationship: FgaRelTuple): Boolean
+
+    fun listObjects(actor: Pair<EntityName, ID>, relation: String, type: EntityName): List<String>
 }

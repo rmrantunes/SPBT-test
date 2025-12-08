@@ -10,4 +10,6 @@ interface ITaskRepository {
     fun update(id: String, task: Task): Boolean?
 
     fun list(): List<Task>
+
+    fun listByIds(ids: List<String>): List<Task>
 }

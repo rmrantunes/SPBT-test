@@ -36,6 +36,10 @@ class RepositoryBeanConfig(
             }
 
             override fun list(): List<Task> = taskRepository.findAll().map { it.toDomain() }
+
+            override fun listByIds(ids: List<String>): List<Task> {
+                TODO("Not yet implemented")
+            }
         }
 
     @Bean
