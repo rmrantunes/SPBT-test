@@ -40,7 +40,7 @@ class TaskController(private val taskService: TaskService) {
         "hasAnyAuthority('ROLE_admin', 'ROLE_somewhat-admin', 'ROLE_@spbttest-api:testizin')"
     )
     @GetMapping("/{id}")
-    fun list(
+    fun getById(
         @PathVariable id: String,
         @AuthenticationPrincipal jwt: Jwt,
     ): ResponseEntity<ResponseDto<GetTaskResDto>> {
