@@ -21,14 +21,8 @@ open class TaskApplicationService(
         return repository.create(task.copy(createdById = reqAccount.id)).also {
             // TODO if error thrown, remove created task, since no action could be done from any
             // account
-            fga.writeRelationships(
-                listOf(
-                    FgaRelTuple(
-                        "user" to reqAccount.id!!,
-                        Task.FgaRelations.OWNER,
-                        "task" to it.id!!,
-                    )
-                )
+            fga.writeRelationship(
+                FgaRelTuple("user" to reqAccount.id!!, Task.FgaRelations.OWNER, "task" to it.id!!)
             )
         }
     }
@@ -49,9 +43,7 @@ open class TaskApplicationService(
                 )
             )
         ) {
-            throw ApplicationServiceException(
-                    "Requested resource is not bonded to requester"
-                )
+            throw ApplicationServiceException("Requested resource is not bonded to requester")
                 .setRelatedHttpStatusCode { FORBIDDEN }
         }
 
@@ -118,11 +110,7 @@ open class TaskApplicationService(
 
         if (
             !fga.checkRelationship(
-                FgaRelTuple(
-                    "user" to reqAccount.id!!,
-                    Task.FgaRelations.OWNER,
-                    "task" to item.id!!,
-                )
+                FgaRelTuple("user" to reqAccount.id!!, Task.FgaRelations.OWNER, "task" to item.id!!)
             )
         ) {
             throw ApplicationServiceException("Requester missing owner relation to task")
@@ -136,9 +124,7 @@ open class TaskApplicationService(
 
         // TODO catch and throw normalized 5xx error
         // TODO if error thrown from FGA provider, register and alert
-        fga.writeRelationships(
-            listOf(FgaRelTuple("user" to accountToShareWithId, relation, "task" to id))
-        )
+        fga.writeRelationship(FgaRelTuple("user" to accountToShareWithId, relation, "task" to id))
 
         return true
     }
