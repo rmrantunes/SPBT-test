@@ -342,4 +342,18 @@ private class TaskApplicationServiceTests {
                 listOf(FgaRelTuple("user" to account2.id!!, Task.FgaRelations.EDITOR, "task" to id))
         }
     }
+
+    @Nested
+    @DisplayName("when listing tasks...")
+    inner class ListTasks {
+        @Test
+        fun `should return an empty list if none is related to requester`() {
+            every { taskRepository.list() } returns emptyList()
+
+            val service = TaskApplicationService(taskRepository, accountRepository, fga)
+            val result = service.list(reqAccount)
+            Assertions.assertThat(result).isEmpty()
+
+        }
+    }
 }
