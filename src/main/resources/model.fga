@@ -1,0 +1,13 @@
+model
+  schema 1.1
+
+type user
+
+type task
+  relations
+    define owner: [user]
+    define admin: owner
+    define can_edit_details: writer
+    define can_share: admin
+    define viewer: [user] or admin or writer
+    define writer: admin
