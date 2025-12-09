@@ -8,6 +8,11 @@ data class Account(
     val iamAccountId: String? = null,
     val id: String? = null,
 ) {
+
+    companion object {
+        const val ENTITY_NAME = "account"
+    }
+
     //    init {
     //        if (!__isPartialEntity) {
     //            require(id != null && runCatching { UUID.fromString(id) }.isSuccess) { "Account id

@@ -22,7 +22,11 @@ open class TaskApplicationService(
             // TODO if error thrown, remove created task, since no action could be done from any
             // account
             fga.writeRelationship(
-                FgaRelTuple("user" to reqAccount.id!!, Task.FgaRelations.OWNER, "task" to it.id!!)
+                FgaRelTuple(
+                    Account.ENTITY_NAME to reqAccount.id!!,
+                    Task.FgaRelations.OWNER,
+                    Task.ENTITY_NAME to it.id!!,
+                )
             )
         }
     }
@@ -37,9 +41,9 @@ open class TaskApplicationService(
         if (
             !fga.checkRelationship(
                 FgaRelTuple(
-                    "user" to reqAccount.id!!,
+                    Account.ENTITY_NAME to reqAccount.id!!,
                     Task.FgaRelations.VIEWER,
-                    "task" to task.id!!,
+                    Task.ENTITY_NAME to task.id!!,
                 )
             )
         ) {
@@ -56,9 +60,9 @@ open class TaskApplicationService(
         if (
             !fga.checkRelationship(
                 FgaRelTuple(
-                    "user" to reqAccount.id!!,
+                    Account.ENTITY_NAME to reqAccount.id!!,
                     Task.FgaRelations.CAN_EDIT_DETAILS,
-                    "task" to existing.id!!,
+                    Task.ENTITY_NAME to existing.id!!,
                 )
             )
         ) {
@@ -78,9 +82,9 @@ open class TaskApplicationService(
         if (
             !fga.checkRelationship(
                 FgaRelTuple(
-                    "user" to reqAccount.id!!,
+                    Account.ENTITY_NAME to reqAccount.id!!,
                     Task.FgaRelations.CAN_EDIT_STATUS,
-                    "task" to existing.id!!,
+                    Task.ENTITY_NAME to existing.id!!,
                 )
             )
         ) {
@@ -96,7 +100,11 @@ open class TaskApplicationService(
 
     override fun list(reqAccount: Account): List<Task> {
         val relatedObjects =
-            fga.listObjects("user" to reqAccount.id!!, Task.FgaRelations.VIEWER, Task.ENTITY_NAME)
+            fga.listObjects(
+                Account.ENTITY_NAME to reqAccount.id!!,
+                Task.FgaRelations.VIEWER,
+                Task.ENTITY_NAME,
+            )
 
         if (relatedObjects.isEmpty()) return emptyList()
 
@@ -117,7 +125,11 @@ open class TaskApplicationService(
 
         if (
             !fga.checkRelationship(
-                FgaRelTuple("user" to reqAccount.id!!, Task.FgaRelations.OWNER, "task" to item.id!!)
+                FgaRelTuple(
+                    Account.ENTITY_NAME to reqAccount.id!!,
+                    Task.FgaRelations.OWNER,
+                    Task.ENTITY_NAME to item.id!!,
+                )
             )
         ) {
             throw ApplicationServiceException("Requester missing owner relation to task")
@@ -131,7 +143,13 @@ open class TaskApplicationService(
 
         // TODO catch and throw normalized 5xx error
         // TODO if error thrown from FGA provider, register and alert
-        fga.writeRelationship(FgaRelTuple("user" to accountToShareWithId, relation, "task" to id))
+        fga.writeRelationship(
+            FgaRelTuple(
+                Account.ENTITY_NAME to accountToShareWithId,
+                relation,
+                Task.ENTITY_NAME to id,
+            )
+        )
 
         return true
     }

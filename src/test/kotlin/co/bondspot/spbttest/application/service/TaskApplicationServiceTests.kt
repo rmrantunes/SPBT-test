@@ -67,9 +67,9 @@ private class TaskApplicationServiceTests {
                     "writeRelationship" withArguments
                     listOf(
                         FgaRelTuple(
-                            "user" to reqAccount.id!!,
+                            Account.ENTITY_NAME to reqAccount.id!!,
                             Task.FgaRelations.OWNER,
-                            "task" to createdTask.id!!,
+                            Task.ENTITY_NAME to createdTask.id!!,
                         )
                     )
             }
@@ -121,16 +121,20 @@ private class TaskApplicationServiceTests {
             every { taskRepository.getById(id) } returns existing.copy(createdById = "not_you")
             every {
                 fga.checkRelationship(
-                    FgaRelTuple("user" to reqAccount.id!!, Task.FgaRelations.VIEWER, "task" to id)
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
                 )
             } returns true
 
             every {
                 fga.checkRelationship(
                     FgaRelTuple(
-                        "user" to reqAccount.id!!,
+                        Account.ENTITY_NAME to reqAccount.id!!,
                         Task.FgaRelations.CAN_EDIT_DETAILS,
-                        "task" to id,
+                        Task.ENTITY_NAME to id,
                     )
                 )
             } returns false
@@ -180,16 +184,20 @@ private class TaskApplicationServiceTests {
 
             every {
                 fga.checkRelationship(
-                    FgaRelTuple("user" to reqAccount.id!!, Task.FgaRelations.VIEWER, "task" to id)
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
                 )
             } returns true
 
             every {
                 fga.checkRelationship(
                     FgaRelTuple(
-                        "user" to reqAccount.id!!,
+                        Account.ENTITY_NAME to reqAccount.id!!,
                         Task.FgaRelations.CAN_EDIT_DETAILS,
-                        "task" to id,
+                        Task.ENTITY_NAME to id,
                     )
                 )
             } returns false
@@ -263,12 +271,20 @@ private class TaskApplicationServiceTests {
             every { taskRepository.getById(id) } returns existing
             every {
                 fga.checkRelationship(
-                    FgaRelTuple("user" to reqAccount.id!!, Task.FgaRelations.VIEWER, "task" to id)
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
                 )
             } returns true
             every {
                 fga.checkRelationship(
-                    FgaRelTuple("user" to reqAccount.id!!, Task.FgaRelations.OWNER, "task" to id)
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.OWNER,
+                        Task.ENTITY_NAME to id,
+                    )
                 )
             } returns false
             val service = TaskApplicationService(taskRepository, accountRepository, fga)
@@ -306,12 +322,20 @@ private class TaskApplicationServiceTests {
             every { accountRepository.getById(accountId2) } returns account2
             every {
                 fga.checkRelationship(
-                    FgaRelTuple("user" to reqAccount.id!!, Task.FgaRelations.VIEWER, "task" to id)
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
                 )
             } returns true
             every {
                 fga.checkRelationship(
-                    FgaRelTuple("user" to reqAccount.id!!, Task.FgaRelations.OWNER, "task" to id)
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.OWNER,
+                        Task.ENTITY_NAME to id,
+                    )
                 )
             } returns true
             val service = TaskApplicationService(taskRepository, accountRepository, fga)
@@ -322,7 +346,11 @@ private class TaskApplicationServiceTests {
                 fga invoke
                     "writeRelationship" withArguments
                     listOf(
-                        FgaRelTuple("user" to account2.id!!, Task.FgaRelations.VIEWER, "task" to id)
+                        FgaRelTuple(
+                            Account.ENTITY_NAME to account2.id!!,
+                            Task.FgaRelations.VIEWER,
+                            Task.ENTITY_NAME to id,
+                        )
                     )
             }
         }
@@ -336,12 +364,20 @@ private class TaskApplicationServiceTests {
         every { accountRepository.getById(accountId2) } returns account2
         every {
             fga.checkRelationship(
-                FgaRelTuple("user" to reqAccount.id!!, Task.FgaRelations.VIEWER, "task" to id)
+                FgaRelTuple(
+                    Account.ENTITY_NAME to reqAccount.id!!,
+                    Task.FgaRelations.VIEWER,
+                    Task.ENTITY_NAME to id,
+                )
             )
         } returns true
         every {
             fga.checkRelationship(
-                FgaRelTuple("user" to reqAccount.id!!, Task.FgaRelations.OWNER, "task" to id)
+                FgaRelTuple(
+                    Account.ENTITY_NAME to reqAccount.id!!,
+                    Task.FgaRelations.OWNER,
+                    Task.ENTITY_NAME to id,
+                )
             )
         } returns true
         val service = TaskApplicationService(taskRepository, accountRepository, fga)
@@ -351,7 +387,13 @@ private class TaskApplicationServiceTests {
         verify {
             fga invoke
                 "writeRelationship" withArguments
-                listOf(FgaRelTuple("user" to account2.id!!, Task.FgaRelations.EDITOR, "task" to id))
+                listOf(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to account2.id!!,
+                        Task.FgaRelations.EDITOR,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
         }
     }
 
@@ -362,7 +404,7 @@ private class TaskApplicationServiceTests {
         fun `should return an empty list if NONE is related to requester`() {
             every {
                 fga.listObjects(
-                    "user" to reqAccount.id!!,
+                    Account.ENTITY_NAME to reqAccount.id!!,
                     Task.FgaRelations.VIEWER,
                     Task.ENTITY_NAME,
                 )
@@ -386,12 +428,11 @@ private class TaskApplicationServiceTests {
             // To handle more, see https://openfga.dev/docs/interacting/search-with-permissions
             every {
                 fga.listObjects(
-                    "user" to reqAccount.id!!,
+                    Account.ENTITY_NAME to reqAccount.id!!,
                     Task.FgaRelations.VIEWER,
                     Task.ENTITY_NAME,
                 )
             } returns relatedObjects
-
 
             // Considering using fga.listObjects() approach:
             // In cases of full-text search, grab the intersection between user-related objects and
