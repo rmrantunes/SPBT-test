@@ -19,9 +19,13 @@ import kotlin.random.Random
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.instancio.Instancio
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.assertThrows
+import kotlin.test.Test
 
-private class TaskApplicationServiceTests {
+class TaskApplicationServiceTests {
     private val id = "some_id"
     private val accountId = "accountId"
     private val accountId2 = "accountId2"
