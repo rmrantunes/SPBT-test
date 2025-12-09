@@ -108,7 +108,7 @@ open class TaskApplicationService(
 
         if (relatedObjects.isEmpty()) return emptyList()
 
-        return repository.listByIds(relatedObjects.map { it.split(":")[1] })
+        return repository.listByIds(relatedObjects.map { it.split(":").getOrNull(1) ?: it })
     }
 
     override fun shareWith(
