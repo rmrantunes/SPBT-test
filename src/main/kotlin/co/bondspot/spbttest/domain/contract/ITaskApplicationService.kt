@@ -35,7 +35,10 @@ interface ITaskApplicationService {
     fun updateStatus(id: String, status: Task.Status, reqAccount: Account): Boolean?
 
     /** Lists the tasks that the requester account is bonded to in any way. */
-    fun list(reqAccount: Account): List<Task>
+    fun list(
+        ftsTerm: String? = null,
+        reqAccount: Account,
+    ): List<Task>
 
     fun shareWith(
         id: String,

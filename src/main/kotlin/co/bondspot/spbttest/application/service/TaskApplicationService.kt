@@ -4,6 +4,7 @@ import co.bondspot.spbttest.application.exception.ApplicationServiceException
 import co.bondspot.spbttest.application.exception.ApplicationServiceInternalException
 import co.bondspot.spbttest.domain.contract.IAccountRepository
 import co.bondspot.spbttest.domain.contract.IFgaProvider
+import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.ITaskApplicationService
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
@@ -14,6 +15,7 @@ open class TaskApplicationService(
     private val repository: ITaskRepository,
     private val accountRepository: IAccountRepository,
     private val fga: IFgaProvider,
+    private val fts: IFullTextSearchProvider,
 ) : ITaskApplicationService {
     override fun create(task: Task, reqAccount: Account): Task {
         // We're considering the user exists in the Api DB. Right approach? Prolly no lol
@@ -98,7 +100,7 @@ open class TaskApplicationService(
         return true
     }
 
-    override fun list(reqAccount: Account): List<Task> {
+    override fun list(ftsTerm: String?, reqAccount: Account): List<Task> {
         val relatedObjects =
             fga.listObjects(
                 Account.ENTITY_NAME to reqAccount.id!!,
@@ -107,6 +109,11 @@ open class TaskApplicationService(
             )
 
         if (relatedObjects.isEmpty()) return emptyList()
+
+        if (ftsTerm != null) {
+            val ftsTasks = fts.fullTextSearch<Task>(ftsTerm)
+            return repository.listByIds(ftsTasks.map { it.id!! })
+        }
 
         return repository.listByIds(relatedObjects.map { it.second })
     }
@@ -154,17 +161,11 @@ open class TaskApplicationService(
         return true
     }
 
-    override fun index(
-        tasks: List<Task>,
-        reqAccount: Account
-    ) {
+    override fun index(tasks: List<Task>, reqAccount: Account) {
         TODO("Not yet implemented")
     }
 
-    override fun fullTextSearch(
-        query: String,
-        reqAccount: Account
-    ): List<Task> {
+    override fun fullTextSearch(query: String, reqAccount: Account): List<Task> {
         TODO("Not yet implemented")
     }
 }

@@ -32,7 +32,7 @@ class TaskController(private val taskService: TaskService) {
 
     @GetMapping
     fun list(@AuthenticationPrincipal jwt: Jwt): ResponseEntity<ResponseDto<ListTasksResDto>> {
-        val tasks = taskService.list(jwt.toAccount())
+        val tasks = taskService.list(reqAccount = jwt.toAccount())
         return ResponseEntity.ok().body(ResponseDto(ListTasksResDto(tasks)))
     }
 

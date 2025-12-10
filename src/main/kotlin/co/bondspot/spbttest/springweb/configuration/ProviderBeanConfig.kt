@@ -1,6 +1,7 @@
 package co.bondspot.spbttest.springweb.configuration
 
 import co.bondspot.spbttest.domain.contract.IFgaProvider
+import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.IIAMProvider
 import co.bondspot.spbttest.infrastructure.fga.OpenFgaProvider
 import co.bondspot.spbttest.infrastructure.iam.KeycloakIAMProvider
@@ -12,4 +13,16 @@ class ProviderBeanConfig {
     @Bean fun getIAMProvider(): IIAMProvider = KeycloakIAMProvider()
 
     @Bean fun getFgaProvider(): IFgaProvider = OpenFgaProvider()
+
+    @Bean
+    fun getFtsProvider(): IFullTextSearchProvider =
+        object : IFullTextSearchProvider {
+            override fun <T> index(tasks: List<T>) {
+                TODO("Not yet implemented")
+            }
+
+            override fun <T> fullTextSearch(query: String): List<T> {
+                TODO("Not yet implemented")
+            }
+        }
 }

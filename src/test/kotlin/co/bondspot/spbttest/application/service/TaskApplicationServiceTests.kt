@@ -4,6 +4,7 @@ import co.bondspot.spbttest.application.exception.ApplicationServiceException
 import co.bondspot.spbttest.application.exception.ApplicationServiceInternalException
 import co.bondspot.spbttest.domain.contract.IAccountRepository
 import co.bondspot.spbttest.domain.contract.IFgaProvider
+import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
@@ -14,8 +15,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import java.util.UUID
+import java.util.*
 import kotlin.random.Random
+import kotlin.test.Test
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.instancio.Instancio
@@ -23,7 +25,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.Test
 
 class TaskApplicationServiceTests {
     private val id = "some_id"
@@ -34,6 +35,7 @@ class TaskApplicationServiceTests {
 
     private lateinit var accountRepository: IAccountRepository
     private lateinit var taskRepository: ITaskRepository
+    private lateinit var fts: IFullTextSearchProvider
     private lateinit var fga: IFgaProvider
 
     private fun generateTask() =
@@ -49,6 +51,7 @@ class TaskApplicationServiceTests {
         accountRepository = mockk<IAccountRepository>()
         taskRepository = spyk<ITaskRepository>(recordPrivateCalls = true)
         fga = spyk<IFgaProvider>(recordPrivateCalls = true)
+        fts = spyk<IFullTextSearchProvider>(recordPrivateCalls = true)
         every { fga.checkRelationship(any()) } returns false
     }
 
@@ -60,7 +63,7 @@ class TaskApplicationServiceTests {
             val task = Task("Text", id = "Some ID")
             val createdTask = task.copy(createdById = reqAccount.id)
             every { taskRepository.create(any()) } returns createdTask
-            val service = TaskApplicationService(taskRepository, accountRepository, fga)
+            val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
 
             val result = service.create(task, reqAccount = reqAccount)
 
@@ -88,7 +91,7 @@ class TaskApplicationServiceTests {
             val existing = Task("Text", id = id)
             every { taskRepository.create(any()) } returns existing.copy(id = accountId)
             every { fga.checkRelationship(any()) } returns false
-            val service = TaskApplicationService(taskRepository, accountRepository, fga)
+            val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
 
             every { taskRepository.getById(id) } returns existing.copy(createdById = "not_you")
 
@@ -103,7 +106,7 @@ class TaskApplicationServiceTests {
             val createdTask = existing.copy(createdById = reqAccount.id)
             every { taskRepository.create(any()) } returns createdTask
             every { fga.checkRelationship(any()) } returns true
-            val service = TaskApplicationService(taskRepository, accountRepository, fga)
+            val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
 
             every { taskRepository.getById(id) } returns createdTask
 
@@ -120,7 +123,7 @@ class TaskApplicationServiceTests {
             val existing = Task("Text", id = id)
             every { taskRepository.create(any()) } returns existing.copy(id = accountId)
             every { fga.checkRelationship(any()) } returns false
-            val service = TaskApplicationService(taskRepository, accountRepository, fga)
+            val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
 
             every { taskRepository.getById(id) } returns existing.copy(createdById = "not_you")
             every {
@@ -157,7 +160,7 @@ class TaskApplicationServiceTests {
             val existing = Task("Text", id = id, createdById = reqAccount.id)
             every { taskRepository.create(any()) } returns existing
             every { fga.checkRelationship(any()) } returns true
-            val service = TaskApplicationService(taskRepository, accountRepository, fga)
+            val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
 
             every { taskRepository.getById(id) } returns existing
             every { fga.checkRelationship(any()) } returns true
@@ -182,7 +185,7 @@ class TaskApplicationServiceTests {
             val existing = Task("Text", id = id)
             every { taskRepository.create(any()) } returns existing.copy(id = accountId)
             every { fga.checkRelationship(any()) } returns false
-            val service = TaskApplicationService(taskRepository, accountRepository, fga)
+            val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
 
             every { taskRepository.getById(id) } returns existing.copy(createdById = "not_you")
 
@@ -220,7 +223,7 @@ class TaskApplicationServiceTests {
             val existing = Task("Text", id = id, createdById = reqAccount.id)
             every { taskRepository.create(any()) } returns existing
             every { fga.checkRelationship(any()) } returns true
-            val service = TaskApplicationService(taskRepository, accountRepository, fga)
+            val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
 
             every { taskRepository.getById(id) } returns existing
 
@@ -242,7 +245,7 @@ class TaskApplicationServiceTests {
         @Test
         fun `throw 500 if not supported relation is passed`() {
 
-            val service = TaskApplicationService(taskRepository, accountRepository, fga)
+            val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
 
             val ex =
                 assertThrows<ApplicationServiceInternalException> {
@@ -259,7 +262,7 @@ class TaskApplicationServiceTests {
         @Test
         fun `throw not found if task does not exist`() {
             every { taskRepository.getById(id) } returns null
-            val service = TaskApplicationService(taskRepository, accountRepository, fga)
+            val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
             val ex =
                 assertThrows<ApplicationServiceException> {
                     service.shareWith(id, accountId2, reqAccount = reqAccount)
@@ -291,7 +294,7 @@ class TaskApplicationServiceTests {
                     )
                 )
             } returns false
-            val service = TaskApplicationService(taskRepository, accountRepository, fga)
+            val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
             val ex =
                 assertThrows<ApplicationServiceException> {
                     service.shareWith(id, accountId2, reqAccount = reqAccount)
@@ -308,7 +311,7 @@ class TaskApplicationServiceTests {
             every { taskRepository.getById(id) } returns existing
             every { accountRepository.getById(accountId2) } returns null
             every { fga.checkRelationship(any()) } returns true
-            val service = TaskApplicationService(taskRepository, accountRepository, fga)
+            val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
             val ex =
                 assertThrows<ApplicationServiceException> {
                     service.shareWith(id, accountId2, reqAccount = reqAccount)
@@ -342,7 +345,7 @@ class TaskApplicationServiceTests {
                     )
                 )
             } returns true
-            val service = TaskApplicationService(taskRepository, accountRepository, fga)
+            val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
             val result = service.shareWith(id, accountId2, Task.FgaRelations.VIEWER, reqAccount)
 
             Assertions.assertThat(result).isTrue()
@@ -384,7 +387,7 @@ class TaskApplicationServiceTests {
                 )
             )
         } returns true
-        val service = TaskApplicationService(taskRepository, accountRepository, fga)
+        val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
         val result = service.shareWith(id, accountId2, Task.FgaRelations.EDITOR, reqAccount)
 
         Assertions.assertThat(result).isTrue()
@@ -414,14 +417,15 @@ class TaskApplicationServiceTests {
                 )
             } returns emptyList()
 
-            val service = TaskApplicationService(taskRepository, accountRepository, fga)
-            val result = service.list(reqAccount)
+            val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
+            val result = service.list(reqAccount = reqAccount)
             Assertions.assertThat(result).isEmpty()
         }
 
         @Test
         fun `should return a list of tasks related to requester`() {
             val tasks = buildList { repeat(30) { add(generateTask()) } }
+            val term = tasks[0].title
 
             val relatedTasks =
                 tasks.filter { it.createdById == reqAccount.id || Random.nextBoolean() }
@@ -443,13 +447,17 @@ class TaskApplicationServiceTests {
             // the full-text search provider response.
             // Or full-text search passing the user-related objects ids.
 
+            val fromFts = listOf(tasks[0])
+
+            every { fts.fullTextSearch<Task>(term) } returns fromFts
+
             // query by retrieved ids the tasks
-            every { taskRepository.listByIds(relatedTasks.map { it.id!! }) } returns relatedTasks
+            every { taskRepository.listByIds(fromFts.map { it.id!! }) } returns relatedTasks
 
             // return the tasks
 
-            val service = TaskApplicationService(taskRepository, accountRepository, fga)
-            val result = service.list(reqAccount)
+            val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
+            val result = service.list(ftsTerm = term, reqAccount = reqAccount)
             Assertions.assertThat(result).isEqualTo(relatedTasks)
         }
     }
