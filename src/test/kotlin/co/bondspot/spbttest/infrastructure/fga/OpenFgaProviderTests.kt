@@ -9,6 +9,7 @@ import io.mockk.verify
 import java.util.*
 import kotlin.test.Ignore
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -193,6 +194,40 @@ class OpenFgaProviderTests {
                         )
                     )
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("checkRelationship")
+    inner class CheckRelationship {
+        @Test
+        fun `check relationship using checkRelationship()`() {
+            val taskId1 = UUID.randomUUID().toString()
+            val accountId2 = UUID.randomUUID().toString()
+
+            val relationship =
+                FgaRelTuple(
+                    Account.ENTITY_NAME to accountId,
+                    Task.FgaRelations.OWNER,
+                    Task.ENTITY_NAME to taskId1,
+                )
+
+            fga.writeRelationship(relationship)
+
+            assertEquals(true, fga.checkRelationship(relationship))
+            assertEquals(
+                false,
+                fga.checkRelationship(
+                    relationship.copy(actor = relationship.actor.first to accountId2)
+                ),
+            )
+
+            val ex = assertThrows<OpenFgaProviderException> {
+                fga.checkRelationship(relationship.copy(relation = "not_a_relation"))
+            }
+
+            assertThat(ex.message).startsWith("relation 'task#not_a_relation' not found")
+            assertThat(ex.cause).isInstanceOf(FgaError::class.java)
         }
     }
 }

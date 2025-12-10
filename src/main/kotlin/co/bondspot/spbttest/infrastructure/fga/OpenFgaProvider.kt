@@ -6,6 +6,7 @@ import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.ID
 import co.bondspot.spbttest.domain.exception.FgaProviderException
 import dev.openfga.sdk.api.client.OpenFgaClient
+import dev.openfga.sdk.api.client.model.ClientCheckRequest
 import dev.openfga.sdk.api.client.model.ClientTupleKey
 import dev.openfga.sdk.api.client.model.ClientWriteRequest
 import dev.openfga.sdk.api.configuration.ApiToken
@@ -37,6 +38,12 @@ class OpenFgaProvider : IFgaProvider {
             .relation(relation)
             ._object("${subject.first}:${subject.second}")
 
+    private fun FgaRelTuple.toClientCheckRequest() =
+        ClientCheckRequest()
+            .user("${actor.first}:${actor.second}")
+            .relation(relation)
+            ._object("${subject.first}:${subject.second}")
+
     private fun FgaError.getMessageFromResponse(): String? {
         return Regex("\"message\":\"(\\w.+)\"").find(responseData)?.groups?.get(1)?.value
     }
@@ -45,7 +52,7 @@ class OpenFgaProvider : IFgaProvider {
      * @throws OpenFgaProviderException
      * @throws FgaProviderException
      */
-    private fun handleFgaError(ex: Exception) {
+    private fun handleFgaError(ex: Exception): Throwable {
         ex.cause.let { cause ->
             if (cause is FgaError) {
                 throw OpenFgaProviderException(
@@ -115,7 +122,12 @@ class OpenFgaProvider : IFgaProvider {
      * @throws FgaProviderException
      */
     override fun checkRelationship(relationship: FgaRelTuple): Boolean {
-        TODO("Not yet implemented")
+        return try {
+            client.check(relationship.toClientCheckRequest()).get().allowed ?: false
+        } catch (ex: Exception) {
+            handleFgaError(ex)
+            false
+        }
     }
 
     /**
