@@ -47,7 +47,7 @@ class OpenFgaProviderTests {
                 )
             }
 
-            assertThat(ex.message).isEqualTo("OpenFGA operation returned error status code 400")
+            assertThat(ex.message).startsWith("cannot write a tuple which already exists")
         }
     }
 }

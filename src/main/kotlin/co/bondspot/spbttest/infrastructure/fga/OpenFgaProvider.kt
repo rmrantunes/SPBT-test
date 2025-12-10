@@ -11,10 +11,7 @@ import dev.openfga.sdk.api.client.model.ClientWriteRequest
 import dev.openfga.sdk.api.configuration.ApiToken
 import dev.openfga.sdk.api.configuration.ClientConfiguration
 import dev.openfga.sdk.api.configuration.Credentials
-import dev.openfga.sdk.errors.ApiException
-import dev.openfga.sdk.errors.FgaApiValidationError
 import dev.openfga.sdk.errors.FgaError
-import java.lang.Exception
 
 class OpenFgaProviderException(message: String) : FgaProviderException(message)
 
@@ -39,6 +36,25 @@ class OpenFgaProvider : IFgaProvider {
             .relation(relation)
             ._object("${subject.first}:${subject.second}")
 
+    private fun FgaError.getMessageFromResponse(): String? {
+        return Regex("\"message\":\"(\\w.+)\"").find(responseData)?.groups?.get(1)?.value
+    }
+
+    /**
+     * @throws OpenFgaProviderException
+     * @throws FgaProviderException
+     */
+    private fun handleFgaError(ex: Exception) {
+        ex.cause.let { cause ->
+            if (cause is FgaError) {
+                throw OpenFgaProviderException(
+                    cause.getMessageFromResponse()
+                        ?: "OpenFGA request returned status code ${cause.statusCode}"
+                )
+            }
+        }
+    }
+
     /**
      * @throws OpenFgaProviderException
      * @throws FgaProviderException
@@ -49,14 +65,10 @@ class OpenFgaProvider : IFgaProvider {
                 client.write(it).get()
             }
         } catch (ex: Exception) {
-            val cause = ex.cause
-            if (cause is FgaError) {
-                throw OpenFgaProviderException(
-                    "OpenFGA write operation returned status code ${cause.statusCode}",
-                )
-            }
+            handleFgaError(ex)
+
             throw OpenFgaProviderException(
-                ex.message ?: "Something very wrong with OpenFgaProvider.writeRelationships"
+                ex.message ?: "Something very wrong with OpenFgaProvider requests"
             )
         }
     }
