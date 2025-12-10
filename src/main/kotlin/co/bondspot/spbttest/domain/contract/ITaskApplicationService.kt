@@ -43,4 +43,9 @@ interface ITaskApplicationService {
         relation: String? = "viewer",
         reqAccount: Account,
     ): Boolean?
+
+    /** Index records for Full-text search */
+    fun index(tasks: List<Task>, reqAccount: Account)
+
+    fun fullTextSearch(query: String, reqAccount: Account): List<Task>
 }
