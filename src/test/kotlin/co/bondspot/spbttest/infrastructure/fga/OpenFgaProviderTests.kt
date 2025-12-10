@@ -3,6 +3,7 @@ package co.bondspot.spbttest.infrastructure.fga
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
+import dev.openfga.sdk.errors.FgaError
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -48,6 +49,7 @@ class OpenFgaProviderTests {
             }
 
             assertThat(ex.message).startsWith("cannot write a tuple which already exists")
+            assertThat(ex.cause).isInstanceOf(FgaError::class.java)
         }
     }
 }

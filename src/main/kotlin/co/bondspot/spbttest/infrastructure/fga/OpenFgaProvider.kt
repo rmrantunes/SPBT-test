@@ -13,7 +13,8 @@ import dev.openfga.sdk.api.configuration.ClientConfiguration
 import dev.openfga.sdk.api.configuration.Credentials
 import dev.openfga.sdk.errors.FgaError
 
-class OpenFgaProviderException(message: String) : FgaProviderException(message)
+class OpenFgaProviderException(message: String? = null, cause: Throwable? = null) :
+    FgaProviderException(message, cause)
 
 class OpenFgaProvider : IFgaProvider {
     private val apiUrl = System.getenv("OPENFGA_API_URL")
@@ -49,10 +50,16 @@ class OpenFgaProvider : IFgaProvider {
             if (cause is FgaError) {
                 throw OpenFgaProviderException(
                     cause.getMessageFromResponse()
-                        ?: "OpenFGA request returned status code ${cause.statusCode}"
+                        ?: "OpenFGA request returned status code ${cause.statusCode}",
+                    ex.cause,
                 )
             }
         }
+
+        throw OpenFgaProviderException(
+            ex.message ?: "Something very wrong with OpenFgaProvider requests",
+            ex.cause,
+        )
     }
 
     /**
@@ -66,10 +73,6 @@ class OpenFgaProvider : IFgaProvider {
             }
         } catch (ex: Exception) {
             handleFgaError(ex)
-
-            throw OpenFgaProviderException(
-                ex.message ?: "Something very wrong with OpenFgaProvider requests"
-            )
         }
     }
 
