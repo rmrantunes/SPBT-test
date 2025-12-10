@@ -56,7 +56,7 @@ class OpenFgaProvider : IFgaProvider {
     private fun handleFgaError(ex: Exception): Throwable {
         ex.cause.let { cause ->
             if (cause is FgaError) {
-                throw OpenFgaProviderException(
+                return OpenFgaProviderException(
                     cause.getMessageFromResponse()
                         ?: "OpenFGA request returned status code ${cause.statusCode}",
                     ex.cause,
@@ -64,7 +64,7 @@ class OpenFgaProvider : IFgaProvider {
             }
         }
 
-        throw OpenFgaProviderException(
+        return OpenFgaProviderException(
             ex.message ?: "Something very wrong with OpenFgaProvider requests",
             ex.cause,
         )
@@ -80,7 +80,7 @@ class OpenFgaProvider : IFgaProvider {
                 client.write(it).get()
             }
         } catch (ex: Exception) {
-            handleFgaError(ex)
+            throw handleFgaError(ex)
         }
     }
 
@@ -102,7 +102,7 @@ class OpenFgaProvider : IFgaProvider {
         try {
             client.deleteTuples(relationships.map { it.toClientTupleKey() }).get()
         } catch (ex: Exception) {
-            handleFgaError(ex)
+            throw handleFgaError(ex)
         }
     }
 
@@ -126,8 +126,7 @@ class OpenFgaProvider : IFgaProvider {
         return try {
             client.check(relationship.toClientCheckRequest()).get().allowed ?: false
         } catch (ex: Exception) {
-            handleFgaError(ex)
-            false
+            throw handleFgaError(ex)
         }
     }
 
@@ -140,14 +139,18 @@ class OpenFgaProvider : IFgaProvider {
         relation: String,
         type: EntityName,
     ): List<Pair<EntityName, ID>> {
-        return ClientListObjectsRequest()
-            .user("${actor.first}:${actor.second}")
-            .relation(relation)
-            .type(type)
-            .let {
-                client.listObjects(it).get().objects.map { rel ->
-                    rel.split(":").let { (type, id) -> type to id }
+        return try {
+            ClientListObjectsRequest()
+                .user("${actor.first}:${actor.second}")
+                .relation(relation)
+                .type(type)
+                .let {
+                    client.listObjects(it).get().objects.map { rel ->
+                        rel.split(":").let { (type, id) -> type to id }
+                    }
                 }
-            }
+        } catch (ex: Exception) {
+            throw handleFgaError(ex)
+        }
     }
 }

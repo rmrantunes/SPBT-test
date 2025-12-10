@@ -262,5 +262,32 @@ class OpenFgaProviderTests {
 
             assertThat(result.size).isEqualTo(relationships.size)
         }
+
+        @Test
+        fun `throw some error cases`() {
+            val accountId1 = UUID.randomUUID().toString()
+
+            val ex =
+                assertThrows<OpenFgaProviderException> {
+                    fga.listObjects(
+                        Account.ENTITY_NAME to accountId1,
+                        Task.FgaRelations.OWNER,
+                        "not_a_type",
+                    )
+                }
+
+            assertThat(ex.cause).isInstanceOf(FgaError::class.java)
+
+            val ex2 =
+                assertThrows<OpenFgaProviderException> {
+                    fga.listObjects(
+                        "not_an_actor" to accountId1,
+                        Task.FgaRelations.OWNER,
+                        Task.ENTITY_NAME,
+                    )
+                }
+
+            assertThat(ex2.cause).isInstanceOf(FgaError::class.java)
+        }
     }
 }
