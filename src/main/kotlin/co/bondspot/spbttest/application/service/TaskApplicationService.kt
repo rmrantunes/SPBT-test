@@ -111,8 +111,14 @@ open class TaskApplicationService(
         if (relatedObjects.isEmpty()) return emptyList()
 
         if (ftsTerm != null) {
-            val ftsTasks = fts.fullTextSearch<Task>(ftsTerm)
-            return repository.listByIds(ftsTasks.map { it.id!! })
+            val ftsTasksIdsSet =
+                fts.fullTextSearch<Task>(ftsTerm).let {
+                    buildSet { addAll(it.map { task -> task.id!! }) }
+                }
+
+            val relatedTasksIdsSet = buildSet { addAll(relatedObjects.map { it.second }) }
+
+            return repository.listByIds(ftsTasksIdsSet.intersect(relatedTasksIdsSet).toList())
         }
 
         return repository.listByIds(relatedObjects.map { it.second })
