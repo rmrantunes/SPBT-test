@@ -55,3 +55,10 @@ services:
       ## - "8081:8081"
       # Needed for the playground (Do not enable in prod!)
       ## - "3000:3000"
+  meillisearch:
+    container_name: meillisearch
+    image: getmeili/meilisearch:v1.16
+    environment:
+      - MEILI_ENV=development
+    ports:
+      - "7700:7700"
