@@ -102,7 +102,6 @@ class OpenFgaProviderTests {
     inner class DeleteRelationships {
         @Test
         fun `delete existing relationships`() {
-
             val taskId1 = UUID.randomUUID().toString()
             val taskId2 = UUID.randomUUID().toString()
 
@@ -153,6 +152,47 @@ class OpenFgaProviderTests {
 
             assertThat(ex.message).startsWith("cannot delete a tuple which does not exist")
             assertThat(ex.cause).isInstanceOf(FgaError::class.java)
+        }
+    }
+
+    @Nested
+    @DisplayName("deleteRelationship")
+    inner class DeleteRelationship {
+        @Test
+        fun `delete a relationship using deleteRelationship()`() {
+            val taskId1 = UUID.randomUUID().toString()
+
+            fga.writeRelationship(
+                FgaRelTuple(
+                    Account.ENTITY_NAME to accountId,
+                    Task.FgaRelations.OWNER,
+                    Task.ENTITY_NAME to taskId1,
+                )
+            )
+
+            assertDoesNotThrow {
+                fga.deleteRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to accountId,
+                        Task.FgaRelations.OWNER,
+                        Task.ENTITY_NAME to taskId1,
+                    )
+                )
+            }
+
+            verify(exactly = 1) {
+                fga invoke
+                    "deleteRelationships" withArguments
+                    listOf(
+                        listOf(
+                            FgaRelTuple(
+                                Account.ENTITY_NAME to accountId,
+                                Task.FgaRelations.OWNER,
+                                Task.ENTITY_NAME to taskId1,
+                            )
+                        )
+                    )
+            }
         }
     }
 }

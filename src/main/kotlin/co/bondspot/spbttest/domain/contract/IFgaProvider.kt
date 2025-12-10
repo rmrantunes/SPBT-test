@@ -21,6 +21,13 @@ interface IFgaProvider {
     fun deleteRelationships(relationships: List<FgaRelTuple>)
 
     /**
+     * Abstraction of `.deleteRelationships()`
+     *
+     * @throws FgaProviderException
+     */
+    fun deleteRelationship(relationship: FgaRelTuple)
+
+    /**
      * If you want to check many at once use `batchCheckRelationships`
      *
      * @throws FgaProviderException

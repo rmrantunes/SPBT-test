@@ -99,6 +99,16 @@ class OpenFgaProvider : IFgaProvider {
     }
 
     /**
+     * Abstraction of `.deleteRelationships()`
+     *
+     * @throws OpenFgaProviderException
+     * @throws FgaProviderException
+     */
+    override fun deleteRelationship(relationship: FgaRelTuple) {
+        deleteRelationships(listOf(relationship))
+    }
+
+    /**
      * If you want to check many at once use `batchCheckRelationships`
      *
      * @throws OpenFgaProviderException
