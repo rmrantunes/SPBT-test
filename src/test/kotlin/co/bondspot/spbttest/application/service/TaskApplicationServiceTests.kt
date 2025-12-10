@@ -425,7 +425,7 @@ class TaskApplicationServiceTests {
 
             val relatedTasks =
                 tasks.filter { it.createdById == reqAccount.id || Random.nextBoolean() }
-            val relatedObjects = relatedTasks.map { "task:${it.id}" }
+            val relatedObjects = relatedTasks.map { "task" to it.id!! }
 
             // List FGA objects related to user.
             // This approach is valid for small applications (~1000 objects returned)

@@ -35,5 +35,9 @@ interface IFgaProvider {
     fun checkRelationship(relationship: FgaRelTuple): Boolean
 
     /** @throws FgaProviderException */
-    fun listObjects(actor: Pair<EntityName, ID>, relation: String, type: EntityName): List<String>
+    fun listObjects(
+        actor: Pair<EntityName, ID>,
+        relation: String,
+        type: EntityName,
+    ): List<Pair<EntityName, ID>>
 }

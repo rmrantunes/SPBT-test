@@ -138,7 +138,7 @@ class OpenFgaProvider : IFgaProvider {
         actor: Pair<EntityName, ID>,
         relation: String,
         type: EntityName,
-    ): List<String> {
+    ): List<Pair<EntityName, ID>> {
         TODO("Not yet implemented")
     }
 }
