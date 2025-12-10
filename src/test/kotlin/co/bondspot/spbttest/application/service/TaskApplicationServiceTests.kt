@@ -438,7 +438,7 @@ class TaskApplicationServiceTests {
                 )
             } returns relatedObjects
 
-            // Considering using fga.listObjects() approach:
+            // When considering using fga.listObjects() approach:
             // In cases of full-text search, grab the intersection between user-related objects and
             // the full-text search provider response.
             // Or full-text search passing the user-related objects ids.
