@@ -91,7 +91,11 @@ class OpenFgaProvider : IFgaProvider {
      * @throws FgaProviderException
      */
     override fun deleteRelationships(relationships: List<FgaRelTuple>) {
-        TODO("Not yet implemented")
+        try {
+            client.deleteTuples(relationships.map { it.toClientTupleKey() }).get()
+        } catch (ex: Exception) {
+            handleFgaError(ex)
+        }
     }
 
     /**

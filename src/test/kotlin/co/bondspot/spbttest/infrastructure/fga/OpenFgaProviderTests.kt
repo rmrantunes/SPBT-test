@@ -7,6 +7,7 @@ import dev.openfga.sdk.errors.FgaError
 import io.mockk.spyk
 import io.mockk.verify
 import java.util.*
+import kotlin.test.Ignore
 import kotlin.test.Test
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -58,6 +59,10 @@ class OpenFgaProviderTests {
             assertThat(ex.message).startsWith("cannot write a tuple which already exists")
             assertThat(ex.cause).isInstanceOf(FgaError::class.java)
         }
+
+        @Ignore fun `handle unexisted relation`() {}
+
+        @Ignore fun `handle unexisted actor or subject entity type`() {}
     }
 
     @Nested
@@ -76,7 +81,6 @@ class OpenFgaProviderTests {
                 )
             }
 
-
             verify(exactly = 1) {
                 fga invoke
                     "writeRelationships" withArguments
@@ -90,6 +94,65 @@ class OpenFgaProviderTests {
                         )
                     )
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("deleteRelationships")
+    inner class DeleteRelationships {
+        @Test
+        fun `delete existing relationships`() {
+
+            val taskId1 = UUID.randomUUID().toString()
+            val taskId2 = UUID.randomUUID().toString()
+
+            fga.writeRelationships(
+                listOf(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to accountId,
+                        Task.FgaRelations.OWNER,
+                        Task.ENTITY_NAME to taskId1,
+                    ),
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to accountId,
+                        Task.FgaRelations.OWNER,
+                        Task.ENTITY_NAME to taskId2,
+                    ),
+                )
+            )
+
+            assertDoesNotThrow {
+                fga.deleteRelationships(
+                    listOf(
+                        FgaRelTuple(
+                            Account.ENTITY_NAME to accountId,
+                            Task.FgaRelations.OWNER,
+                            Task.ENTITY_NAME to taskId1,
+                        ),
+                        FgaRelTuple(
+                            Account.ENTITY_NAME to accountId,
+                            Task.FgaRelations.OWNER,
+                            Task.ENTITY_NAME to taskId2,
+                        ),
+                    )
+                )
+            }
+
+            val ex =
+                assertThrows<OpenFgaProviderException> {
+                    fga.deleteRelationships(
+                        listOf(
+                            FgaRelTuple(
+                                Account.ENTITY_NAME to accountId,
+                                Task.FgaRelations.OWNER,
+                                Task.ENTITY_NAME to taskId1,
+                            )
+                        )
+                    )
+                }
+
+            assertThat(ex.message).startsWith("cannot delete a tuple which does not exist")
+            assertThat(ex.cause).isInstanceOf(FgaError::class.java)
         }
     }
 }
