@@ -77,11 +77,13 @@ class OpenFgaProvider : IFgaProvider {
     }
 
     /**
+     * Abstraction of `.writeRelationships()`
+     *
      * @throws OpenFgaProviderException
      * @throws FgaProviderException
      */
     override fun writeRelationship(relationship: FgaRelTuple) {
-        TODO("Not yet implemented")
+        writeRelationships(listOf(relationship))
     }
 
     /**

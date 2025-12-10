@@ -10,7 +10,11 @@ interface IFgaProvider {
     /** @throws FgaProviderException */
     fun writeRelationships(relationships: List<FgaRelTuple>)
 
-    /** @throws FgaProviderException */
+    /**
+     * Abstraction of `.writeRelationships()`
+     *
+     * @throws FgaProviderException
+     */
     fun writeRelationship(relationship: FgaRelTuple)
 
     /** @throws FgaProviderException */
