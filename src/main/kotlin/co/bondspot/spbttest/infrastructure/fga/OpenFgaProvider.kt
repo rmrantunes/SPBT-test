@@ -11,6 +11,10 @@ import dev.openfga.sdk.api.client.model.ClientWriteRequest
 import dev.openfga.sdk.api.configuration.ApiToken
 import dev.openfga.sdk.api.configuration.ClientConfiguration
 import dev.openfga.sdk.api.configuration.Credentials
+import dev.openfga.sdk.errors.ApiException
+import dev.openfga.sdk.errors.FgaApiValidationError
+import dev.openfga.sdk.errors.FgaError
+import java.lang.Exception
 
 class OpenFgaProviderException(message: String) : FgaProviderException(message)
 
@@ -40,8 +44,20 @@ class OpenFgaProvider : IFgaProvider {
      * @throws FgaProviderException
      */
     override fun writeRelationships(relationships: List<FgaRelTuple>) {
-        ClientWriteRequest().writes(relationships.map { it.toClientTupleKey() }).let {
-            client.write(it).get()
+        try {
+            ClientWriteRequest().writes(relationships.map { it.toClientTupleKey() }).let {
+                client.write(it).get()
+            }
+        } catch (ex: Exception) {
+            val cause = ex.cause
+            if (cause is FgaError) {
+                throw OpenFgaProviderException(
+                    "OpenFGA write operation returned status code ${cause.statusCode}",
+                )
+            }
+            throw OpenFgaProviderException(
+                ex.message ?: "Something very wrong with OpenFgaProvider.writeRelationships"
+            )
         }
     }
 

@@ -3,9 +3,11 @@ package co.bondspot.spbttest.infrastructure.fga
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import java.util.*
 import kotlin.test.Test
 
@@ -31,6 +33,21 @@ class OpenFgaProviderTests {
                     )
                 )
             }
+
+
+            val ex = assertThrows<OpenFgaProviderException> {
+                fga.writeRelationships(
+                    listOf(
+                        FgaRelTuple(
+                            Account.ENTITY_NAME to accountId,
+                            Task.FgaRelations.OWNER,
+                            Task.ENTITY_NAME to taskId,
+                        )
+                    )
+                )
+            }
+
+            assertThat(ex.message).isEqualTo("OpenFGA operation returned error status code 400")
         }
     }
 }
