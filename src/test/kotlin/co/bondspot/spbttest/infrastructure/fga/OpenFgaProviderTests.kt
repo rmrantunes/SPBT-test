@@ -222,12 +222,45 @@ class OpenFgaProviderTests {
                 ),
             )
 
-            val ex = assertThrows<OpenFgaProviderException> {
-                fga.checkRelationship(relationship.copy(relation = "not_a_relation"))
-            }
+            val ex =
+                assertThrows<OpenFgaProviderException> {
+                    fga.checkRelationship(relationship.copy(relation = "not_a_relation"))
+                }
 
             assertThat(ex.message).startsWith("relation 'task#not_a_relation' not found")
             assertThat(ex.cause).isInstanceOf(FgaError::class.java)
+        }
+    }
+
+    @Nested
+    @DisplayName("listObjects")
+    inner class ListObjects {
+        @Test
+        fun `list user related object with listObjects()`() {
+            val accountId1 = UUID.randomUUID().toString()
+
+            val relationships = buildList {
+                repeat(10) {
+                    add(
+                        FgaRelTuple(
+                            Account.ENTITY_NAME to accountId1,
+                            Task.FgaRelations.OWNER,
+                            Task.ENTITY_NAME to UUID.randomUUID().toString(),
+                        )
+                    )
+                }
+            }
+
+            fga.writeRelationships(relationships)
+
+            val result =
+                fga.listObjects(
+                    Account.ENTITY_NAME to accountId1,
+                    Task.FgaRelations.OWNER,
+                    Task.ENTITY_NAME,
+                )
+
+            assertThat(result.size).isEqualTo(relationships.size)
         }
     }
 }

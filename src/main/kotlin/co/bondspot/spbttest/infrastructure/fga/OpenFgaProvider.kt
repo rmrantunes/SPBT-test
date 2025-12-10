@@ -7,6 +7,7 @@ import co.bondspot.spbttest.domain.entity.ID
 import co.bondspot.spbttest.domain.exception.FgaProviderException
 import dev.openfga.sdk.api.client.OpenFgaClient
 import dev.openfga.sdk.api.client.model.ClientCheckRequest
+import dev.openfga.sdk.api.client.model.ClientListObjectsRequest
 import dev.openfga.sdk.api.client.model.ClientTupleKey
 import dev.openfga.sdk.api.client.model.ClientWriteRequest
 import dev.openfga.sdk.api.configuration.ApiToken
@@ -139,6 +140,14 @@ class OpenFgaProvider : IFgaProvider {
         relation: String,
         type: EntityName,
     ): List<Pair<EntityName, ID>> {
-        TODO("Not yet implemented")
+        return ClientListObjectsRequest()
+            .user("${actor.first}:${actor.second}")
+            .relation(relation)
+            .type(type)
+            .let {
+                client.listObjects(it).get().objects.map { rel ->
+                    rel.split(":").let { (type, id) -> type to id }
+                }
+            }
     }
 }
