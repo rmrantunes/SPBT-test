@@ -166,12 +166,4 @@ open class TaskApplicationService(
 
         return true
     }
-
-    override fun index(tasks: List<Task>, reqAccount: Account) {
-        TODO("Not yet implemented")
-    }
-
-    override fun fullTextSearch(query: String, reqAccount: Account): List<Task> {
-        TODO("Not yet implemented")
-    }
 }
