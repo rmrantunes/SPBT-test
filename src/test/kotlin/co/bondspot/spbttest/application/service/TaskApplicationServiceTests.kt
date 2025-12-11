@@ -449,11 +449,16 @@ class TaskApplicationServiceTests {
 
             val tasksFromFts = tasks.subList(0, 5)
 
-            every { fts.search<Task>(term, ids = relatedTasks.map { it.id!! }) } returns
-                tasksFromFts
+            every {
+                fts.search<Task>(
+                    collection = Task.ENTITY_NAME,
+                    query = term,
+                    ids = relatedTasks.map { it.id!! },
+                )
+            } returns tasksFromFts
 
             // query by retrieved ids the tasks
-            //every { taskRepository.listByIds(tasksFromFts.map { it.id!! }) } returns tasksFromFts
+            // every { taskRepository.listByIds(tasksFromFts.map { it.id!! }) } returns tasksFromFts
 
             // return the tasks
 

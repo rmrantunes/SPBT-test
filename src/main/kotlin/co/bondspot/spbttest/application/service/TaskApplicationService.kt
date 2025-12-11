@@ -111,7 +111,11 @@ open class TaskApplicationService(
         if (relatedObjects.isEmpty()) return emptyList()
 
         return if (ftsTerm != null) {
-            fts.search(ftsTerm, relatedObjects.map { it.second })
+            fts.search(
+                collection = Task.ENTITY_NAME,
+                query = ftsTerm,
+                ids = relatedObjects.map { it.second },
+            )
         } else {
             repository.listByIds(relatedObjects.map { it.second })
         }
