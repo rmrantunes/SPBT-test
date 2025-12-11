@@ -43,8 +43,13 @@ class TaskApplicationServiceTests {
         Instancio.of(Task::class.java)
             .set(KSelect.field(Task::id), UUID.randomUUID().toString())
             .set(KSelect.field(Task::createdById), listOf(accountId, accountId2).random())
+            .set(KSelect.field(Task::status), Task.Status.entries.random())
             .generate(KSelect.field(Task::title)) { it.text().word().adjective().noun() }
             .generate(KSelect.field(Task::description)) { it.text().word().adjective().noun() }
+            .set(KSelect.field(Task::createdById), UUID.randomUUID().toString())
+            .set(KSelect.field(Task::lastUpdatedById), UUID.randomUUID().toString())
+            .generate(KSelect.field(Task::lastUpdatedAt)) { it.temporal().localDateTime() }
+            .generate(KSelect.field(Task::createdAt)) { it.temporal().localDateTime() }
             .create()
 
     @BeforeEach
