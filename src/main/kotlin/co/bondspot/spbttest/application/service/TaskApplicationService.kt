@@ -77,7 +77,12 @@ open class TaskApplicationService(
                 .setRelatedHttpStatusCode { FORBIDDEN }
         }
 
-        repository.update(id, existing.copy(title = title ?: existing.title))
+        val updated = existing.copy(title = title ?: existing.title)
+
+        repository.update(id, updated)
+
+        // TODO normalize errors FtsProviderException
+        fts.index(Task.ENTITY_NAME, listOf(updated))
         return true
     }
 
@@ -99,7 +104,12 @@ open class TaskApplicationService(
                 .setRelatedHttpStatusCode { FORBIDDEN }
         }
 
-        repository.update(id, existing.copy(status = status))
+        val updated = existing.copy(status = status)
+
+        repository.update(id, updated)
+
+        // TODO normalize errors FtsProviderException
+        fts.index(Task.ENTITY_NAME, listOf(updated))
         return true
     }
 
