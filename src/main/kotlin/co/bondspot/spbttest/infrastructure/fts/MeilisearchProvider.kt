@@ -16,7 +16,7 @@ class MeilisearchProvider : IFullTextSearchProvider {
             .defaultHeader("Authorization", "Bearer $masterKey")
             .build()
 
-    override fun <T> index(collection: String, items: List<T>) {
+    override fun index(collection: String, items: List<Any>) {
         restClient
             .put()
             .uri("/indexes/$collection/documents")
@@ -25,8 +25,7 @@ class MeilisearchProvider : IFullTextSearchProvider {
             .toBodilessEntity()
     }
 
-    @Suppress("UNCHECKED_CAST")
-    override fun <T> search(collection: String, query: String, ids: List<String>?): List<T> {
+    override fun search(collection: String, query: String, ids: List<String>?): FtsSearchResponse {
         val response =
             restClient
                 .post()
@@ -35,6 +34,6 @@ class MeilisearchProvider : IFullTextSearchProvider {
                 .retrieve()
                 .body(FtsSearchResponse::class.java)
 
-        return response?.hits as? List<T> ?: emptyList()
+        return response ?: FtsSearchResponse()
     }
 }

@@ -10,6 +10,7 @@ import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
+import java.time.LocalDateTime
 
 open class TaskApplicationService(
     private val taskRepo: ITaskRepository,
@@ -23,8 +24,8 @@ open class TaskApplicationService(
         return taskRepo.create(task.copy(createdById = reqAccount.id)).also {
             // TODO if error thrown in this block, remove created task, since no action could be
             //  done from any account.
-            // TODO Consider adding a listener handler (including this block) to react to task creation event and
-            //  optimize this service.
+            // TODO Consider adding a listener handler (including this block) to react to task
+            //  creation event and optimize this service.
             fga.writeRelationship(
                 FgaRelTuple(
                     Account.ENTITY_NAME to reqAccount.id!!,
@@ -127,10 +128,29 @@ open class TaskApplicationService(
 
         return if (ftsTerm != null) {
             fts.search(
-                collection = Task.ENTITY_NAME,
-                query = ftsTerm,
-                ids = relatedObjects.map { it.second },
-            )
+                    collection = Task.ENTITY_NAME,
+                    query = ftsTerm,
+                    ids = relatedObjects.map { it.second },
+                )
+                .hits
+                .map { map ->
+                    Task().let { task ->
+                        task.copy(
+                            id = map["id"].toString(),
+                            title = map["title"].toString(),
+                            status =
+                                map["status"]?.toString()?.let { Task.Status.valueOf(it) }
+                                    ?: task.status,
+                            description = map["description"].toString(),
+                            createdById = map["createdById"].toString(),
+                            lastUpdatedById = map["lastUpdatedById"].toString(),
+                            createdAt =
+                                map["createdAt"]?.toString()?.let { LocalDateTime.parse(it) },
+                            lastUpdatedAt =
+                                map["lastUpdatedAt"]?.toString()?.let { LocalDateTime.parse(it) },
+                        )
+                    }
+                }
         } else {
             taskRepo.listByIds(relatedObjects.map { it.second })
         }

@@ -8,6 +8,7 @@ import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
+import co.bondspot.spbttest.domain.entity.FtsSearchResponse
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import co.bondspot.spbttest.testutils.KSelect
@@ -457,12 +458,29 @@ class TaskApplicationServiceTests {
             val tasksFromFts = tasks.subList(0, 5)
 
             every {
-                fts.search<Task>(
+                fts.search(
                     collection = Task.ENTITY_NAME,
                     query = term,
                     ids = relatedTasks.map { it.id!! },
                 )
-            } returns tasksFromFts
+            } returns FtsSearchResponse(
+                buildList {
+                    tasksFromFts.forEach {
+                        add(
+                            mapOf<String, Any>(
+                                "id" to it.id!!,
+                                "title" to it.title,
+                                "description" to it.description!!,
+                                "status" to it.status,
+                                "createdById" to it.createdById!!,
+                                "lastUpdatedById" to it.lastUpdatedById!!,
+                                "createdAt" to it.createdAt?.toString()!!,
+                                "lastUpdatedAt" to it.lastUpdatedAt?.toString()!!,
+                            )
+                        )
+                    }
+                }
+            )
 
             // query by retrieved ids the tasks
             // every { taskRepository.listByIds(tasksFromFts.map { it.id!! }) } returns tasksFromFts

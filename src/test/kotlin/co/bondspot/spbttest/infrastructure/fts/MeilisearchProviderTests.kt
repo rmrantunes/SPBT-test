@@ -41,7 +41,7 @@ class MeillisearchProviderTests {
 
         @Test
         fun `query successfully`() {
-            assertDoesNotThrow { meilisearch.search<Foo>(Foo.ENTITY_NAME, "some_name") }
+            assertDoesNotThrow { meilisearch.search(Foo.ENTITY_NAME, "some_name") }
         }
     }
 }
