@@ -69,7 +69,7 @@ class TaskApplicationServiceTests {
 
             assertThat(result).isEqualTo(createdTask)
 
-            verify {
+            verify(exactly = 1) {
                 fga invoke
                     "writeRelationship" withArguments
                     listOf(
@@ -79,6 +79,10 @@ class TaskApplicationServiceTests {
                             Task.ENTITY_NAME to createdTask.id!!,
                         )
                     )
+            }
+
+            verify(exactly = 1) {
+                fts invoke "index" withArguments listOf(Task.ENTITY_NAME, listOf(createdTask))
             }
         }
     }

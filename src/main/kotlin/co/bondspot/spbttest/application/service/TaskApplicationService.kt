@@ -30,6 +30,9 @@ open class TaskApplicationService(
                     Task.ENTITY_NAME to it.id!!,
                 )
             )
+
+            // TODO normalize errors FtsProviderException
+            fts.index(Task.ENTITY_NAME, listOf(it))
         }
     }
 
