@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class TaskService(
-    taskRepository: ITaskRepository,
-    accountRepository: IAccountRepository,
+    taskRepo: ITaskRepository,
+    accountRepo: IAccountRepository,
     fga: IFgaProvider,
     fts: IFullTextSearchProvider,
-) : TaskApplicationService(taskRepository, accountRepository, fga, fts)
+) : TaskApplicationService(taskRepo, accountRepo, fga, fts)

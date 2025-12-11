@@ -21,7 +21,11 @@ class ProviderBeanConfig {
                 TODO("Not yet implemented")
             }
 
-            override fun <T> search(collection: String, query: String, ids: List<String>?): List<T> {
+            override fun <T> search(
+                collection: String,
+                query: String,
+                ids: List<String>?,
+            ): List<T> {
                 TODO("Not yet implemented")
             }
         }

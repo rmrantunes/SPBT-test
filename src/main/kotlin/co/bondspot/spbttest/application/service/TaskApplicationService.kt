@@ -12,15 +12,15 @@ import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
 
 open class TaskApplicationService(
-    private val repository: ITaskRepository,
-    private val accountRepository: IAccountRepository,
+    private val taskRepo: ITaskRepository,
+    private val accountRepo: IAccountRepository,
     private val fga: IFgaProvider,
     private val fts: IFullTextSearchProvider,
 ) : ITaskApplicationService {
     override fun create(task: Task, reqAccount: Account): Task {
         // We're considering the user exists in the Api DB. Right approach? Prolly no lol
 
-        return repository.create(task.copy(createdById = reqAccount.id)).also {
+        return taskRepo.create(task.copy(createdById = reqAccount.id)).also {
             // TODO if error thrown, remove created task, since no action could be done from any
             // account
             fga.writeRelationship(
@@ -38,7 +38,7 @@ open class TaskApplicationService(
 
     override fun getById(id: String, reqAccount: Account): Task {
         val task =
-            repository.getById(id)
+            taskRepo.getById(id)
                 ?: throw ApplicationServiceException("Task not found").setRelatedHttpStatusCode {
                     NOT_FOUND
                 }
@@ -79,7 +79,7 @@ open class TaskApplicationService(
 
         val updated = existing.copy(title = title ?: existing.title)
 
-        repository.update(id, updated)
+        taskRepo.update(id, updated)
 
         // TODO normalize errors FtsProviderException
         fts.index(Task.ENTITY_NAME, listOf(updated))
@@ -106,7 +106,7 @@ open class TaskApplicationService(
 
         val updated = existing.copy(status = status)
 
-        repository.update(id, updated)
+        taskRepo.update(id, updated)
 
         // TODO normalize errors FtsProviderException
         fts.index(Task.ENTITY_NAME, listOf(updated))
@@ -130,7 +130,7 @@ open class TaskApplicationService(
                 ids = relatedObjects.map { it.second },
             )
         } else {
-            repository.listByIds(relatedObjects.map { it.second })
+            taskRepo.listByIds(relatedObjects.map { it.second })
         }
     }
 
@@ -160,7 +160,7 @@ open class TaskApplicationService(
         }
 
         // Here we're considering only accounts that already authenticated into the application
-        accountRepository.getById(accountToShareWithId)
+        accountRepo.getById(accountToShareWithId)
             ?: throw ApplicationServiceException("Account to share with not found")
                 .setRelatedHttpStatusCode { NOT_FOUND }
 
