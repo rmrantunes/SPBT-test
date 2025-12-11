@@ -173,10 +173,12 @@ class TaskApplicationServiceTests {
 
             Assertions.assertThat(result).isTrue()
 
-            verify {
-                taskRepository invoke
-                    "update" withArguments
-                    listOf(id, existing.copy(status = Task.Status.IN_PROGRESS))
+            val updated = existing.copy(status = Task.Status.IN_PROGRESS)
+
+            verify { taskRepository invoke "update" withArguments listOf(id, updated) }
+
+            verify(exactly = 1) {
+                fts invoke "index" withArguments listOf(Task.ENTITY_NAME, listOf(updated))
             }
         }
     }
@@ -235,10 +237,11 @@ class TaskApplicationServiceTests {
 
             Assertions.assertThat(result).isTrue()
 
-            verify {
-                taskRepository invoke
-                    "update" withArguments
-                    listOf(id, existing.copy(title = "Editado"))
+            val updated = existing.copy(title = "Editado")
+            verify { taskRepository invoke "update" withArguments listOf(id, updated) }
+
+            verify(exactly = 1) {
+                fts invoke "index" withArguments listOf(Task.ENTITY_NAME, listOf(updated))
             }
         }
     }
