@@ -423,7 +423,7 @@ class TaskApplicationServiceTests {
         }
 
         @Test
-        fun `should return a list of tasks related to requester`() {
+        fun `should return a list of tasks related to requester according to query term`() {
             val tasks = buildList { repeat(30) { add(generateTask()) } }
             val term = "termo_qualquer"
 
@@ -449,21 +449,17 @@ class TaskApplicationServiceTests {
 
             val tasksFromFts = tasks.subList(0, 5)
 
-            every { fts.fullTextSearch<Task>(term) } returns tasksFromFts
-
-            val tasksIntersected = tasksFromFts.intersect(relatedTasks.toSet())
-
-            val expectedList = tasksIntersected.toList()
+            every { fts.search<Task>(term, ids = relatedTasks.map { it.id!! }) } returns
+                tasksFromFts
 
             // query by retrieved ids the tasks
-            every { taskRepository.listByIds(tasksIntersected.map { it.id!! }) } returns
-                expectedList
+            //every { taskRepository.listByIds(tasksFromFts.map { it.id!! }) } returns tasksFromFts
 
             // return the tasks
 
             val service = TaskApplicationService(taskRepository, accountRepository, fga, fts)
             val result = service.list(ftsTerm = term, reqAccount = reqAccount)
-            Assertions.assertThat(result).isEqualTo(expectedList)
+            Assertions.assertThat(result).isEqualTo(tasksFromFts)
         }
     }
 }

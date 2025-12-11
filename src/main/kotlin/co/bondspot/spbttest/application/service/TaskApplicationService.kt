@@ -110,18 +110,11 @@ open class TaskApplicationService(
 
         if (relatedObjects.isEmpty()) return emptyList()
 
-        if (ftsTerm != null) {
-            val ftsTasksIdsSet =
-                fts.fullTextSearch<Task>(ftsTerm).let {
-                    buildSet { addAll(it.map { task -> task.id!! }) }
-                }
-
-            val relatedTasksIdsSet = buildSet { addAll(relatedObjects.map { it.second }) }
-
-            return repository.listByIds(ftsTasksIdsSet.intersect(relatedTasksIdsSet).toList())
+        return if (ftsTerm != null) {
+            fts.search(ftsTerm, relatedObjects.map { it.second })
+        } else {
+            repository.listByIds(relatedObjects.map { it.second })
         }
-
-        return repository.listByIds(relatedObjects.map { it.second })
     }
 
     override fun shareWith(

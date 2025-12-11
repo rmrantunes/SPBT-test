@@ -17,11 +17,14 @@ class ProviderBeanConfig {
     @Bean
     fun getFtsProvider(): IFullTextSearchProvider =
         object : IFullTextSearchProvider {
-            override fun <T> index(tasks: List<T>) {
+            override fun <T> index(items: List<T>) {
                 TODO("Not yet implemented")
             }
 
-            override fun <T> fullTextSearch(query: String): List<T> {
+            override fun <T> search(
+                query: String,
+                ids: List<String>?
+            ): List<T> {
                 TODO("Not yet implemented")
             }
         }
