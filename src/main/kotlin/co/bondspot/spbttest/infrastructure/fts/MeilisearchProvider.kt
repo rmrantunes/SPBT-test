@@ -1,6 +1,7 @@
 package co.bondspot.spbttest.infrastructure.fts
 
 import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
+import co.bondspot.spbttest.domain.entity.FtsSearchResponse
 import org.springframework.web.client.RestClient
 
 class MeilisearchProvider : IFullTextSearchProvider {
@@ -24,7 +25,16 @@ class MeilisearchProvider : IFullTextSearchProvider {
             .toBodilessEntity()
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T> search(collection: String, query: String, ids: List<String>?): List<T> {
-        TODO("Not yet implemented")
+        val response =
+            restClient
+                .post()
+                .uri("/indexes/$collection/search")
+                .body(mapOf("q" to query))
+                .retrieve()
+                .body(FtsSearchResponse::class.java)
+
+        return response?.hits as? List<T> ?: emptyList()
     }
 }
