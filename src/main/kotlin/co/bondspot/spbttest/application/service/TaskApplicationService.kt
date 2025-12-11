@@ -21,8 +21,10 @@ open class TaskApplicationService(
         // We're considering the user exists in the Api DB. Right approach? Prolly no lol
 
         return taskRepo.create(task.copy(createdById = reqAccount.id)).also {
-            // TODO if error thrown, remove created task, since no action could be done from any
-            // account
+            // TODO if error thrown in this block, remove created task, since no action could be
+            //  done from any account.
+            // TODO Consider adding a listener handler (including this block) to react to task creation event and
+            //  optimize this service.
             fga.writeRelationship(
                 FgaRelTuple(
                     Account.ENTITY_NAME to reqAccount.id!!,
