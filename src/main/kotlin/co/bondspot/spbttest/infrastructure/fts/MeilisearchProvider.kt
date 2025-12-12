@@ -44,13 +44,16 @@ class MeilisearchProvider : IFullTextSearchProvider {
         return response.body ?: FtsSearchResponse()
     }
 
-    /**
-     * Wipes all documents from a Meilisearch Index. Be careful.
-     * */
+    /** Wipes all documents from a Meilisearch Index. Be careful. */
     fun dangerouslyDeleteAllDocuments(index: String) {
+        restClient.delete().uri("/indexes/$index/documents").retrieve().toBodilessEntity()
+    }
+
+    fun setFilterableAttributes(index: String, attributes: List<String>) {
         restClient
-            .delete()
-            .uri("/indexes/$index/documents")
+            .put()
+            .uri("/indexes/$index/settings/filterable-attributes")
+            .body(attributes)
             .retrieve()
             .toBodilessEntity()
     }

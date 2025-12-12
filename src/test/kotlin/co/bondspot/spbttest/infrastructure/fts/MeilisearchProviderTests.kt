@@ -7,6 +7,7 @@ import kotlin.test.Test
 import org.assertj.core.api.Assertions.assertThat
 import org.instancio.Instancio
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -28,6 +29,12 @@ class MeillisearchProviderTests {
             .create()
 
     companion object {
+        @JvmStatic
+        @BeforeAll
+        fun setUp() {
+            MeilisearchProvider().setFilterableAttributes(Foo.ENTITY_NAME, listOf("id"))
+        }
+
         @JvmStatic
         @AfterAll
         fun tearDown() {
