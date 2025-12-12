@@ -464,7 +464,7 @@ class TaskApplicationServiceTests {
 
             every {
                 fts.search(
-                    collection = Task.ENTITY_NAME,
+                    indexUid = Task.ENTITY_NAME,
                     query = term,
                     ids = relatedTasks.map { it.id!! },
                 )

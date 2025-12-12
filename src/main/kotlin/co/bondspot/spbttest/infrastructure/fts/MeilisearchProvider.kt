@@ -16,16 +16,16 @@ class MeilisearchProvider : IFullTextSearchProvider {
             .defaultHeader("Authorization", "Bearer $masterKey")
             .build()
 
-    override fun index(collection: String, items: List<Any>) {
+    override fun index(indexUid: String, items: List<Any>) {
         restClient
             .put()
-            .uri("/indexes/$collection/documents")
+            .uri("/indexes/$indexUid/documents")
             .body(items)
             .retrieve()
             .toBodilessEntity()
     }
 
-    override fun search(collection: String, query: String, ids: List<String>?): FtsSearchResponse {
+    override fun search(indexUid: String, query: String, ids: List<String>?): FtsSearchResponse {
         val body = buildMap {
             set("q", query)
             if (ids != null && ids.isNotEmpty()) {
@@ -36,7 +36,7 @@ class MeilisearchProvider : IFullTextSearchProvider {
         val response =
             restClient
                 .post()
-                .uri("/indexes/$collection/search")
+                .uri("/indexes/$indexUid/search")
                 .body(body)
                 .retrieve()
                 .toEntity(FtsSearchResponse::class.java)

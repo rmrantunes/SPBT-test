@@ -4,7 +4,7 @@ import co.bondspot.spbttest.domain.entity.FtsSearchResponse
 
 interface IFullTextSearchProvider {
     /** Index records for Full-text Search */
-    fun index(collection: String, items: List<Any>)
+    fun index(indexUid: String, items: List<Any>)
 
-    fun search(collection: String, query: String, ids: List<String>? = null): FtsSearchResponse
+    fun search(indexUid: String, query: String, ids: List<String>? = null): FtsSearchResponse
 }

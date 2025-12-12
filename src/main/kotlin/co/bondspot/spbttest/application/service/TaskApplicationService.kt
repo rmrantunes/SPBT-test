@@ -128,7 +128,7 @@ open class TaskApplicationService(
         return if (ftsTerm != null) {
             val searchResultIds =
                 fts.search(
-                        collection = Task.ENTITY_NAME,
+                        indexUid = Task.ENTITY_NAME,
                         query = ftsTerm,
                         ids = relatedObjects.map { it.second },
                     )
