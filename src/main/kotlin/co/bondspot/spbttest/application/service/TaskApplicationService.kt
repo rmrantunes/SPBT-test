@@ -115,28 +115,28 @@ open class TaskApplicationService(
         return true
     }
 
-    override fun list(ftsTerm: String?, reqAccount: Account): List<Task> {
-        val relatedObjects =
+    override fun list(queryTerm: String?, reqAccount: Account): List<Task> {
+        val relatedToRequester =
             fga.listObjects(
                 Account.ENTITY_NAME to reqAccount.id!!,
                 Task.FgaRelations.VIEWER,
                 Task.ENTITY_NAME,
             )
 
-        if (relatedObjects.isEmpty()) return emptyList()
+        if (relatedToRequester.isEmpty()) return emptyList()
 
-        return if (ftsTerm != null) {
-            val searchResultIds =
+        return if (queryTerm != null) {
+            val fullTextSearchedIds =
                 fts.search(
                         indexUid = Task.ENTITY_NAME,
-                        query = ftsTerm,
-                        ids = relatedObjects.map { it.second },
+                        query = queryTerm,
+                        ids = relatedToRequester.map { it.second },
                     )
                     .hitsIds()
 
-            taskRepo.listByIds(searchResultIds)
+            taskRepo.listByIds(fullTextSearchedIds)
         } else {
-            taskRepo.listByIds(relatedObjects.map { it.second })
+            taskRepo.listByIds(relatedToRequester.map { it.second })
         }
     }
 

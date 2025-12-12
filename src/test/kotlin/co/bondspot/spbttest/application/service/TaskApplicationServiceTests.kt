@@ -477,7 +477,7 @@ class TaskApplicationServiceTests {
             // return the tasks
 
             val service = TaskApplicationService(taskRepo, accountRepo, fga, fts)
-            val result = service.list(ftsTerm = term, reqAccount = reqAccount)
+            val result = service.list(queryTerm = term, reqAccount = reqAccount)
             Assertions.assertThat(result).isEqualTo(tasksFromFts)
         }
     }

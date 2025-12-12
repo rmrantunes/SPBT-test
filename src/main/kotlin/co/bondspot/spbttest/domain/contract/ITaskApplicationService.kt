@@ -36,7 +36,7 @@ interface ITaskApplicationService {
 
     /** Lists the tasks that the requester account is bonded to in any way. */
     fun list(
-        ftsTerm: String? = null,
+        queryTerm: String? = null,
         reqAccount: Account,
     ): List<Task>
 
