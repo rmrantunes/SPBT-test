@@ -6,8 +6,11 @@ import co.bondspot.spbttest.domain.exception.FullTextSearchProviderException
 import org.springframework.web.client.HttpStatusCodeException
 import org.springframework.web.client.RestClient
 
-class MeilisearchProviderException(message: String, cause: Throwable? = null) :
-    FullTextSearchProviderException(message, cause)
+class MeilisearchProviderException(
+    message: String,
+    cause: Throwable? = null,
+    override val contextParams: Map<String, Any> = emptyMap(),
+) : FullTextSearchProviderException(message, cause)
 
 class MeilisearchProvider : IFullTextSearchProvider {
     private val baseUrl = "http://localhost:7700"
@@ -21,25 +24,33 @@ class MeilisearchProvider : IFullTextSearchProvider {
             .defaultHeader("Authorization", "Bearer $masterKey")
             .build()
 
-    override fun index(indexUid: String, items: List<Any>) {
-        try {
-            restClient
-                .put()
-                .uri("/indexes/$indexUid/documents")
-                .body(items)
-                .retrieve()
-                .toBodilessEntity()
-        } catch (ex: HttpStatusCodeException) {
+    private fun handleException(ex: Exception, contextParams: Map<String, Any>): Throwable {
+        return if (ex is HttpStatusCodeException) {
             val body = ex.getResponseBodyAs(Map::class.java)
             val apiErrorMessage = body?.getOrDefault("message", "Unknown error") as String
-            throw MeilisearchProviderException(
+            MeilisearchProviderException(
                 "Meilisearch API responded with error status code ${ex.statusCode.value()}: $apiErrorMessage",
                 ex,
+                contextParams = contextParams,
             )
-        } catch (ex: Exception) {
-            throw MeilisearchProviderException(
-                ex.message ?: "Something wrong when indexing $indexUid: $items",
+        } else {
+            MeilisearchProviderException(
+                ex.message
+                    ?: "Something wrong with Meilisearch API call. See context params for details.",
                 ex,
+                contextParams = contextParams,
+            )
+        }
+    }
+
+    override fun index(indexUid: String, items: List<Any>) {
+        val uri = "/indexes/$indexUid/documents"
+        try {
+            restClient.put().uri(uri).body(items).retrieve().toBodilessEntity()
+        } catch (ex: Exception) {
+            throw handleException(
+                ex,
+                mapOf("baseUrl" to baseUrl, "uri" to uri, "indexUid" to indexUid, "items" to items),
             )
         }
     }

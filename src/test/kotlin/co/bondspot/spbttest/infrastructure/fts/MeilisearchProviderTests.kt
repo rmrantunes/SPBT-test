@@ -55,10 +55,14 @@ class MeillisearchProviderTests {
         @Test
         fun `throw a certain exception with MeilisearchProviderException`() {
             val ex =
-                assertThrows<MeilisearchProviderException> { meilisearch.index("aha", listOf("kllk")) }
+                assertThrows<MeilisearchProviderException> { meilisearch.index("aha", listOf("invalid_structure")) }
             assertThat(ex).isExactlyInstanceOf(MeilisearchProviderException::class.java)
             assertThat(ex.message)
                 .startsWith("Meilisearch API responded with error status code 500")
+            assertThat(ex.contextParams).containsKey("indexUid")
+            assertThat(ex.contextParams).containsKey("items")
+            assertThat(ex.contextParams["indexUid"]).isEqualTo("aha")
+            assertThat(ex.contextParams["items"]).isEqualTo(listOf("invalid_structure"))
         }
     }
 
