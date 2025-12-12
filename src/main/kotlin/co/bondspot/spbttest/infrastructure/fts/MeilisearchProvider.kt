@@ -35,8 +35,9 @@ class MeilisearchProvider : IFullTextSearchProvider {
             )
         } else {
             MeilisearchProviderException(
-                ex.message
-                    ?: "Something wrong with Meilisearch API call. See context params for details.",
+                "Something wrong with Meilisearch API call." +
+                    (ex.message ?: "") +
+                    " See context params for details.",
                 ex,
                 contextParams = contextParams,
             )
@@ -72,7 +73,6 @@ class MeilisearchProvider : IFullTextSearchProvider {
                     .body(body)
                     .retrieve()
                     .toEntity(FtsSearchResponse::class.java)
-
 
             return response.body ?: FtsSearchResponse()
         } catch (ex: Exception) {
