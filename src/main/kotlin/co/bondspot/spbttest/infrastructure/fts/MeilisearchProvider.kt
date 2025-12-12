@@ -43,4 +43,15 @@ class MeilisearchProvider : IFullTextSearchProvider {
 
         return response.body ?: FtsSearchResponse()
     }
+
+    /**
+     * Wipes all documents from a Meilisearch Index. Be careful.
+     * */
+    fun dangerouslyDeleteAllDocuments(index: String) {
+        restClient
+            .delete()
+            .uri("/indexes/$index/documents")
+            .retrieve()
+            .toBodilessEntity()
+    }
 }

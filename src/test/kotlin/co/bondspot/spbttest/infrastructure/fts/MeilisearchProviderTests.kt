@@ -6,6 +6,7 @@ import java.util.*
 import kotlin.test.Test
 import org.assertj.core.api.Assertions.assertThat
 import org.instancio.Instancio
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -25,6 +26,14 @@ class MeillisearchProviderTests {
             .generate(KSelect.field(Foo::name)) { it.text().word().noun() }
             .generate(KSelect.field(Foo::keywords)) { it.collection<String>().size(4) }
             .create()
+
+    companion object {
+        @JvmStatic
+        @AfterAll
+        fun tearDown() {
+            MeilisearchProvider().dangerouslyDeleteAllDocuments(Foo.ENTITY_NAME)
+        }
+    }
 
     @Nested
     @DisplayName("when indexing documents...")
