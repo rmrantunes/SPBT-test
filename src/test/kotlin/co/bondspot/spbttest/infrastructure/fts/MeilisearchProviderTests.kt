@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 
 data class Foo(val id: String, val name: String, val keywords: List<String>) {
     companion object {
@@ -49,6 +50,15 @@ class MeillisearchProviderTests {
         @Test
         fun `create successfully`() {
             assertDoesNotThrow { meilisearch.index(Foo.ENTITY_NAME, listOf(generateFoo())) }
+        }
+
+        @Test
+        fun `throw a certain exception with MeilisearchProviderException`() {
+            val ex =
+                assertThrows<MeilisearchProviderException> { meilisearch.index("aha", listOf("kllk")) }
+            assertThat(ex).isExactlyInstanceOf(MeilisearchProviderException::class.java)
+            assertThat(ex.message)
+                .startsWith("Meilisearch API responded with error status code 500")
         }
     }
 

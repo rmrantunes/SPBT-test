@@ -2,7 +2,12 @@ package co.bondspot.spbttest.infrastructure.fts
 
 import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.entity.FtsSearchResponse
+import co.bondspot.spbttest.domain.exception.FullTextSearchProviderException
+import org.springframework.web.client.HttpStatusCodeException
 import org.springframework.web.client.RestClient
+
+class MeilisearchProviderException(message: String, cause: Throwable? = null) :
+    FullTextSearchProviderException(message, cause)
 
 class MeilisearchProvider : IFullTextSearchProvider {
     private val baseUrl = "http://localhost:7700"
@@ -17,12 +22,26 @@ class MeilisearchProvider : IFullTextSearchProvider {
             .build()
 
     override fun index(indexUid: String, items: List<Any>) {
-        restClient
-            .put()
-            .uri("/indexes/$indexUid/documents")
-            .body(items)
-            .retrieve()
-            .toBodilessEntity()
+        try {
+            restClient
+                .put()
+                .uri("/indexes/$indexUid/documents")
+                .body(items)
+                .retrieve()
+                .toBodilessEntity()
+        } catch (ex: HttpStatusCodeException) {
+            val body = ex.getResponseBodyAs(Map::class.java)
+            val apiErrorMessage = body?.getOrDefault("message", "Unknown error") as String
+            throw MeilisearchProviderException(
+                "Meilisearch API responded with error status code ${ex.statusCode.value()}: $apiErrorMessage",
+                ex,
+            )
+        } catch (ex: Exception) {
+            throw MeilisearchProviderException(
+                ex.message ?: "Something wrong when indexing $indexUid: $items",
+                ex,
+            )
+        }
     }
 
     override fun search(indexUid: String, query: String, ids: List<String>?): FtsSearchResponse {
