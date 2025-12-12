@@ -26,11 +26,18 @@ class MeilisearchProvider : IFullTextSearchProvider {
     }
 
     override fun search(collection: String, query: String, ids: List<String>?): FtsSearchResponse {
+        val body = buildMap {
+            set("q", query)
+            if (ids != null && ids.isNotEmpty()) {
+                set("filter", listOf(ids.map { "id = $it" }))
+            }
+        }
+
         val response =
             restClient
                 .post()
                 .uri("/indexes/$collection/search")
-                .body(mapOf("q" to query))
+                .body(body)
                 .retrieve()
                 .toEntity(FtsSearchResponse::class.java)
 

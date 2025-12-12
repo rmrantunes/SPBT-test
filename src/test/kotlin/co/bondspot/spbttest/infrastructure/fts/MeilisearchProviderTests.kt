@@ -59,4 +59,26 @@ class MeillisearchProviderTests {
             assertThat(result.hits).hasSize(4)
         }
     }
+
+    @Test
+    fun `query successfully informing ids`() {
+        val foo = generateFoo()
+        val items = buildList {
+            repeat(4) {
+                add(foo.copy(name = "${foo.name} #$it", id = UUID.randomUUID().toString()))
+            }
+        }
+
+        meilisearch.index(Foo.ENTITY_NAME, items)
+
+        val itemsIds = items.map { it.id }.subList(0, 2)
+
+        val meilisearchTaskTimeoutMillis = 1000L
+        Thread.sleep(meilisearchTaskTimeoutMillis)
+
+        val result = meilisearch.search(Foo.ENTITY_NAME, foo.name, itemsIds)
+        assertThat(result).isInstanceOf(FtsSearchResponse::class.java)
+        assertThat(result.hits).hasSize(2)
+        assertThat(result.hitsIds()).containsExactlyElementsOf(itemsIds)
+    }
 }
