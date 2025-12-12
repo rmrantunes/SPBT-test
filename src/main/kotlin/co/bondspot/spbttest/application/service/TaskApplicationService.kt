@@ -8,7 +8,6 @@ import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.ITaskApplicationService
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
-import co.bondspot.spbttest.domain.entity.FTS_DEFAULT_PRIMARY_KEY
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
 
@@ -133,8 +132,7 @@ open class TaskApplicationService(
                         query = ftsTerm,
                         ids = relatedObjects.map { it.second },
                     )
-                    .hits
-                    .mapNotNull { it[FTS_DEFAULT_PRIMARY_KEY] as? String }
+                    .hitsIds()
 
             taskRepo.listByIds(searchResultIds)
         } else {

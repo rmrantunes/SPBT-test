@@ -1,12 +1,14 @@
 package co.bondspot.spbttest.infrastructure.fts
 
+import co.bondspot.spbttest.domain.entity.FtsSearchResponse
 import co.bondspot.spbttest.testutils.KSelect
+import java.util.*
+import kotlin.test.Test
+import org.assertj.core.api.Assertions.assertThat
 import org.instancio.Instancio
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertDoesNotThrow
-import java.util.*
-import kotlin.test.Test
 
 data class Foo(val id: String, val name: String, val keywords: List<String>) {
     companion object {
@@ -20,7 +22,6 @@ class MeillisearchProviderTests {
     fun generateFoo(): Foo =
         Instancio.of(Foo::class.java)
             .set(KSelect.field(Foo::id), UUID.randomUUID().toString())
-            .set(KSelect.field(Foo::name), "some_name")
             .generate(KSelect.field(Foo::name)) { it.text().word().noun() }
             .generate(KSelect.field(Foo::keywords)) { it.collection<String>().size(4) }
             .create()
@@ -41,7 +42,21 @@ class MeillisearchProviderTests {
 
         @Test
         fun `query successfully`() {
-            assertDoesNotThrow { meilisearch.search(Foo.ENTITY_NAME, "some_name") }
+            val foo = generateFoo()
+            val items = buildList {
+                repeat(4) {
+                    add(foo.copy(name = "${foo.name} #$it", id = UUID.randomUUID().toString()))
+                }
+            }
+
+            meilisearch.index(Foo.ENTITY_NAME, items)
+
+            val meilisearchTaskTimeoutMillis = 1000L
+            Thread.sleep(meilisearchTaskTimeoutMillis)
+
+            val result = meilisearch.search(Foo.ENTITY_NAME, foo.name)
+            assertThat(result).isInstanceOf(FtsSearchResponse::class.java)
+            assertThat(result.hits).hasSize(4)
         }
     }
 }

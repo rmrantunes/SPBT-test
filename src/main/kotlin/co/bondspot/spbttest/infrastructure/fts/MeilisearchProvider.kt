@@ -32,8 +32,8 @@ class MeilisearchProvider : IFullTextSearchProvider {
                 .uri("/indexes/$collection/search")
                 .body(mapOf("q" to query))
                 .retrieve()
-                .body(FtsSearchResponse::class.java)
+                .toEntity(FtsSearchResponse::class.java)
 
-        return response ?: FtsSearchResponse()
+        return response.body ?: FtsSearchResponse()
     }
 }

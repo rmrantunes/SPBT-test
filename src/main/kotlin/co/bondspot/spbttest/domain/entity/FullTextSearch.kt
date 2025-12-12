@@ -8,4 +8,6 @@ data class FtsSearchResponse(
     val totalHits: Int? = null,
     val offset: Int = 0,
     val limit: Int = 20,
-)
+) {
+    fun hitsIds() = hits.mapNotNull { it[FTS_DEFAULT_PRIMARY_KEY] as? String }
+}
