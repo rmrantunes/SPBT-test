@@ -10,7 +10,7 @@ import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
-import java.time.LocalDateTime
+import co.bondspot.spbttest.domain.utils.fromMap
 
 open class TaskApplicationService(
     private val taskRepo: ITaskRepository,
@@ -133,24 +133,7 @@ open class TaskApplicationService(
                     ids = relatedObjects.map { it.second },
                 )
                 .hits
-                .map { map ->
-                    Task().let { task ->
-                        task.copy(
-                            id = map["id"].toString(),
-                            title = map["title"].toString(),
-                            status =
-                                map["status"]?.toString()?.let { Task.Status.valueOf(it) }
-                                    ?: task.status,
-                            description = map["description"].toString(),
-                            createdById = map["createdById"].toString(),
-                            lastUpdatedById = map["lastUpdatedById"].toString(),
-                            createdAt =
-                                map["createdAt"]?.toString()?.let { LocalDateTime.parse(it) },
-                            lastUpdatedAt =
-                                map["lastUpdatedAt"]?.toString()?.let { LocalDateTime.parse(it) },
-                        )
-                    }
-                }
+                .map { Task.fromMap(it) }
         } else {
             taskRepo.listByIds(relatedObjects.map { it.second })
         }
