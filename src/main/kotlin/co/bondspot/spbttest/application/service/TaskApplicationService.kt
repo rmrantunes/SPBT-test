@@ -8,9 +8,9 @@ import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.ITaskApplicationService
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
+import co.bondspot.spbttest.domain.entity.FTS_DEFAULT_PRIMARY_KEY
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
-import co.bondspot.spbttest.domain.utils.fromMap
 
 open class TaskApplicationService(
     private val taskRepo: ITaskRepository,
@@ -127,13 +127,16 @@ open class TaskApplicationService(
         if (relatedObjects.isEmpty()) return emptyList()
 
         return if (ftsTerm != null) {
-            fts.search(
-                    collection = Task.ENTITY_NAME,
-                    query = ftsTerm,
-                    ids = relatedObjects.map { it.second },
-                )
-                .hits
-                .map { Task.fromMap(it) }
+            val searchResultIds =
+                fts.search(
+                        collection = Task.ENTITY_NAME,
+                        query = ftsTerm,
+                        ids = relatedObjects.map { it.second },
+                    )
+                    .hits
+                    .mapNotNull { it[FTS_DEFAULT_PRIMARY_KEY] as? String }
+
+            taskRepo.listByIds(searchResultIds)
         } else {
             taskRepo.listByIds(relatedObjects.map { it.second })
         }

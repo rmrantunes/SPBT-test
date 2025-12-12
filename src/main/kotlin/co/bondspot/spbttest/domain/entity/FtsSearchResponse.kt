@@ -1,5 +1,7 @@
 package co.bondspot.spbttest.domain.entity
 
+const val FTS_DEFAULT_PRIMARY_KEY = "id"
+
 data class FtsSearchResponse(
     val hits: List<Map<String, Any>> = emptyList(),
     val estimatedTotalHits: Int = 0,

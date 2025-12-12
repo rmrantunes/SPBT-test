@@ -10,7 +10,6 @@ import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.FtsSearchResponse
 import co.bondspot.spbttest.domain.entity.Task
-import co.bondspot.spbttest.domain.utils.toMap
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import co.bondspot.spbttest.testutils.KSelect
 import io.mockk.every
@@ -469,10 +468,11 @@ class TaskApplicationServiceTests {
                     query = term,
                     ids = relatedTasks.map { it.id!! },
                 )
-            } returns FtsSearchResponse(buildList { addAll(tasksFromFts.map { it.toMap() }) })
+            } returns
+                FtsSearchResponse(buildList { addAll(tasksFromFts.map { mapOf("id" to it.id!!) }) })
 
             // query by retrieved ids the tasks
-            // every { taskRepository.listByIds(tasksFromFts.map { it.id!! }) } returns tasksFromFts
+            every { taskRepo.listByIds(tasksFromFts.map { it.id!! }) } returns tasksFromFts
 
             // return the tasks
 
