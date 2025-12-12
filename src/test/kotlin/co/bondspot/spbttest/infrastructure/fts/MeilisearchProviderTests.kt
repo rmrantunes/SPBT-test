@@ -53,14 +53,12 @@ class MeillisearchProviderTests {
         }
 
         @Test
-        fun `throw a certain exception with MeilisearchProviderException`() {
+        fun `throw a certain API exception with MeilisearchProviderException`() {
             val ex =
                 assertThrows<MeilisearchProviderException> { meilisearch.index("aha", listOf("invalid_structure")) }
             assertThat(ex).isExactlyInstanceOf(MeilisearchProviderException::class.java)
             assertThat(ex.message)
                 .startsWith("Meilisearch API responded with error status code 500")
-            assertThat(ex.contextParams).containsKey("indexUid")
-            assertThat(ex.contextParams).containsKey("items")
             assertThat(ex.contextParams["indexUid"]).isEqualTo("aha")
             assertThat(ex.contextParams["items"]).isEqualTo(listOf("invalid_structure"))
         }
@@ -110,5 +108,17 @@ class MeillisearchProviderTests {
         assertThat(result).isInstanceOf(FtsSearchResponse::class.java)
         assertThat(result.hits).hasSize(2)
         assertThat(result.hitsIds()).containsExactlyElementsOf(itemsIds)
+    }
+
+    @Test
+    fun `throw a certain API exception with MeilisearchProviderException`() {
+        val ex =
+            assertThrows<MeilisearchProviderException> { meilisearch.search("aha", "") }
+        assertThat(ex).isExactlyInstanceOf(MeilisearchProviderException::class.java)
+        assertThat(ex.message)
+            .startsWith("Meilisearch API responded with error status code 404")
+        assertThat(ex.contextParams["indexUid"]).isEqualTo("aha")
+        assertThat(ex.contextParams["query"]).isEqualTo("")
+        assertThat(ex.contextParams["ids"]).isEqualTo(null)
     }
 }

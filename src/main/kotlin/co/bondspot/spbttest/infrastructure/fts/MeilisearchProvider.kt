@@ -9,7 +9,7 @@ import org.springframework.web.client.RestClient
 class MeilisearchProviderException(
     message: String,
     cause: Throwable? = null,
-    override val contextParams: Map<String, Any> = emptyMap(),
+    override val contextParams: Map<String, Any?> = emptyMap(),
 ) : FullTextSearchProviderException(message, cause)
 
 class MeilisearchProvider : IFullTextSearchProvider {
@@ -24,7 +24,7 @@ class MeilisearchProvider : IFullTextSearchProvider {
             .defaultHeader("Authorization", "Bearer $masterKey")
             .build()
 
-    private fun handleException(ex: Exception, contextParams: Map<String, Any>): Throwable {
+    private fun handleException(ex: Exception, contextParams: Map<String, Any?>): Throwable {
         return if (ex is HttpStatusCodeException) {
             val body = ex.getResponseBodyAs(Map::class.java)
             val apiErrorMessage = body?.getOrDefault("message", "Unknown error") as String
@@ -56,22 +56,37 @@ class MeilisearchProvider : IFullTextSearchProvider {
     }
 
     override fun search(indexUid: String, query: String, ids: List<String>?): FtsSearchResponse {
-        val body = buildMap {
-            set("q", query)
-            if (ids != null && ids.isNotEmpty()) {
-                set("filter", listOf(ids.map { "id = $it" }))
+        val uri = "/indexes/$indexUid/search"
+        try {
+            val body = buildMap {
+                set("q", query)
+                if (ids != null && ids.isNotEmpty()) {
+                    set("filter", listOf(ids.map { "id = $it" }))
+                }
             }
+
+            val response =
+                restClient
+                    .post()
+                    .uri(uri)
+                    .body(body)
+                    .retrieve()
+                    .toEntity(FtsSearchResponse::class.java)
+
+
+            return response.body ?: FtsSearchResponse()
+        } catch (ex: Exception) {
+            throw handleException(
+                ex,
+                mapOf(
+                    "baseUrl" to baseUrl,
+                    "uri" to uri,
+                    "indexUid" to indexUid,
+                    "query" to query,
+                    "ids" to ids,
+                ),
+            )
         }
-
-        val response =
-            restClient
-                .post()
-                .uri("/indexes/$indexUid/search")
-                .body(body)
-                .retrieve()
-                .toEntity(FtsSearchResponse::class.java)
-
-        return response.body ?: FtsSearchResponse()
     }
 
     /** Wipes all documents from a Meilisearch Index. Be careful. */
