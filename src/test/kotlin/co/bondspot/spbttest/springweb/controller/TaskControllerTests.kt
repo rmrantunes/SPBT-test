@@ -276,7 +276,7 @@ class TaskControllerTests {
     }
 
     @Nested
-    @DisplayName("when getting a task...")
+    @DisplayName("GET /task/{id} when getting a task...")
     inner class GetTask {
         @Test
         fun `return 404 if no task found with given id`() {
@@ -321,11 +321,13 @@ class TaskControllerTests {
                     jsonPath("$.errors[0].message")
                         .value("Requested resource is not bonded to requester")
                 )
+
+            verify(exactly = 2) { fga.checkRelationship(any()) }
         }
     }
 
     @Nested
-    @DisplayName("when updating a task details...")
+    @DisplayName("PATCH /task/{id}/details when updating a task details...")
     inner class UpdateTaskDetails {
         @Test
         fun `return 404 if no task found with given id`() {
@@ -390,11 +392,13 @@ class TaskControllerTests {
                         .value("Requested resource is not bonded to requester")
                 )
                 .andExpect(status().isForbidden)
+
+            verify(exactly = 3) { fga.checkRelationship(any()) }
         }
     }
 
     @Nested
-    @DisplayName("when updating a task status...")
+    @DisplayName("PATCH /tasks/{id}/status when updating a task status...")
     inner class UpdateTaskStatus {
         @Test
         fun `validate request body status options`() {
@@ -406,7 +410,6 @@ class TaskControllerTests {
                         .with(AdminJwtMock.postProcessor)
                 )
                 .andExpect(status().isBadRequest)
-                // .andExpect(jsonPath("$.errors[0]")..messagevalue("'status' must be a string'"))
                 .andExpect(
                     jsonPath("$.errors[0].message")
                         .value("'status' must be one of: ${Task.Status.entries.joinToString(", ")}")
@@ -460,6 +463,17 @@ class TaskControllerTests {
 
                 assertThat(updated?.status).isEqualTo(value)
             }
+
+            mockMvc
+                .perform(
+                    patch("/task/$id/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"status":  "COMPLETED"}""".trimIndent())
+                        .with(AdminJwtMock2.postProcessor)
+                )
+                .andExpect(status().isForbidden)
+
+            verify(exactly = 7) { fga.checkRelationship(any()) }
         }
     }
 }
