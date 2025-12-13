@@ -3,6 +3,8 @@ package co.bondspot.spbttest.springweb.controller
 import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.ITaskRepository
+import co.bondspot.spbttest.domain.entity.Account
+import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.infrastructure.fts.MeilisearchProvider
 import co.bondspot.spbttest.springweb.persistence.TaskRepository
@@ -366,6 +368,8 @@ class TaskControllerTests {
             val id =
                 JsonPath.parse(result.response.contentAsString).read<String>("$.requested.task.id")
 
+            // Creation done
+
             mockMvc
                 .perform(
                     patch("/task/$id/details")
@@ -380,6 +384,8 @@ class TaskControllerTests {
 
             assertThat(updated?.title).isEqualTo("Task 1 updated")
 
+            // ^ User with permissions just successfully updated it
+
             mockMvc
                 .perform(
                     patch("/task/$id/details")
@@ -393,7 +399,36 @@ class TaskControllerTests {
                 )
                 .andExpect(status().isForbidden)
 
-            verify(exactly = 3) { fga.checkRelationship(any()) }
+            // ^ User with no permissions has just been denied
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to AdminJwtMock2.jwtMock.subject,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            mockMvc
+                .perform(
+                    patch("/task/$id/details")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"title":  "Task 1 updated"}""".trimIndent())
+                        .with(AdminJwtMock2.postProcessor)
+                )
+                .andExpect(
+                    jsonPath("$.errors[0].message")
+                        .value(
+                            "Requester does not have sufficient permission to perform this action"
+                        )
+                )
+                .andExpect(status().isForbidden)
+
+            // ^ User with view permission only has just been denied
+
+            verify(exactly = 5) { fga.checkRelationship(any()) }
         }
     }
 
@@ -448,6 +483,8 @@ class TaskControllerTests {
             val id =
                 JsonPath.parse(result.response.contentAsString).read<String>("$.requested.task.id")
 
+            // ^ Creation done
+
             for (value in Task.Status.entries) {
                 mockMvc
                     .perform(
@@ -464,6 +501,31 @@ class TaskControllerTests {
                 assertThat(updated?.status).isEqualTo(value)
             }
 
+            // ^ User with permissions just successfully updated it
+
+            mockMvc
+                .perform(
+                    patch("/task/$id/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"status":  "COMPLETED"}""".trimIndent())
+                        .with(
+                            AdminJwtMock2.postProcessor
+                        ) // add another test with viewer permission only
+                )
+                .andExpect(status().isForbidden)
+
+            // ^ User with no permissions has just been denied
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to AdminJwtMock2.jwtMock.subject,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
             mockMvc
                 .perform(
                     patch("/task/$id/status")
@@ -471,9 +533,17 @@ class TaskControllerTests {
                         .content("""{"status":  "COMPLETED"}""".trimIndent())
                         .with(AdminJwtMock2.postProcessor)
                 )
+                .andExpect(
+                    jsonPath("$.errors[0].message")
+                        .value(
+                            "Requester does not have sufficient permission to perform this action"
+                        )
+                )
                 .andExpect(status().isForbidden)
 
-            verify(exactly = 7) { fga.checkRelationship(any()) }
+            // ^ User with view permission only has just been denied
+
+            verify(exactly = 9) { fga.checkRelationship(any()) }
         }
     }
 }
