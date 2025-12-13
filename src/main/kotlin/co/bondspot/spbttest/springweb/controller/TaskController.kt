@@ -7,6 +7,7 @@ import co.bondspot.spbttest.springweb.util.security.toAccount
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.springframework.data.repository.query.Param
 import java.net.URI
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -31,8 +32,11 @@ class TaskController(private val taskService: TaskService) {
     }
 
     @GetMapping
-    fun list(@AuthenticationPrincipal jwt: Jwt): ResponseEntity<ResponseDto<ListTasksResDto>> {
-        val tasks = taskService.list(reqAccount = jwt.toAccount())
+    fun list(
+        @AuthenticationPrincipal jwt: Jwt,
+        @Param("q") q: String?,
+    ): ResponseEntity<ResponseDto<ListTasksResDto>> {
+        val tasks = taskService.list(queryTerm = q, reqAccount = jwt.toAccount())
         return ResponseEntity.ok().body(ResponseDto(ListTasksResDto(tasks)))
     }
 

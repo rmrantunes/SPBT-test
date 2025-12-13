@@ -4,6 +4,7 @@ import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Task
+import co.bondspot.spbttest.infrastructure.fts.MeilisearchProvider
 import co.bondspot.spbttest.springweb.persistence.TaskRepository
 import co.bondspot.spbttest.testutils.AdminJwtMock
 import co.bondspot.spbttest.testutils.AdminJwtMock2
@@ -73,6 +74,20 @@ class TaskControllerTests {
     @AfterEach
     fun afterEach() {
         jpaTaskRepository.deleteAll()
+    }
+
+    companion object {
+        @JvmStatic
+        @BeforeAll
+        fun beforeAll() {
+            MeilisearchProvider().dangerouslyDeleteAllDocuments(Task.ENTITY_NAME)
+        }
+
+        @JvmStatic
+        @AfterAll
+        fun afterAll() {
+            MeilisearchProvider().dangerouslyDeleteAllDocuments(Task.ENTITY_NAME)
+        }
     }
 
     @Nested
@@ -189,7 +204,59 @@ class TaskControllerTests {
             verify(exactly = 0) { fts.search(any(), any()) }
         }
 
-        @Ignore fun `return list of created tasks with query term`() {}
+        @Test
+        fun `return list of created tasks with query term`() {
+            repeat(3) {
+                mockMvc.perform(
+                    post("/task")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"title": "Fala comigo admin 1 $it"}""")
+                        .with(AdminJwtMock.postProcessor)
+                )
+            }
+
+            every { auditorProvider.currentAuditor } returns
+                Optional.of(AdminJwtMock2.jwtMock.subject)
+
+            val titles =
+                listOf(
+                    "Fala comigo admin 2 0",
+                    "Fala comigo admin 2 1",
+                    "Fala comigo admin 2 2",
+                    "Vai pegar nunca admin 2 0",
+                    "Vai pegar nunca admin 2 1",
+                    "Vai pegar nunca admin 2 2",
+                )
+
+            for (title in titles) {
+                mockMvc.perform(
+                    post("/task")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"title": "$title"}""")
+                        .with(AdminJwtMock2.postProcessor)
+                )
+            }
+
+            Thread.sleep(300)
+
+            mockMvc
+                .perform(get("/task?q={q}", "Fala comigo").with(AdminJwtMock2.postProcessor))
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.requested.tasks").isArray)
+                .andExpect(jsonPath("$.requested.tasks.size()").value(3))
+                .andReturn()
+                .let {
+                    val titles =
+                        JsonPath.parse(it.response.contentAsString)
+                            .read<List<String>>("$.requested.tasks[*].title")
+
+                    assertThat(titles).containsExactlyInAnyOrderElementsOf(titles.subList(0, 3))
+                }
+
+            verify { fga.listObjects(any(), any(), any()) }
+
+            verify(exactly = 1) { fts.search(any(), any(), any()) }
+        }
 
         @Ignore fun `return a paginated list of tasks`() {}
     }
@@ -210,7 +277,6 @@ class TaskControllerTests {
         fun `return task found with given id`() {
             val created = taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí"))
 
-            created
             mockMvc
                 .perform(get("/task/${created.id}").with(AdminJwtMock.postProcessor))
                 .andExpect(status().isOk)
