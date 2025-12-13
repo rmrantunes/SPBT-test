@@ -206,19 +206,38 @@ class TaskControllerTests {
 
         @Test
         fun `return list of created tasks with query term`() {
-            repeat(3) {
+            val titles1 =
+                listOf("Fala comigo admin 1 0", "Fala comigo admin 1 1", "Fala comigo admin 1 2")
+
+            for (title in titles1) {
                 mockMvc.perform(
                     post("/task")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""{"title": "Fala comigo admin 1 $it"}""")
+                        .content("""{"title": "$title"}""")
                         .with(AdminJwtMock.postProcessor)
                 )
             }
 
+            Thread.sleep(300)
+
+            mockMvc
+                .perform(get("/task?q={q}", "Fala comigo").with(AdminJwtMock.postProcessor))
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.requested.tasks").isArray)
+                .andExpect(jsonPath("$.requested.tasks.size()").value(3))
+                .andReturn()
+                .let {
+                    val titles =
+                        JsonPath.parse(it.response.contentAsString)
+                            .read<List<String>>("$.requested.tasks[*].title")
+
+                    assertThat(titles).containsExactlyInAnyOrderElementsOf(titles1.subList(0, 3))
+                }
+
             every { auditorProvider.currentAuditor } returns
                 Optional.of(AdminJwtMock2.jwtMock.subject)
 
-            val titles =
+            val titles2 =
                 listOf(
                     "Fala comigo admin 2 0",
                     "Fala comigo admin 2 1",
@@ -228,7 +247,7 @@ class TaskControllerTests {
                     "Vai pegar nunca admin 2 2",
                 )
 
-            for (title in titles) {
+            for (title in titles2) {
                 mockMvc.perform(
                     post("/task")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -250,12 +269,12 @@ class TaskControllerTests {
                         JsonPath.parse(it.response.contentAsString)
                             .read<List<String>>("$.requested.tasks[*].title")
 
-                    assertThat(titles).containsExactlyInAnyOrderElementsOf(titles.subList(0, 3))
+                    assertThat(titles).containsExactlyInAnyOrderElementsOf(titles2.subList(0, 3))
                 }
 
-            verify { fga.listObjects(any(), any(), any()) }
+            verify(exactly = 2) { fga.listObjects(any(), any(), any()) }
 
-            verify(exactly = 1) { fts.search(any(), any(), any()) }
+            verify(exactly = 2) { fts.search(any(), any(), any()) }
         }
 
         @Ignore fun `return a paginated list of tasks`() {}
