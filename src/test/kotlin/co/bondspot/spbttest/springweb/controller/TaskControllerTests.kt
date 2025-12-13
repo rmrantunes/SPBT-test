@@ -74,18 +74,13 @@ class TaskControllerTests {
     @AfterEach
     fun afterEach() {
         jpaTaskRepository.deleteAll()
+        MeilisearchProvider().dangerouslyDeleteAllDocuments(Task.ENTITY_NAME)
     }
 
     companion object {
         @JvmStatic
         @BeforeAll
         fun beforeAll() {
-            MeilisearchProvider().dangerouslyDeleteAllDocuments(Task.ENTITY_NAME)
-        }
-
-        @JvmStatic
-        @AfterAll
-        fun afterAll() {
             MeilisearchProvider().dangerouslyDeleteAllDocuments(Task.ENTITY_NAME)
         }
     }
@@ -352,8 +347,22 @@ class TaskControllerTests {
 
         @Test
         fun `return success result for found task updated`() {
-            val created = taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí"))
-            val id = created.id!!
+            val created = Task("Task 1", description = "alguma coisa aí")
+
+            val result =
+                mockMvc
+                    .perform(
+                        post("/task")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                """{"title": "${created.title}", "description": "${created.description}"}"""
+                            )
+                            .with(AdminJwtMock.postProcessor)
+                    )
+                    .andReturn()
+
+            val id =
+                JsonPath.parse(result.response.contentAsString).read<String>("$.requested.task.id")
 
             mockMvc
                 .perform(
@@ -368,6 +377,19 @@ class TaskControllerTests {
             val updated = taskRepositoryImpl.getById(id)
 
             assertThat(updated?.title).isEqualTo("Task 1 updated")
+
+            mockMvc
+                .perform(
+                    patch("/task/$id/details")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"title":  "Task 1 updated"}""".trimIndent())
+                        .with(AdminJwtMock2.postProcessor)
+                )
+                .andExpect(
+                    jsonPath("$.errors[0].message")
+                        .value("Requested resource is not bonded to requester")
+                )
+                .andExpect(status().isForbidden)
         }
     }
 
