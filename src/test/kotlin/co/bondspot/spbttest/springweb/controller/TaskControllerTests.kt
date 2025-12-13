@@ -1,11 +1,17 @@
 package co.bondspot.spbttest.springweb.controller
 
+import co.bondspot.spbttest.domain.contract.IFgaProvider
+import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.springweb.persistence.TaskRepository
 import co.bondspot.spbttest.testutils.AdminJwtMock
+import co.bondspot.spbttest.testutils.AdminJwtMock2
+import com.jayway.jsonpath.JsonPath
 import com.ninjasquad.springmockk.MockkBean
+import com.ninjasquad.springmockk.SpykBean
 import io.mockk.every
+import io.mockk.verify
 import java.util.*
 import kotlin.test.Ignore
 import kotlin.test.assertTrue
@@ -49,6 +55,10 @@ class TaskControllerTests {
 
     @MockkBean private lateinit var auditorProvider: AuditorAware<String>
 
+    @SpykBean private lateinit var fga: IFgaProvider
+
+    @SpykBean private lateinit var fts: IFullTextSearchProvider
+
     @BeforeEach
     fun beforeEach() {
         mockMvc =
@@ -67,7 +77,7 @@ class TaskControllerTests {
 
     @Nested
     @DisplayName("when creating a task...")
-    inner class CreateTask() {
+    inner class CreateTask {
 
         @Test
         fun `return it if input is valid`() {
@@ -89,6 +99,10 @@ class TaskControllerTests {
                     assertTrue {
                         it.response.getHeaderValue("Location").toString().startsWith("/task")
                     }
+
+                    verify { fga.writeRelationship(any()) }
+
+                    verify { fts.index(Task.ENTITY_NAME, any()) }
                 }
         }
 
@@ -124,33 +138,65 @@ class TaskControllerTests {
 
     @Nested
     @DisplayName("when listing a task...")
-    inner class ListTasks() {
+    inner class ListTasks {
+
         @Test
         fun `return list of created tasks`() {
             repeat(3) {
-                taskRepositoryImpl.create(
-                    Task("Task $it", createdById = AdminJwtMock.jwtMock.subject)
+                mockMvc.perform(
+                    post("/task")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"title": "Uma tarefa qualquer admin 1 $it"}""")
+                        .with(AdminJwtMock.postProcessor)
+                )
+            }
+
+            every { auditorProvider.currentAuditor } returns
+                Optional.of(AdminJwtMock2.jwtMock.subject)
+
+            val titles =
+                listOf(
+                    "Uma tarefa qualquer admin 2 0",
+                    "Uma tarefa qualquer admin 2 1",
+                    "Uma tarefa qualquer admin 2 2",
+                )
+
+            for (title in titles) {
+                mockMvc.perform(
+                    post("/task")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"title": "$title"}""")
+                        .with(AdminJwtMock2.postProcessor)
                 )
             }
 
             mockMvc
-                .perform(get("/task").with(AdminJwtMock.postProcessor))
+                .perform(get("/task").with(AdminJwtMock2.postProcessor))
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.requested.tasks").isArray)
                 .andExpect(jsonPath("$.requested.tasks.size()").value(3))
-                .also { m ->
-                    repeat(3) {
-                        m.andExpect(jsonPath("$.requested.tasks[${it}].title").value("Task $it"))
-                    }
+                .andReturn()
+                .let {
+                    val titles =
+                        JsonPath.parse(it.response.contentAsString)
+                            .read<List<String>>("$.requested.tasks[*].title")
+
+                    assertThat(titles).containsExactlyInAnyOrderElementsOf(titles)
                 }
+
+            verify { fga.listObjects(any(), any(), any()) }
+
+            verify(exactly = 0) { fts.search(any(), any()) }
         }
+
+        @Ignore fun `return list of created tasks with query term`() {}
 
         @Ignore fun `return a paginated list of tasks`() {}
     }
 
     @Nested
     @DisplayName("when getting a task...")
-    inner class GetTask() {
+    inner class GetTask {
         @Test
         fun `return 404 if no task found with given id`() {
             mockMvc
