@@ -95,7 +95,7 @@ open class TaskApplicationService(
             !fga.checkRelationship(
                 FgaRelTuple(
                     Account.ENTITY_NAME to reqAccount.id!!,
-                    Task.FgaRelations.CAN_EDIT_STATUS,
+                    Task.FgaRelations.CAN_EDIT_DETAILS,
                     Task.ENTITY_NAME to existing.id!!,
                 )
             )

@@ -428,15 +428,22 @@ class TaskControllerTests {
 
         @Test
         fun `return success result for found task updated`() {
-            val created =
-                taskRepositoryImpl.create(
-                    Task(
-                        "Task 1",
-                        description = "alguma coisa aí",
-                        createdById = AdminJwtMock.jwtMock.subject,
+            val created = Task("Task 1", description = "alguma coisa aí")
+
+            val result =
+                mockMvc
+                    .perform(
+                        post("/task")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                """{"title": "${created.title}", "description": "${created.description}"}"""
+                            )
+                            .with(AdminJwtMock.postProcessor)
                     )
-                )
-            val id = created.id!!
+                    .andReturn()
+
+            val id =
+                JsonPath.parse(result.response.contentAsString).read<String>("$.requested.task.id")
 
             for (value in Task.Status.entries) {
                 mockMvc

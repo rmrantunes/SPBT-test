@@ -8,6 +8,7 @@ type task
     define owner: [user]
     define admin: owner
     define can_edit_details: writer
+    define can_edit_status: writer
     define can_share: admin
     define viewer: [user] or admin or writer
     define writer: admin
