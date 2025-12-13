@@ -294,15 +294,38 @@ class TaskControllerTests {
 
         @Test
         fun `return task found with given id`() {
-            val created = taskRepositoryImpl.create(Task("Task 1", description = "alguma coisa aí"))
+            val created = Task("Task 1", description = "alguma coisa aí")
+
+            val result =
+                mockMvc
+                    .perform(
+                        post("/task")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                """{"title": "${created.title}", "description": "${created.description}"}"""
+                            )
+                            .with(AdminJwtMock.postProcessor)
+                    )
+                    .andReturn()
+
+            val id =
+                JsonPath.parse(result.response.contentAsString).read<String>("$.requested.task.id")
 
             mockMvc
-                .perform(get("/task/${created.id}").with(AdminJwtMock.postProcessor))
+                .perform(get("/task/${id}").with(AdminJwtMock.postProcessor))
                 .andExpect(status().isOk)
-                .andExpect(jsonPath("$.requested.task.id").value(created.id))
+                .andExpect(jsonPath("$.requested.task.id").value(id))
                 .andExpect(jsonPath("$.requested.task.title").value(created.title))
                 .andExpect(jsonPath("$.requested.task.description").value(created.description))
                 .andExpect(jsonPath("$.requested.task.status").value("PENDING"))
+
+            mockMvc
+                .perform(get("/task/${id}").with(AdminJwtMock2.postProcessor))
+                .andExpect(status().isForbidden)
+                .andExpect(
+                    jsonPath("$.errors[0].message")
+                        .value("Requested resource is not bonded to requester")
+                )
         }
     }
 
