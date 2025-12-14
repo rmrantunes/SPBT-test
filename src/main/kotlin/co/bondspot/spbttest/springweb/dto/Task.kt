@@ -56,3 +56,16 @@ data class UpdateTaskStatusReqDto(
 }
 
 @Serializable data class UpdateTaskStatusResDto(val updateSuccessful: Boolean?)
+
+@Serializable
+data class ShareTaskReqDto(
+    @IsString(required = true, nullable = false)
+    @Serializable(KSVString::class)
+    val accountIdToShareWith: KSVerifiable<String> = KSVerifiable(),
+    @IsString(nullable = true)
+    @IsOneOf(["viewer", "editor"])
+    @Serializable(KSVString::class)
+    val relation: KSVerifiable<String> = KSVerifiable(),
+)
+
+data class ShareTaskResDto(val operationSuccessful: Boolean?)

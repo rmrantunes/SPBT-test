@@ -546,4 +546,25 @@ class TaskControllerTests {
             verify(exactly = 9) { fga.checkRelationship(any()) }
         }
     }
+
+    @Nested
+    @DisplayName("POST /task/{id}/share")
+    inner class ShareTask {
+        val content =
+            """{"relation":  "viewer", "accountIdToShareWith": "${AdminJwtMock2.jwtMock.subject}"}"""
+                .trimIndent()
+
+        @Test
+        fun `return 404 if no task found with given id`() {
+            mockMvc
+                .perform(
+                    post("/task/${UUID.randomUUID()}/share")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                        .with(AdminJwtMock.postProcessor)
+                )
+                .andExpect(status().isNotFound)
+                .andExpect(jsonPath("$.errors[0].message").value("Task not found"))
+        }
+    }
 }
