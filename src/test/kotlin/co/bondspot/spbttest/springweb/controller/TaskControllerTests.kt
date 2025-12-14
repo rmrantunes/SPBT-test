@@ -378,7 +378,7 @@ class TaskControllerTests {
                         .with(AdminJwtMock.postProcessor)
                 )
                 .andExpect(status().isOk)
-                .andExpect(jsonPath("$.requested.updateSuccessful").value(true))
+                .andExpect(jsonPath("$.requested.operationSuccessful").value(true))
 
             val updated = taskRepositoryImpl.getById(id)
 
@@ -494,7 +494,7 @@ class TaskControllerTests {
                             .with(AdminJwtMock.postProcessor)
                     )
                     .andExpect(status().isOk)
-                    .andExpect(jsonPath("$.requested.updateSuccessful").value(true))
+                    .andExpect(jsonPath("$.requested.operationSuccessful").value(true))
 
                 val updated = taskRepositoryImpl.getById(id)
 
