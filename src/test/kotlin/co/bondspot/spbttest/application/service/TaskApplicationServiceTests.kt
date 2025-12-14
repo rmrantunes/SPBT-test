@@ -254,7 +254,7 @@ class TaskApplicationServiceTests {
 
     @Nested
     @DisplayName("when sharing task with another account...")
-    inner class ShareTaskForView() {
+    inner class ShareTaskForView {
         @Test
         fun `throw 500 if not supported relation is passed`() {
 
@@ -313,7 +313,7 @@ class TaskApplicationServiceTests {
                     service.shareWith(id, accountId2, reqAccount = reqAccount)
                 }
 
-            assertThat(ex.message).isEqualTo("Requester missing owner relation to task")
+            assertThat(ex.message).isEqualTo("Requester does not have sufficient permission to perform this action")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
         }
 

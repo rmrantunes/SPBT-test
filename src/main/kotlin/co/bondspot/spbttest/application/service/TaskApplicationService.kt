@@ -161,7 +161,7 @@ open class TaskApplicationService(
                 )
             )
         ) {
-            throw ApplicationServiceException("Requester missing owner relation to task")
+            throw ApplicationServiceException("Requester does not have sufficient permission to perform this action")
                 .setRelatedHttpStatusCode { FORBIDDEN }
         }
 

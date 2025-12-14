@@ -554,6 +554,8 @@ class TaskControllerTests {
             """{"relation":  "viewer", "accountIdToShareWith": "${AdminJwtMock2.jwtMock.subject}"}"""
                 .trimIndent()
 
+        @Ignore fun `validate input`() {}
+
         @Test
         fun `return 404 if no task found with given id`() {
             mockMvc
@@ -565,6 +567,66 @@ class TaskControllerTests {
                 )
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.errors[0].message").value("Task not found"))
+        }
+
+        @Test
+        fun `throw error if not owner is trying to share`() {
+            val created = Task("Task 1", description = "alguma coisa aí")
+
+            val result =
+                mockMvc
+                    .perform(
+                        post("/task")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                """{"title": "${created.title}", "description": "${created.description}"}"""
+                            )
+                            .with(AdminJwtMock.postProcessor)
+                    )
+                    .andReturn()
+
+            val id =
+                JsonPath.parse(result.response.contentAsString).read<String>("$.requested.task.id")
+
+            mockMvc
+                .perform(
+                    post("/task/$id/share")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                        .with(AdminJwtMock2.postProcessor)
+                )
+                .andExpect(status().isForbidden)
+                .andExpect(
+                    jsonPath("$.errors[0].message")
+                        .value(
+                            "Requested resource is not bonded to requester"
+                        )
+                )
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to AdminJwtMock2.jwtMock.subject,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            mockMvc
+                .perform(
+                    post("/task/$id/share")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                        .with(AdminJwtMock2.postProcessor)
+                )
+                .andExpect(status().isForbidden)
+                .andExpect(
+                    jsonPath("$.errors[0].message")
+                        .value(
+                            "Requester does not have sufficient permission to perform this action"
+                        )
+                )
         }
     }
 }
