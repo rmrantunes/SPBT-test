@@ -42,7 +42,7 @@ data class UpdateTaskDetailsReqDto(
     fun toDomainEntity(): Task = Task(title.value ?: "", description = description.value)
 }
 
-@Serializable data class UpdateTaskDetailsResDto(val updateSuccessful: Boolean?)
+@Serializable data class UpdateTaskDetailsResDto(val operationSuccessful: Boolean?)
 
 @Serializable
 data class UpdateTaskStatusReqDto(
@@ -55,7 +55,7 @@ data class UpdateTaskStatusReqDto(
     fun toDomainEntity() = Task(status = Task.Status.valueOf(status.dangerouslyForceCast()))
 }
 
-@Serializable data class UpdateTaskStatusResDto(val updateSuccessful: Boolean?)
+@Serializable data class UpdateTaskStatusResDto(val operationSuccessful: Boolean?)
 
 @Serializable
 data class ShareTaskReqDto(
