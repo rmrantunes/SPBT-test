@@ -1,7 +1,16 @@
 package co.bondspot.spbttest.springweb.controller
 
 import co.bondspot.spbttest.shared.dto.ResponseDto
-import co.bondspot.spbttest.springweb.dto.*
+import co.bondspot.spbttest.springweb.dto.CreateTaskReqDto
+import co.bondspot.spbttest.springweb.dto.CreateTaskResDto
+import co.bondspot.spbttest.springweb.dto.GetTaskResDto
+import co.bondspot.spbttest.springweb.dto.ListTasksResDto
+import co.bondspot.spbttest.springweb.dto.ShareTaskReqDto
+import co.bondspot.spbttest.springweb.dto.ShareTaskResDto
+import co.bondspot.spbttest.springweb.dto.UpdateTaskDetailsReqDto
+import co.bondspot.spbttest.springweb.dto.UpdateTaskDetailsResDto
+import co.bondspot.spbttest.springweb.dto.UpdateTaskStatusReqDto
+import co.bondspot.spbttest.springweb.dto.UpdateTaskStatusResDto
 import co.bondspot.spbttest.springweb.service.TaskService
 import co.bondspot.spbttest.springweb.util.security.toAccount
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -13,7 +22,13 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/task")
