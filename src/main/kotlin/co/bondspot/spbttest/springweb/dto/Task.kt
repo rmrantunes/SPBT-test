@@ -61,10 +61,12 @@ data class UpdateTaskStatusReqDto(
 data class ShareTaskReqDto(
     @IsString(required = true, nullable = false)
     @Serializable(KSVString::class)
+    @field:Schema(type = "string")
     val accountIdToShareWith: KSVerifiable<String> = KSVerifiable(),
     @IsString(nullable = true)
     @IsOneOf(["viewer", "writer"])
     @Serializable(KSVString::class)
+    @field:Schema(type = "string", nullable = true, allowableValues = ["viewer", "writer"])
     val relation: KSVerifiable<String> = KSVerifiable(),
 )
 

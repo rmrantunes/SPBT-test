@@ -657,6 +657,7 @@ class TaskControllerTests {
                         .content(content)
                         .with(AdminJwtMock.postProcessor)
                 )
+                .also { println(it.andReturn().response.contentAsString) }
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.requested.operationSuccessful").value(true))
 
