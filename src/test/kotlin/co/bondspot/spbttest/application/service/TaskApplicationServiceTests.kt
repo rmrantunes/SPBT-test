@@ -401,7 +401,7 @@ class TaskApplicationServiceTests {
             )
         } returns true
         val service = TaskApplicationService(taskRepo, accountRepo, fga, fts)
-        val result = service.shareWith(id, accountId2, Task.FgaRelations.EDITOR, reqAccount)
+        val result = service.shareWith(id, accountId2, Task.FgaRelations.WRITER, reqAccount)
 
         Assertions.assertThat(result).isTrue()
         verify {
@@ -410,7 +410,7 @@ class TaskApplicationServiceTests {
                 listOf(
                     FgaRelTuple(
                         Account.ENTITY_NAME to account2.id!!,
-                        Task.FgaRelations.EDITOR,
+                        Task.FgaRelations.WRITER,
                         Task.ENTITY_NAME to id,
                     )
                 )

@@ -598,9 +598,7 @@ class TaskControllerTests {
                 .andExpect(status().isForbidden)
                 .andExpect(
                     jsonPath("$.errors[0].message")
-                        .value(
-                            "Requested resource is not bonded to requester"
-                        )
+                        .value("Requested resource is not bonded to requester")
                 )
 
             every {
@@ -627,6 +625,80 @@ class TaskControllerTests {
                             "Requester does not have sufficient permission to perform this action"
                         )
                 )
+        }
+
+        @Test
+        fun `share successfully to other account`() {
+            val created = Task("Task 1", description = "alguma coisa aí")
+
+            val result =
+                mockMvc
+                    .perform(
+                        post("/task")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                """{"title": "${created.title}", "description": "${created.description}"}"""
+                            )
+                            .with(AdminJwtMock.postProcessor)
+                    )
+                    .andReturn()
+
+            val id =
+                JsonPath.parse(result.response.contentAsString).read<String>("$.requested.task.id")
+
+            mockMvc
+                .perform(get("/task/$id").with(AdminJwtMock.postProcessor))
+                .andExpect(status().isOk)
+
+            mockMvc
+                .perform(
+                    post("/task/$id/share")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content)
+                        .with(AdminJwtMock.postProcessor)
+                )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.requested.operationSuccessful").value(true))
+
+            // ^ Just granted Admin 2 the view permission to resource
+
+            mockMvc
+                .perform(
+                    get("/task/$id")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(AdminJwtMock2.postProcessor)
+                )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.requested.task.title").value(created.title))
+                .andExpect(jsonPath("$.requested.task.description").value(created.description))
+                .andExpect(
+                    jsonPath("$.requested.task.createdById").value(AdminJwtMock.jwtMock.subject)
+                )
+
+            // ^ Admin 2 can now access the resource
+
+            mockMvc
+                .perform(
+                    post("/task/$id/share")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                            """{ "accountIdToShareWith": "${AdminJwtMock2.jwtMock.subject}", "relation": "writer" }"""
+                        )
+                        .with(AdminJwtMock.postProcessor)
+                )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.requested.operationSuccessful").value(true))
+
+            mockMvc
+                .perform(
+                    patch("/task/$id/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"status":  "COMPLETED"}""".trimIndent())
+                        .with(AdminJwtMock2.postProcessor)
+                )
+                .andExpect(status().isOk)
+
+            // ^ Admin 2 can now edit the resource
         }
     }
 }

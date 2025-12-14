@@ -63,7 +63,7 @@ data class ShareTaskReqDto(
     @Serializable(KSVString::class)
     val accountIdToShareWith: KSVerifiable<String> = KSVerifiable(),
     @IsString(nullable = true)
-    @IsOneOf(["viewer", "editor"])
+    @IsOneOf(["viewer", "writer"])
     @Serializable(KSVString::class)
     val relation: KSVerifiable<String> = KSVerifiable(),
 )

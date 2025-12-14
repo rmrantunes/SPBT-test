@@ -91,7 +91,7 @@ class TaskController(private val taskService: TaskService) {
             taskService.shareWith(
                 id,
                 body.accountIdToShareWith.dangerouslyForceCast(),
-                "viewer",
+                body.relation.value ?: "viewer",
                 jwt.toAccount(),
             )
         return ResponseEntity.ok().body(ResponseDto(ShareTaskResDto(updated)))
