@@ -142,7 +142,7 @@ open class TaskApplicationService(
 
     override fun shareWith(
         id: String,
-        accountToShareWithId: String,
+        accountIdToShareWith: String,
         relation: String?,
         reqAccount: Account,
     ): Boolean? {
@@ -166,7 +166,7 @@ open class TaskApplicationService(
         }
 
         // Here we're considering only accounts that already authenticated into the application
-        accountRepo.getById(accountToShareWithId)
+        accountRepo.getById(accountIdToShareWith)
             ?: throw ApplicationServiceException("Account to share with not found")
                 .setRelatedHttpStatusCode { NOT_FOUND }
 
@@ -174,7 +174,7 @@ open class TaskApplicationService(
         // TODO if error thrown from FGA provider, register and alert
         fga.writeRelationship(
             FgaRelTuple(
-                Account.ENTITY_NAME to accountToShareWithId,
+                Account.ENTITY_NAME to accountIdToShareWith,
                 relation,
                 Task.ENTITY_NAME to id,
             )

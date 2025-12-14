@@ -42,7 +42,7 @@ interface ITaskApplicationService {
 
     fun shareWith(
         id: String,
-        accountToShareWithId: String,
+        accountIdToShareWith: String,
         relation: String? = "viewer",
         reqAccount: Account,
     ): Boolean?
