@@ -58,7 +58,7 @@ class OpenFgaProviderTests {
                 }
 
             assertThat(ex.message).startsWith("cannot write a tuple which already exists")
-            assertThat(ex.cause).isInstanceOf(FgaError::class.java)
+            assertThat(ex.cause?.cause).isInstanceOf(FgaError::class.java)
         }
 
         @Ignore fun `handle unexisted relation`() {}
@@ -152,7 +152,7 @@ class OpenFgaProviderTests {
                 }
 
             assertThat(ex.message).startsWith("cannot delete a tuple which does not exist")
-            assertThat(ex.cause).isInstanceOf(FgaError::class.java)
+            assertThat(ex.cause?.cause).isInstanceOf(FgaError::class.java)
         }
     }
 
@@ -228,7 +228,7 @@ class OpenFgaProviderTests {
                 }
 
             assertThat(ex.message).startsWith("relation 'task#not_a_relation' not found")
-            assertThat(ex.cause).isInstanceOf(FgaError::class.java)
+            assertThat(ex.cause?.cause).isInstanceOf(FgaError::class.java)
         }
     }
 
@@ -276,7 +276,7 @@ class OpenFgaProviderTests {
                     )
                 }
 
-            assertThat(ex.cause).isInstanceOf(FgaError::class.java)
+            assertThat(ex.cause?.cause).isInstanceOf(FgaError::class.java)
 
             val ex2 =
                 assertThrows<OpenFgaProviderException> {
@@ -287,7 +287,7 @@ class OpenFgaProviderTests {
                     )
                 }
 
-            assertThat(ex2.cause).isInstanceOf(FgaError::class.java)
+            assertThat(ex2.cause?.cause).isInstanceOf(FgaError::class.java)
         }
     }
 
@@ -335,13 +335,13 @@ class OpenFgaProviderTests {
                 fga.listRelatedUsers("not_a_type" to taskId, Task.FgaRelations.OWNER)
             }
 
-        assertThat(ex.cause).isInstanceOf(FgaError::class.java)
+        assertThat(ex.cause?.cause).isInstanceOf(FgaError::class.java)
 
         val ex2 =
             assertThrows<OpenFgaProviderException> {
                 fga.listRelatedUsers(Task.ENTITY_NAME to taskId, "not_a_relation")
             }
 
-        assertThat(ex2.cause).isInstanceOf(FgaError::class.java)
+        assertThat(ex2.cause?.cause).isInstanceOf(FgaError::class.java)
     }
 }

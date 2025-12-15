@@ -65,14 +65,14 @@ class OpenFgaProvider : IFgaProvider {
                 return OpenFgaProviderException(
                     cause.getMessageFromResponse()
                         ?: "OpenFGA request returned status code ${cause.statusCode}",
-                    ex.cause,
+                    ex,
                 )
             }
         }
 
         return OpenFgaProviderException(
             ex.message ?: "Something very wrong with OpenFgaProvider requests",
-            ex.cause,
+            ex,
         )
     }
 
@@ -160,6 +160,10 @@ class OpenFgaProvider : IFgaProvider {
         }
     }
 
+    /**
+     * @throws OpenFgaProviderException
+     * @throws FgaProviderException
+     */
     override fun listRelatedUsers(
         subject: Pair<EntityName, ID>,
         relation: String,
