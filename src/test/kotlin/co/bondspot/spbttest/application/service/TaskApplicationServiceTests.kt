@@ -526,7 +526,7 @@ class TaskApplicationServiceTests {
 
         @Test
         fun `should return a list of accounts containing at least the owner`() {
-            val existing = Task("Text", id = id, createdById = account2.id)
+            val existing = Task("Text", id = id, createdById = reqAccount.id)
             every { taskRepo.create(any()) } returns existing
             every { taskRepo.getById(any()) } returns existing
 
@@ -572,7 +572,7 @@ class TaskApplicationServiceTests {
 
         @Test
         fun `should return list of accounts related to task via share`() {
-            val existing = Task("Text", id = id, createdById = account2.id)
+            val existing = Task("Text", id = id, createdById = reqAccount.id)
             every { taskRepo.create(any()) } returns existing
             every { taskRepo.getById(any()) } returns existing
 
