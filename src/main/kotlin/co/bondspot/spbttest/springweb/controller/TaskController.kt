@@ -5,12 +5,10 @@ import co.bondspot.spbttest.springweb.dto.CreateTaskReqDto
 import co.bondspot.spbttest.springweb.dto.CreateTaskResDto
 import co.bondspot.spbttest.springweb.dto.GetTaskResDto
 import co.bondspot.spbttest.springweb.dto.ListTasksResDto
+import co.bondspot.spbttest.springweb.dto.OperationSuccessfulResDto
 import co.bondspot.spbttest.springweb.dto.ShareTaskReqDto
-import co.bondspot.spbttest.springweb.dto.ShareTaskResDto
 import co.bondspot.spbttest.springweb.dto.UpdateTaskDetailsReqDto
-import co.bondspot.spbttest.springweb.dto.UpdateTaskDetailsResDto
 import co.bondspot.spbttest.springweb.dto.UpdateTaskStatusReqDto
-import co.bondspot.spbttest.springweb.dto.UpdateTaskStatusResDto
 import co.bondspot.spbttest.springweb.service.TaskService
 import co.bondspot.spbttest.springweb.util.security.toAccount
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -75,9 +73,9 @@ class TaskController(private val taskService: TaskService) {
         @PathVariable id: String,
         @Valid @RequestBody body: UpdateTaskDetailsReqDto,
         @AuthenticationPrincipal jwt: Jwt,
-    ): ResponseEntity<ResponseDto<UpdateTaskDetailsResDto>> {
+    ): ResponseEntity<ResponseDto<OperationSuccessfulResDto>> {
         val updated = taskService.updateDetails(id, body.toDomainEntity().title, jwt.toAccount())
-        return ResponseEntity.ok().body(ResponseDto(UpdateTaskDetailsResDto(updated)))
+        return ResponseEntity.ok().body(ResponseDto(OperationSuccessfulResDto(updated)))
     }
 
     @PreAuthorize(
@@ -88,9 +86,9 @@ class TaskController(private val taskService: TaskService) {
         @PathVariable id: String,
         @Valid @RequestBody body: UpdateTaskStatusReqDto,
         @AuthenticationPrincipal jwt: Jwt,
-    ): ResponseEntity<ResponseDto<UpdateTaskStatusResDto>> {
+    ): ResponseEntity<ResponseDto<OperationSuccessfulResDto>> {
         val updated = taskService.updateStatus(id, body.toDomainEntity().status, jwt.toAccount())
-        return ResponseEntity.ok().body(ResponseDto(UpdateTaskStatusResDto(updated)))
+        return ResponseEntity.ok().body(ResponseDto(OperationSuccessfulResDto(updated)))
     }
 
     @PreAuthorize(
@@ -101,7 +99,7 @@ class TaskController(private val taskService: TaskService) {
         @PathVariable id: String,
         @Valid @RequestBody body: ShareTaskReqDto,
         @AuthenticationPrincipal jwt: Jwt,
-    ): ResponseEntity<ResponseDto<ShareTaskResDto>> {
+    ): ResponseEntity<ResponseDto<OperationSuccessfulResDto>> {
         val updated =
             taskService.shareWith(
                 id,
@@ -109,6 +107,6 @@ class TaskController(private val taskService: TaskService) {
                 body.relation.value ?: "viewer",
                 jwt.toAccount(),
             )
-        return ResponseEntity.ok().body(ResponseDto(ShareTaskResDto(updated)))
+        return ResponseEntity.ok().body(ResponseDto(OperationSuccessfulResDto(updated)))
     }
 }

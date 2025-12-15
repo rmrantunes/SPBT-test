@@ -42,8 +42,6 @@ data class UpdateTaskDetailsReqDto(
     fun toDomainEntity(): Task = Task(title.value ?: "", description = description.value)
 }
 
-@Serializable data class UpdateTaskDetailsResDto(val operationSuccessful: Boolean?)
-
 @Serializable
 data class UpdateTaskStatusReqDto(
     @IsString
@@ -54,8 +52,6 @@ data class UpdateTaskStatusReqDto(
 ) {
     fun toDomainEntity() = Task(status = Task.Status.valueOf(status.dangerouslyForceCast()))
 }
-
-@Serializable data class UpdateTaskStatusResDto(val operationSuccessful: Boolean?)
 
 @Serializable
 data class ShareTaskReqDto(
@@ -70,4 +66,3 @@ data class ShareTaskReqDto(
     val relation: KSVerifiable<String> = KSVerifiable(),
 )
 
-data class ShareTaskResDto(val operationSuccessful: Boolean?)
