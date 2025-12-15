@@ -570,6 +570,54 @@ class TaskApplicationServiceTests {
             assertThat(result).isEqualTo(listOf(reqAccount))
         }
 
-        @Test fun `should return list of accounts related to task via share`() {}
+        @Test
+        fun `should return list of accounts related to task via share`() {
+            val existing = Task("Text", id = id, createdById = account2.id)
+            every { taskRepo.create(any()) } returns existing
+            every { taskRepo.getById(any()) } returns existing
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.OWNER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.OWNER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            val fgaRelatedUsers =
+                listOf(Account.ENTITY_NAME to reqAccount.id!!, Account.ENTITY_NAME to account2.id!!)
+
+            every { fga.listRelatedUsers(Task.ENTITY_NAME to id, Task.FgaRelations.VIEWER) } returns
+                fgaRelatedUsers
+
+            every { accountRepo.listByIds(fgaRelatedUsers.map { it.second }) } returns
+                listOf(reqAccount, account2)
+
+            val service = TaskApplicationService(taskRepo, accountRepo, fga, fts)
+            val result = service.listRelatedAccounts(id, reqAccount = reqAccount)
+            assertThat(result).isEqualTo(listOf(reqAccount, account2))
+        }
     }
 }
