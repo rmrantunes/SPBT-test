@@ -204,8 +204,9 @@ open class TaskApplicationService(
             )
         ) {
             throw ApplicationServiceException(
-                "Requester does not have sufficient permission to perform this action"
-            )
+                    "Requester does not have sufficient permission to perform this action"
+                )
+                .setRelatedHttpStatusCode { FORBIDDEN }
         }
 
         if (accountIdToRevokeFrom == reqAccount.id) {
@@ -242,8 +243,9 @@ open class TaskApplicationService(
             )
         ) {
             throw ApplicationServiceException(
-                "Requester does not have sufficient permission to perform this action"
-            )
+                    "Requester does not have sufficient permission to perform this action"
+                )
+                .setRelatedHttpStatusCode { FORBIDDEN }
         }
 
         val fgaRelatedAccounts =
