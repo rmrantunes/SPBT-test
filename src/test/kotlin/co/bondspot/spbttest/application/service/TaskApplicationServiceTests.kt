@@ -620,4 +620,44 @@ class TaskApplicationServiceTests {
             assertThat(result).isEqualTo(listOf(reqAccount, account2))
         }
     }
+
+    @Nested
+    @DisplayName("when unsharing a task with an account...")
+    inner class Unsharing {
+        @Test
+        fun `should throw an requester is not owner`() {
+            val existing = Task("Text", id = id, createdById = accountId)
+            every { taskRepo.create(any()) } returns existing
+            every { taskRepo.getById(any()) } returns existing
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.OWNER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns false
+
+            val service = TaskApplicationService(taskRepo, accountRepo, fga, fts)
+            val ex =
+                assertThrows<ApplicationServiceException> {
+                    service.revokeShare(id, UUID.randomUUID().toString(), reqAccount = reqAccount)
+                }
+
+            assertThat(ex.message)
+                .isEqualTo("Requester does not have sufficient permission to perform this action")
+        }
+    }
 }

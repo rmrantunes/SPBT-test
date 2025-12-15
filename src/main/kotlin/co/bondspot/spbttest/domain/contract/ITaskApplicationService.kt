@@ -44,5 +44,7 @@ interface ITaskApplicationService {
         reqAccount: Account,
     ): Boolean?
 
+    fun revokeShare(id: String, accountIdToRevokeFrom: String, reqAccount: Account): Boolean?
+
     fun listRelatedAccounts(id: String, reqAccount: Account): List<Account>
 }

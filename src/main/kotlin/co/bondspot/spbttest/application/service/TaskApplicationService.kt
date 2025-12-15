@@ -185,6 +185,26 @@ open class TaskApplicationService(
         return true
     }
 
+    override fun revokeShare(id: String, accountIdToRevokeFrom: String, reqAccount: Account): Boolean? {
+        val task = getById(id, reqAccount)
+
+        if (
+            !fga.checkRelationship(
+                FgaRelTuple(
+                    Account.ENTITY_NAME to reqAccount.id!!,
+                    Task.FgaRelations.OWNER,
+                    Task.ENTITY_NAME to task.id!!,
+                )
+            )
+        ) {
+            throw ApplicationServiceException(
+                "Requester does not have sufficient permission to perform this action"
+            )
+        }
+
+        return false
+    }
+
     override fun listRelatedAccounts(id: String, reqAccount: Account): List<Account> {
         val task = getById(id, reqAccount)
 
