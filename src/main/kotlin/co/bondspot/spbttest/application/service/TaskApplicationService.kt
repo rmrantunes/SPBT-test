@@ -208,6 +208,12 @@ open class TaskApplicationService(
             )
         }
 
+        if (accountIdToRevokeFrom == reqAccount.id) {
+            throw ApplicationServiceException("Owner cannot self revoke").setRelatedHttpStatusCode {
+                FORBIDDEN
+            }
+        }
+
         for (relation in relationsToBeShared) {
             val tuple =
                 FgaRelTuple(

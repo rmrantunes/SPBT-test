@@ -660,11 +660,41 @@ class TaskApplicationServiceTests {
                 .isEqualTo("Requester does not have sufficient permission to perform this action")
         }
 
-        //        @Ignore
-        //        fun `throw if owner is trying to self revoke`() {
-        //            assertThat(ex.message)
-        //                .isEqualTo("Resource owner cannot self revoke")
-        //        }
+        @Test
+        fun `forbidden if owner is trying to self revoke`() {
+            val existing = Task("Text", id = id, createdById = accountId2)
+            every { taskRepo.create(any()) } returns existing
+            every { taskRepo.getById(any()) } returns existing
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.OWNER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            val service = TaskApplicationService(taskRepo, accountRepo, fga, fts)
+            val ex =
+                assertThrows<ApplicationServiceException> {
+                    service.revokeShare(id, reqAccount.id!!, reqAccount = reqAccount)
+                }
+
+            assertThat(ex.message).isEqualTo("Owner cannot self revoke")
+            assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
+        }
 
         @Test
         fun `revoke permission from account`() {
