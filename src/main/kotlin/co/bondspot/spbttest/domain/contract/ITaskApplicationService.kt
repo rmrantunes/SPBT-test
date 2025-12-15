@@ -35,10 +35,7 @@ interface ITaskApplicationService {
     fun updateStatus(id: String, status: Task.Status, reqAccount: Account): Boolean?
 
     /** Lists the tasks that the requester account is bonded to in any way. */
-    fun list(
-        queryTerm: String? = null,
-        reqAccount: Account,
-    ): List<Task>
+    fun list(queryTerm: String? = null, reqAccount: Account): List<Task>
 
     fun shareWith(
         id: String,
@@ -46,4 +43,6 @@ interface ITaskApplicationService {
         relation: String? = "viewer",
         reqAccount: Account,
     ): Boolean?
+
+    fun listRelatedAccounts(id: String, reqAccount: Account)
 }

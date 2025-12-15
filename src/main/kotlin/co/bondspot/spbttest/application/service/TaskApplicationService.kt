@@ -161,14 +161,16 @@ open class TaskApplicationService(
                 )
             )
         ) {
-            throw ApplicationServiceException("Requester does not have sufficient permission to perform this action")
+            throw ApplicationServiceException(
+                    "Requester does not have sufficient permission to perform this action"
+                )
                 .setRelatedHttpStatusCode { FORBIDDEN }
         }
 
         // Here we're considering only accounts that already authenticated into the application
-//        accountRepo.getById(accountIdToShareWith)
-//            ?: throw ApplicationServiceException("Account to share with not found")
-//                .setRelatedHttpStatusCode { NOT_FOUND }
+        //        accountRepo.getById(accountIdToShareWith)
+        //            ?: throw ApplicationServiceException("Account to share with not found")
+        //                .setRelatedHttpStatusCode { NOT_FOUND }
 
         // TODO catch and throw normalized 5xx error
         // TODO if error thrown from FGA provider, register and alert
@@ -181,5 +183,23 @@ open class TaskApplicationService(
         )
 
         return true
+    }
+
+    override fun listRelatedAccounts(id: String, reqAccount: Account) {
+        val task = getById(id, reqAccount)
+
+        if (
+            !fga.checkRelationship(
+                FgaRelTuple(
+                    Account.ENTITY_NAME to reqAccount.id!!,
+                    Task.FgaRelations.OWNER,
+                    Task.ENTITY_NAME to task.id!!,
+                )
+            )
+        ) {
+            throw ApplicationServiceException(
+                "Requester does not have sufficient permission to perform this action"
+            )
+        }
     }
 }
