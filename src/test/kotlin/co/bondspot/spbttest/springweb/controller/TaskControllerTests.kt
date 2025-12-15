@@ -831,4 +831,14 @@ class TaskControllerTests {
                 }
         }
     }
+
+    @Nested
+    @DisplayName("POST /task/{id}/revoke-sharing")
+    inner class RevokeShareFromAccount {
+        @Ignore
+        fun `forbidden action if requester is not owner` () {}
+
+        @Ignore
+        fun `revoke access permission from account once permitted` () {}
+    }
 }
