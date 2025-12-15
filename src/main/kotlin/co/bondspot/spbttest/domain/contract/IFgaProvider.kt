@@ -40,4 +40,10 @@ interface IFgaProvider {
         relation: String,
         type: EntityName,
     ): List<Pair<EntityName, ID>>
+
+    /** @throws FgaProviderException */
+    fun listRelatedUsers(
+        subject: Pair<EntityName, ID>,
+        relation: String,
+    ): List<Pair<EntityName, ID>>
 }

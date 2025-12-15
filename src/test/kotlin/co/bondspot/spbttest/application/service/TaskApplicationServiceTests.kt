@@ -313,7 +313,8 @@ class TaskApplicationServiceTests {
                     service.shareWith(id, accountId2, reqAccount = reqAccount)
                 }
 
-            assertThat(ex.message).isEqualTo("Requester does not have sufficient permission to perform this action")
+            assertThat(ex.message)
+                .isEqualTo("Requester does not have sufficient permission to perform this action")
             assertThat(ex.relatedHttpStatusCode).isEqualTo(HttpStatusCode.FORBIDDEN)
         }
 
@@ -487,44 +488,88 @@ class TaskApplicationServiceTests {
     inner class ListAccountsRelated {
         // for a given id bring all users related as viewer
 
-       @Test
-       fun `should throw an requester is not owner`() {
-           val existing = Task("Text", id = id, createdById = account2.id)
-           every { taskRepo.create(any()) } returns existing
-           every { taskRepo.getById(any()) } returns existing
+        @Test
+        fun `should throw an requester is not owner`() {
+            val existing = Task("Text", id = id, createdById = account2.id)
+            every { taskRepo.create(any()) } returns existing
+            every { taskRepo.getById(any()) } returns existing
 
-           every {
-               fga.checkRelationship(
-                   FgaRelTuple(
-                       Account.ENTITY_NAME to reqAccount.id!!,
-                       Task.FgaRelations.VIEWER,
-                       Task.ENTITY_NAME to id,
-                   )
-               )
-           } returns true
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
 
-           every {
-               fga.checkRelationship(
-                   FgaRelTuple(
-                       Account.ENTITY_NAME to reqAccount.id!!,
-                       Task.FgaRelations.OWNER,
-                       Task.ENTITY_NAME to id,
-                   )
-               )
-           } returns false
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.OWNER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns false
 
-           val service = TaskApplicationService(taskRepo, accountRepo, fga, fts)
-           val ex = assertThrows<ApplicationServiceException> {
-               service.listRelatedAccounts(id, reqAccount = reqAccount)
-           }
+            val service = TaskApplicationService(taskRepo, accountRepo, fga, fts)
+            val ex =
+                assertThrows<ApplicationServiceException> {
+                    service.listRelatedAccounts(id, reqAccount = reqAccount)
+                }
 
-            assertThat(ex.message).isEqualTo("Requester does not have sufficient permission to perform this action")
-       }
+            assertThat(ex.message)
+                .isEqualTo("Requester does not have sufficient permission to perform this action")
+        }
 
         @Test
-        fun `should return a list of accounts containing at least the owner`() {}
+        fun `should return a list of accounts containing at least the owner`() {
+            val existing = Task("Text", id = id, createdById = account2.id)
+            every { taskRepo.create(any()) } returns existing
+            every { taskRepo.getById(any()) } returns existing
 
-        @Test
-        fun `should return list of accounts related to task via share`() {}
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.OWNER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.OWNER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            every { fga.listRelatedUsers(Task.ENTITY_NAME to id, Task.FgaRelations.VIEWER) } returns
+                listOf(Account.ENTITY_NAME to reqAccount.id!!)
+
+            every { accountRepo.listByIds(listOf(reqAccount.id!!)) } returns listOf(reqAccount)
+
+            val service = TaskApplicationService(taskRepo, accountRepo, fga, fts)
+            val result = service.listRelatedAccounts(id, reqAccount = reqAccount)
+            assertThat(result).isEqualTo(listOf(reqAccount))
+        }
+
+        @Test fun `should return list of accounts related to task via share`() {}
     }
 }

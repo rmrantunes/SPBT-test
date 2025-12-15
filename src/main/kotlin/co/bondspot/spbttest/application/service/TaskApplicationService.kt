@@ -185,7 +185,7 @@ open class TaskApplicationService(
         return true
     }
 
-    override fun listRelatedAccounts(id: String, reqAccount: Account) {
+    override fun listRelatedAccounts(id: String, reqAccount: Account): List<Account> {
         val task = getById(id, reqAccount)
 
         if (
@@ -201,5 +201,10 @@ open class TaskApplicationService(
                 "Requester does not have sufficient permission to perform this action"
             )
         }
+
+        val fgaRelatedAccounts =
+            fga.listRelatedUsers(Task.ENTITY_NAME to task.id, Task.FgaRelations.VIEWER)
+
+        return accountRepo.listByIds(fgaRelatedAccounts.map { it.second })
     }
 }

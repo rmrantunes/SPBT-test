@@ -10,4 +10,6 @@ interface IAccountRepository {
     fun getByUsername(username: String): Account?
 
     fun getById(id: String): Account?
+
+    fun listByIds(ids: List<String>): List<Account>
 }

@@ -153,4 +153,11 @@ class OpenFgaProvider : IFgaProvider {
             throw handleFgaError(ex)
         }
     }
+
+    override fun listRelatedUsers(
+        subject: Pair<EntityName, ID>,
+        relation: String
+    ): List<Pair<EntityName, ID>> {
+        TODO("Not yet implemented")
+    }
 }

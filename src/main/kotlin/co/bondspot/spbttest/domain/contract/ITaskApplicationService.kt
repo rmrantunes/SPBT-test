@@ -44,5 +44,5 @@ interface ITaskApplicationService {
         reqAccount: Account,
     ): Boolean?
 
-    fun listRelatedAccounts(id: String, reqAccount: Account)
+    fun listRelatedAccounts(id: String, reqAccount: Account): List<Account>
 }
