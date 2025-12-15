@@ -772,5 +772,63 @@ class TaskControllerTests {
                     jsonPath("$.requested.accounts[0].id").value(AdminJwtMock.jwtMock.subject)
                 )
         }
+
+        @Test
+        fun `return a list with owner and shared accounts`() {
+            val created = Task("Task 1", description = "alguma coisa aí")
+
+            val result =
+                mockMvc
+                    .perform(
+                        post("/task")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                """{"title": "${created.title}", "description": "${created.description}"}"""
+                            )
+                            .with(AdminJwtMock.postProcessor)
+                    )
+                    .andReturn()
+
+            val id =
+                JsonPath.parse(result.response.contentAsString).read<String>("$.requested.task.id")
+
+            mockMvc
+                .perform(
+                    post("/task/$id/share")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                            """{"relation": "viewer", "accountIdToShareWith": "${AdminJwtMock2.jwtMock.subject}"}"""
+                        )
+                        .with(AdminJwtMock.postProcessor)
+                )
+                .andExpect(status().isOk)
+
+            mockMvc
+                .perform(
+                    get("/task/$id")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(AdminJwtMock2.postProcessor)
+                )
+                .andExpect(status().isOk)
+
+            // ^ AdminJwtMock2 user created on request
+
+            mockMvc
+                .perform(get("/task/$id/shared-with").with(AdminJwtMock.postProcessor))
+                .also { println(it.andReturn().response.contentAsString) }
+                .andExpect(status().isOk)
+                .andReturn()
+                .let {
+                    val list =
+                        JsonPath.parse(it.response.contentAsString)
+                            .read<List<String>>("$.requested.accounts[*].id")
+
+                    assertThat(list)
+                        .containsExactlyInAnyOrder(
+                            AdminJwtMock.jwtMock.subject,
+                            AdminJwtMock2.jwtMock.subject,
+                        )
+                }
+        }
     }
 }
