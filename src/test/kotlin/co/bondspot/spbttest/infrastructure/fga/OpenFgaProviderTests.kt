@@ -312,12 +312,36 @@ class OpenFgaProviderTests {
 
             fga.writeRelationships(relationships)
 
-            val result = fga.listRelatedUsers(
-                Task.ENTITY_NAME to taskId,
-                Task.FgaRelations.OWNER,
-            )
+            val result = fga.listRelatedUsers(Task.ENTITY_NAME to taskId, Task.FgaRelations.OWNER)
 
             assertThat(result.size).isEqualTo(relationships.size)
         }
+    }
+
+    @Test
+    fun `throw some error cases`() {
+        fga.writeRelationships(
+            listOf(
+                FgaRelTuple(
+                    Account.ENTITY_NAME to UUID.randomUUID().toString(),
+                    Task.FgaRelations.OWNER,
+                    Task.ENTITY_NAME to taskId,
+                )
+            )
+        )
+
+        val ex =
+            assertThrows<OpenFgaProviderException> {
+                fga.listRelatedUsers("not_a_type" to taskId, Task.FgaRelations.OWNER)
+            }
+
+        assertThat(ex.cause).isInstanceOf(FgaError::class.java)
+
+        val ex2 =
+            assertThrows<OpenFgaProviderException> {
+                fga.listRelatedUsers(Task.ENTITY_NAME to taskId, "not_a_relation")
+            }
+
+        assertThat(ex2.cause).isInstanceOf(FgaError::class.java)
     }
 }
