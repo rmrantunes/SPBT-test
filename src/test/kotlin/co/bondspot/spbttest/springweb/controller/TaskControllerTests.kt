@@ -702,4 +702,48 @@ class TaskControllerTests {
             // ^ Admin 2 can now edit the resource
         }
     }
+
+    @Nested
+    @DisplayName("GET /task/{id}/shared-with")
+    inner class GetRelatedAccounts {
+        @Test
+        fun `forbidden if requester is not owner`() {
+            val created = Task("Task 1", description = "alguma coisa aí")
+
+            val result =
+                mockMvc
+                    .perform(
+                        post("/task")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                """{"title": "${created.title}", "description": "${created.description}"}"""
+                            )
+                            .with(AdminJwtMock.postProcessor)
+                    )
+                    .andReturn()
+
+            val id =
+                JsonPath.parse(result.response.contentAsString).read<String>("$.requested.task.id")
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to AdminJwtMock2.jwtMock.subject,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            mockMvc
+                .perform(get("/task/$id/shared-with").with(AdminJwtMock2.postProcessor))
+                .andExpect(status().isForbidden)
+                .andExpect(
+                    jsonPath("$.errors[0].message")
+                        .value(
+                            "Requester does not have sufficient permission to perform this action"
+                        )
+                )
+        }
+    }
 }

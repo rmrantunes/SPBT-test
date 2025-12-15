@@ -4,6 +4,7 @@ import co.bondspot.spbttest.shared.dto.ResponseDto
 import co.bondspot.spbttest.springweb.dto.CreateTaskReqDto
 import co.bondspot.spbttest.springweb.dto.CreateTaskResDto
 import co.bondspot.spbttest.springweb.dto.GetTaskResDto
+import co.bondspot.spbttest.springweb.dto.ListTaskRelatedAccountsResDto
 import co.bondspot.spbttest.springweb.dto.ListTasksResDto
 import co.bondspot.spbttest.springweb.dto.OperationSuccessfulResDto
 import co.bondspot.spbttest.springweb.dto.ShareTaskReqDto
@@ -108,5 +109,14 @@ class TaskController(private val taskService: TaskService) {
                 jwt.toAccount(),
             )
         return ResponseEntity.ok().body(ResponseDto(OperationSuccessfulResDto(updated)))
+    }
+
+    @GetMapping("/{id}/shared-with")
+    fun listRelatedAccounts(
+        @PathVariable id: String,
+        @AuthenticationPrincipal jwt: Jwt,
+    ): ResponseEntity<ResponseDto<ListTaskRelatedAccountsResDto>> {
+        val accounts = taskService.listRelatedAccounts(id, jwt.toAccount())
+        return ResponseEntity.ok().body(ResponseDto(ListTaskRelatedAccountsResDto(accounts)))
     }
 }

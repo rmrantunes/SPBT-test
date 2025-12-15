@@ -1,5 +1,6 @@
 package co.bondspot.spbttest.springweb.dto
 
+import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.springweb.util.validation.IsOneOf
 import co.bondspot.spbttest.springweb.util.validation.IsString
@@ -66,3 +67,4 @@ data class ShareTaskReqDto(
     val relation: KSVerifiable<String> = KSVerifiable(),
 )
 
+data class ListTaskRelatedAccountsResDto(val accounts: List<Account>)
