@@ -42,7 +42,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
     implementation("org.keycloak:keycloak-admin-client:26.0.7")
     implementation("org.keycloak:keycloak-authz-client:26.0.7")
-    implementation("dev.openfga:openfga-sdk:0.3.1")
+    implementation("dev.openfga:openfga-sdk:0.9.4")
     implementation("org.flywaydb:flyway-core")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     runtimeOnly("com.h2database:h2")

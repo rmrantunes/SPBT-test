@@ -1,6 +1,7 @@
 package co.bondspot.spbttest.infrastructure.fga
 
 import co.bondspot.spbttest.domain.contract.IFgaProvider
+import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.EntityName
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.ID
@@ -8,12 +9,17 @@ import co.bondspot.spbttest.domain.exception.FgaProviderException
 import dev.openfga.sdk.api.client.OpenFgaClient
 import dev.openfga.sdk.api.client.model.ClientCheckRequest
 import dev.openfga.sdk.api.client.model.ClientListObjectsRequest
+import dev.openfga.sdk.api.client.model.ClientListUsersRequest
 import dev.openfga.sdk.api.client.model.ClientTupleKey
 import dev.openfga.sdk.api.client.model.ClientWriteRequest
 import dev.openfga.sdk.api.configuration.ApiToken
 import dev.openfga.sdk.api.configuration.ClientConfiguration
 import dev.openfga.sdk.api.configuration.Credentials
+import dev.openfga.sdk.api.model.FgaObject
+import dev.openfga.sdk.api.model.UserTypeFilter
 import dev.openfga.sdk.errors.FgaError
+import kotlin.collections.component1
+import kotlin.collections.component2
 
 class OpenFgaProviderException(message: String? = null, cause: Throwable? = null) :
     FgaProviderException(message, cause)
@@ -156,8 +162,23 @@ class OpenFgaProvider : IFgaProvider {
 
     override fun listRelatedUsers(
         subject: Pair<EntityName, ID>,
-        relation: String
+        relation: String,
     ): List<Pair<EntityName, ID>> {
-        TODO("Not yet implemented")
+        val userFilters = listOf<UserTypeFilter>(UserTypeFilter().type(Account.ENTITY_NAME))
+
+        return try {
+            ClientListUsersRequest()
+                .relation(relation)
+                ._object(FgaObject().type(subject.first).id(subject.second))
+                .userFilters(userFilters)
+                .let {
+                    client.listUsers(it).get().users.mapNotNull { user ->
+                        val obj = user.`object`
+                        if (obj != null) obj.type to obj.id else null
+                    }
+                }
+        } catch (ex: Exception) {
+            throw handleFgaError(ex)
+        }
     }
 }

@@ -290,4 +290,34 @@ class OpenFgaProviderTests {
             assertThat(ex2.cause).isInstanceOf(FgaError::class.java)
         }
     }
+
+    @Nested
+    @DisplayName("listRelatedUsers")
+    inner class ListRelatedUsers {
+        @Test
+        fun `list users related to object with some relation`() {
+            val taskId = UUID.randomUUID().toString()
+
+            val relationships = buildList {
+                repeat(10) {
+                    add(
+                        FgaRelTuple(
+                            Account.ENTITY_NAME to UUID.randomUUID().toString(),
+                            Task.FgaRelations.OWNER,
+                            Task.ENTITY_NAME to taskId,
+                        )
+                    )
+                }
+            }
+
+            fga.writeRelationships(relationships)
+
+            val result = fga.listRelatedUsers(
+                Task.ENTITY_NAME to taskId,
+                Task.FgaRelations.OWNER,
+            )
+
+            assertThat(result.size).isEqualTo(relationships.size)
+        }
+    }
 }
