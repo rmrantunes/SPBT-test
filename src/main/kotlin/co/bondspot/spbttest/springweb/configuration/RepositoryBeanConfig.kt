@@ -57,8 +57,7 @@ class RepositoryBeanConfig(
             override fun getById(id: String): Account? =
                 accountRepository.findById(id).getOrNull()?.toDomain()
 
-            override fun listByIds(ids: List<String>): List<Account> {
-                TODO("Not yet implemented")
-            }
+            override fun listByIds(ids: List<String>) =
+                accountRepository.findAllById(ids).map { it.toDomain() }
         }
 }

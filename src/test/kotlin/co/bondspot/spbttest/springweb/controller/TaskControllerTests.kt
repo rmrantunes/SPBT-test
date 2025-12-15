@@ -745,5 +745,32 @@ class TaskControllerTests {
                         )
                 )
         }
+
+        @Test
+        fun `return a list with at least the owner`() {
+            val created = Task("Task 1", description = "alguma coisa aí")
+
+            val result =
+                mockMvc
+                    .perform(
+                        post("/task")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                """{"title": "${created.title}", "description": "${created.description}"}"""
+                            )
+                            .with(AdminJwtMock.postProcessor)
+                    )
+                    .andReturn()
+
+            val id =
+                JsonPath.parse(result.response.contentAsString).read<String>("$.requested.task.id")
+
+            mockMvc
+                .perform(get("/task/$id/shared-with").with(AdminJwtMock.postProcessor))
+                .andExpect(status().isOk)
+                .andExpectAll(
+                    jsonPath("$.requested.accounts[0].id").value(AdminJwtMock.jwtMock.subject)
+                )
+        }
     }
 }
