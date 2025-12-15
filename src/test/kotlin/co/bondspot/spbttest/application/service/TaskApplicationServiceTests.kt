@@ -625,8 +625,8 @@ class TaskApplicationServiceTests {
     @DisplayName("when unsharing a task with an account...")
     inner class Unsharing {
         @Test
-        fun `should throw an requester is not owner`() {
-            val existing = Task("Text", id = id, createdById = accountId)
+        fun `throw if requester is not the owner`() {
+            val existing = Task("Text", id = id, createdById = accountId2)
             every { taskRepo.create(any()) } returns existing
             every { taskRepo.getById(any()) } returns existing
 
@@ -658,6 +658,66 @@ class TaskApplicationServiceTests {
 
             assertThat(ex.message)
                 .isEqualTo("Requester does not have sufficient permission to perform this action")
+        }
+
+        //        @Ignore
+        //        fun `throw if owner is trying to self revoke`() {
+        //            assertThat(ex.message)
+        //                .isEqualTo("Resource owner cannot self revoke")
+        //        }
+
+        @Test
+        fun `revoke permission from account`() {
+            val existing = Task("Text", id = id, createdById = reqAccount.id)
+            every { taskRepo.create(any()) } returns existing
+            every { taskRepo.getById(any()) } returns existing
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to reqAccount.id!!,
+                        Task.FgaRelations.OWNER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            val accountIdToRevokeFrom = UUID.randomUUID().toString()
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to accountIdToRevokeFrom,
+                        Task.FgaRelations.WRITER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            val service = TaskApplicationService(taskRepo, accountRepo, fga, fts)
+            val result = service.revokeShare(id, accountIdToRevokeFrom, reqAccount = reqAccount)
+            assertThat(result).isTrue()
+            verify(exactly = 1) {
+                fga invoke
+                    "deleteRelationship" withArguments
+                    listOf(
+                        FgaRelTuple(
+                            Account.ENTITY_NAME to accountIdToRevokeFrom,
+                            Task.FgaRelations.WRITER,
+                            Task.ENTITY_NAME to id,
+                        )
+                    )
+            }
         }
     }
 }

@@ -17,6 +17,8 @@ open class TaskApplicationService(
     private val fga: IFgaProvider,
     private val fts: IFullTextSearchProvider,
 ) : ITaskApplicationService {
+    private val relationsToBeShared = setOf(Task.FgaRelations.WRITER, Task.FgaRelations.VIEWER)
+
     override fun create(task: Task, reqAccount: Account): Task {
         // We're considering the user exists in the Api DB. Right approach? Prolly no lol
 
@@ -185,7 +187,11 @@ open class TaskApplicationService(
         return true
     }
 
-    override fun revokeShare(id: String, accountIdToRevokeFrom: String, reqAccount: Account): Boolean? {
+    override fun revokeShare(
+        id: String,
+        accountIdToRevokeFrom: String,
+        reqAccount: Account,
+    ): Boolean? {
         val task = getById(id, reqAccount)
 
         if (
@@ -202,7 +208,19 @@ open class TaskApplicationService(
             )
         }
 
-        return false
+        for (relation in relationsToBeShared) {
+            val tuple =
+                FgaRelTuple(
+                    Account.ENTITY_NAME to accountIdToRevokeFrom,
+                    relation,
+                    Task.ENTITY_NAME to task.id,
+                )
+            if (fga.checkRelationship(tuple)) {
+                fga.deleteRelationship(tuple)
+            }
+        }
+
+        return true
     }
 
     override fun listRelatedAccounts(id: String, reqAccount: Account): List<Account> {
