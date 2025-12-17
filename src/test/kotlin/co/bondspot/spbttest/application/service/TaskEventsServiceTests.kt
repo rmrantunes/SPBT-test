@@ -1,7 +1,7 @@
 package co.bondspot.spbttest.application.service
 
 import co.bondspot.spbttest.domain.entity.Task
-import co.bondspot.spbttest.domain.event.UpdatedStatusTaskEvent
+import co.bondspot.spbttest.domain.event.TaskNewEvent
 import java.util.UUID
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -22,8 +22,8 @@ class TaskEventsServiceTests {
             // publish send notification (to the receivers) event
 
             assertThrows<NotImplementedError> {
-                service.handleUpdatedStatusTaskEvent(
-                    UpdatedStatusTaskEvent(Task(), UUID.randomUUID().toString())
+                service.handleTaskNewEvent(
+                    TaskNewEvent(Task(), UUID.randomUUID().toString())
                 )
             }
         }
