@@ -656,7 +656,7 @@ class TaskApplicationServiceTests {
             val service = TaskApplicationService(taskRepo, accountRepo, fga, fts)
             val ex =
                 assertThrows<ApplicationServiceException> {
-                    service.revokeShare(id, UUID.randomUUID().toString(), reqAccount = reqAccount)
+                    service.revokeSharing(id, UUID.randomUUID().toString(), reqAccount = reqAccount)
                 }
 
             assertThat(ex.message)
@@ -693,7 +693,7 @@ class TaskApplicationServiceTests {
             val service = TaskApplicationService(taskRepo, accountRepo, fga, fts)
             val ex =
                 assertThrows<ApplicationServiceException> {
-                    service.revokeShare(id, reqAccount.id!!, reqAccount = reqAccount)
+                    service.revokeSharing(id, reqAccount.id!!, reqAccount = reqAccount)
                 }
 
             assertThat(ex.message).isEqualTo("Owner cannot self revoke")
@@ -739,7 +739,7 @@ class TaskApplicationServiceTests {
             } returns true
 
             val service = TaskApplicationService(taskRepo, accountRepo, fga, fts)
-            val result = service.revokeShare(id, accountIdToRevokeFrom, reqAccount = reqAccount)
+            val result = service.revokeSharing(id, accountIdToRevokeFrom, reqAccount = reqAccount)
             assertThat(result).isTrue()
             verify(exactly = 1) {
                 fga invoke

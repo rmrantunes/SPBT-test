@@ -187,7 +187,7 @@ open class TaskApplicationService(
         return true
     }
 
-    override fun revokeShare(
+    override fun revokeSharing(
         id: String,
         accountIdToRevokeFrom: String,
         reqAccount: Account,

@@ -67,4 +67,13 @@ data class ShareTaskReqDto(
     val relation: KSVerifiable<String> = KSVerifiable(),
 )
 
+@Serializable
+data class RevokeTaskSharingReqDto(
+    @IsString(required = true, nullable = false)
+    @Serializable(KSVString::class)
+    @field:Schema(type = "string")
+    val accountIdToRevokeFrom: KSVerifiable<String> = KSVerifiable(),
+)
+
+
 data class ListTaskRelatedAccountsResDto(val accounts: List<Account>)

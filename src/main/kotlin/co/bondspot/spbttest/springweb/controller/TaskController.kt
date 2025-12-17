@@ -7,6 +7,7 @@ import co.bondspot.spbttest.springweb.dto.GetTaskResDto
 import co.bondspot.spbttest.springweb.dto.ListTaskRelatedAccountsResDto
 import co.bondspot.spbttest.springweb.dto.ListTasksResDto
 import co.bondspot.spbttest.springweb.dto.OperationSuccessfulResDto
+import co.bondspot.spbttest.springweb.dto.RevokeTaskSharingReqDto
 import co.bondspot.spbttest.springweb.dto.ShareTaskReqDto
 import co.bondspot.spbttest.springweb.dto.UpdateTaskDetailsReqDto
 import co.bondspot.spbttest.springweb.dto.UpdateTaskStatusReqDto
@@ -118,5 +119,20 @@ class TaskController(private val taskService: TaskService) {
     ): ResponseEntity<ResponseDto<ListTaskRelatedAccountsResDto>> {
         val accounts = taskService.listRelatedAccounts(id, jwt.toAccount())
         return ResponseEntity.ok().body(ResponseDto(ListTaskRelatedAccountsResDto(accounts)))
+    }
+
+    @PostMapping("/{id}/revoke-sharing")
+    fun revokeSharing(
+        @PathVariable id: String,
+        @Valid @RequestBody body: RevokeTaskSharingReqDto,
+        @AuthenticationPrincipal jwt: Jwt,
+    ): ResponseEntity<ResponseDto<OperationSuccessfulResDto>> {
+        val accounts =
+            taskService.revokeSharing(
+                id,
+                body.accountIdToRevokeFrom.dangerouslyForceCast(),
+                jwt.toAccount(),
+            )
+        return ResponseEntity.ok().body(ResponseDto(OperationSuccessfulResDto(accounts)))
     }
 }

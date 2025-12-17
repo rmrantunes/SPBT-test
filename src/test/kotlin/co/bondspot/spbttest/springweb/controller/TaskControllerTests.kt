@@ -835,10 +835,53 @@ class TaskControllerTests {
     @Nested
     @DisplayName("POST /task/{id}/revoke-sharing")
     inner class RevokeShareFromAccount {
-        @Ignore
-        fun `forbidden action if requester is not owner` () {}
+        @Test
+        fun `forbidden action if requester is not owner`() {
+            val created = Task("Task 1", description = "alguma coisa aí")
 
-        @Ignore
-        fun `revoke access permission from account once permitted` () {}
+            val result =
+                mockMvc
+                    .perform(
+                        post("/task")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                """{"title": "${created.title}", "description": "${created.description}"}"""
+                            )
+                            .with(AdminJwtMock.postProcessor)
+                    )
+                    .andReturn()
+
+            val id =
+                JsonPath.parse(result.response.contentAsString).read<String>("$.requested.task.id")
+
+            every {
+                fga.checkRelationship(
+                    FgaRelTuple(
+                        Account.ENTITY_NAME to AdminJwtMock2.jwtMock.subject,
+                        Task.FgaRelations.VIEWER,
+                        Task.ENTITY_NAME to id,
+                    )
+                )
+            } returns true
+
+            mockMvc
+                .perform(
+                    post("/task/$id/revoke-sharing")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                            """{ "accountIdToRevokeFrom": "${AdminJwtMock2.jwtMock.subject}" }"""
+                        )
+                        .with(AdminJwtMock2.postProcessor)
+                )
+                .andExpect(status().isForbidden)
+                .andExpect(
+                    jsonPath("$.errors[0].message")
+                        .value(
+                            "Requester does not have sufficient permission to perform this action"
+                        )
+                )
+        }
+
+        @Ignore fun `revoke access permission from account once permitted`() {}
     }
 }
