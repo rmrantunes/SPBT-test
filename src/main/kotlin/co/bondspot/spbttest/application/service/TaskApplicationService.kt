@@ -3,6 +3,7 @@ package co.bondspot.spbttest.application.service
 import co.bondspot.spbttest.application.exception.ApplicationServiceException
 import co.bondspot.spbttest.application.exception.ApplicationServiceInternalException
 import co.bondspot.spbttest.domain.contract.IAccountRepository
+import co.bondspot.spbttest.domain.contract.IEventPublisher
 import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.ITaskApplicationService
@@ -10,12 +11,15 @@ import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
+import co.bondspot.spbttest.domain.event.UpdatedDetailsTaskEvent
+import co.bondspot.spbttest.domain.event.UpdatedStatusTaskEvent
 
 open class TaskApplicationService(
     private val taskRepo: ITaskRepository,
     private val accountRepo: IAccountRepository,
     private val fga: IFgaProvider,
     private val fts: IFullTextSearchProvider,
+    private val eventPub: IEventPublisher,
 ) : ITaskApplicationService {
     private val relationsToBeShared = setOf(Task.FgaRelations.WRITER, Task.FgaRelations.VIEWER)
 
@@ -87,6 +91,9 @@ open class TaskApplicationService(
 
         // TODO normalize errors FtsProviderException
         fts.index(Task.ENTITY_NAME, listOf(updated))
+
+        eventPub.publishEvent(UpdatedDetailsTaskEvent(updated, reqAccount.id))
+
         return true
     }
 
@@ -114,6 +121,9 @@ open class TaskApplicationService(
 
         // TODO normalize errors FtsProviderException
         fts.index(Task.ENTITY_NAME, listOf(updated))
+
+        eventPub.publishEvent(UpdatedStatusTaskEvent(updated, reqAccount.id))
+
         return true
     }
 
