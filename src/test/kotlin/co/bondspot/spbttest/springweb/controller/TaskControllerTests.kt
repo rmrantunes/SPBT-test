@@ -1011,5 +1011,37 @@ class TaskControllerTests {
                         .value("Requested resource is not bonded to requester")
                 )
         }
+
+        @Test
+        fun `forbidden for owner self revoking`() {
+            val created = Task("Task 1", description = "alguma coisa aí")
+
+            val result =
+                mockMvc
+                    .perform(
+                        post("/task")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                """{"title": "${created.title}", "description": "${created.description}"}"""
+                            )
+                            .with(AdminJwtMock.postProcessor)
+                    )
+                    .andReturn()
+
+            val id =
+                JsonPath.parse(result.response.contentAsString).read<String>("$.requested.task.id")
+
+            mockMvc
+                .perform(
+                    post("/task/$id/revoke-sharing")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                            """{ "accountIdToRevokeFrom": "${AdminJwtMock.jwtMock.subject}" }"""
+                        )
+                        .with(AdminJwtMock.postProcessor)
+                )
+                .andExpect(status().isForbidden)
+                .andExpect(jsonPath("$.errors[0].message").value("Owner cannot self revoke"))
+        }
     }
 }
