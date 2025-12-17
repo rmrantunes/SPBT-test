@@ -882,6 +882,134 @@ class TaskControllerTests {
                 )
         }
 
-        @Ignore fun `revoke access permission from account once permitted`() {}
+        @Test
+        fun `revoke access permission from account once permitted`() {
+            val created = Task("Task 1", description = "alguma coisa aí")
+
+            val result =
+                mockMvc
+                    .perform(
+                        post("/task")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                """{"title": "${created.title}", "description": "${created.description}"}"""
+                            )
+                            .with(AdminJwtMock.postProcessor)
+                    )
+                    .andReturn()
+
+            val id =
+                JsonPath.parse(result.response.contentAsString).read<String>("$.requested.task.id")
+
+            mockMvc
+                .perform(
+                    post("/task/$id/share")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                            """{"relation":  "viewer", "accountIdToShareWith": "${AdminJwtMock2.jwtMock.subject}"}"""
+                        )
+                        .with(AdminJwtMock.postProcessor)
+                )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.requested.operationSuccessful").value(true))
+
+            // ^ Just granted Admin 2 the view permission to resource
+
+            mockMvc
+                .perform(
+                    get("/task/$id")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(AdminJwtMock2.postProcessor)
+                )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.requested.task.title").value(created.title))
+                .andExpect(jsonPath("$.requested.task.description").value(created.description))
+                .andExpect(
+                    jsonPath("$.requested.task.createdById").value(AdminJwtMock.jwtMock.subject)
+                )
+
+            // ^ Admin 2 can now access task as a viewer
+
+            mockMvc
+                .perform(
+                    post("/task/$id/revoke-sharing")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                            """{ "accountIdToRevokeFrom": "${AdminJwtMock2.jwtMock.subject}" }"""
+                        )
+                        .with(AdminJwtMock.postProcessor)
+                )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.requested.operationSuccessful").value(true))
+
+            // ^ Admin 2 access have just been revoked
+
+            mockMvc
+                .perform(
+                    get("/task/$id")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(AdminJwtMock2.postProcessor)
+                )
+                .andExpect(status().isForbidden)
+                .andExpect(
+                    jsonPath("$.errors[0].message")
+                        .value("Requested resource is not bonded to requester")
+                )
+
+            // ^ Admin 2 can't access anymore
+
+            mockMvc
+                .perform(
+                    post("/task/$id/share")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                            """{"relation":  "writer", "accountIdToShareWith": "${AdminJwtMock2.jwtMock.subject}"}"""
+                        )
+                        .with(AdminJwtMock.postProcessor)
+                )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.requested.operationSuccessful").value(true))
+
+            // ^ Just granted Admin 2 the write permission to resource
+
+            mockMvc
+                .perform(
+                    patch("/task/$id/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"status": "COMPLETED"}""")
+                        .with(AdminJwtMock2.postProcessor)
+                )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.requested.operationSuccessful").value(true))
+
+            // ^ Admin 2 just performed a write operation
+
+            mockMvc
+                .perform(
+                    post("/task/$id/revoke-sharing")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                            """{ "accountIdToRevokeFrom": "${AdminJwtMock2.jwtMock.subject}" }"""
+                        )
+                        .with(AdminJwtMock.postProcessor)
+                )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.requested.operationSuccessful").value(true))
+
+            // ^ Admin 2 access have just been revoked again
+
+            mockMvc
+                .perform(
+                    patch("/task/$id/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"status": "IN_PROGRESS"}""")
+                        .with(AdminJwtMock2.postProcessor)
+                )
+                .andExpect(status().isForbidden)
+                .andExpect(
+                    jsonPath("$.errors[0].message")
+                        .value("Requested resource is not bonded to requester")
+                )
+        }
     }
 }
