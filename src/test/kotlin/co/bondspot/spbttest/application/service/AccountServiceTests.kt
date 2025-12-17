@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.util.*
 
-class AccountApplicationServiceTests {
+class AccountServiceTests {
     @Nested
     @DisplayName("when registering an account...")
     inner class RegisterAccount {
@@ -25,7 +25,7 @@ class AccountApplicationServiceTests {
         fun `return CONFLICT if user with same username or email already exists in IAM or DB`() {
             val iamProvider = mockk<IIAMProvider>()
             val accountRepository = mockk<IAccountRepository>()
-            val service = AccountApplicationService(accountRepository, iamProvider)
+            val service = AccountService(accountRepository, iamProvider)
 
             val account = Account("user1", "haha@email.com", "Haha", "O Monstro")
             val iamAccount = IAMAccount("user1", "haha@email.com", "Haha", "O Monstro")
@@ -67,7 +67,7 @@ class AccountApplicationServiceTests {
         fun `if valid should register to DB with IAM integration`() {
             val iamProvider = mockk<IIAMProvider>()
             val accountRepository = mockk<IAccountRepository>()
-            val service = AccountApplicationService(accountRepository, iamProvider)
+            val service = AccountService(accountRepository, iamProvider)
 
             val accountId = UUID.randomUUID().toString()
             val iamAccountId = UUID.randomUUID().toString()
@@ -103,7 +103,7 @@ class AccountApplicationServiceTests {
         fun `if invalid throw ApplicationServiceException`() {
             val iamProvider = mockk<IIAMProvider>()
             val accountRepository = mockk<IAccountRepository>()
-            val service = AccountApplicationService(accountRepository, iamProvider)
+            val service = AccountService(accountRepository, iamProvider)
 
             every { iamProvider.obtainAccessToken(any(), any()) } throws
                 IAMProviderException("Invalid account credentials", HttpStatusCode.UNAUTHORIZED)

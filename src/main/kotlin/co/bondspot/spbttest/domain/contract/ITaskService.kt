@@ -3,7 +3,7 @@ package co.bondspot.spbttest.domain.contract
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.Task
 
-interface ITaskApplicationService {
+interface ITaskService {
     /**
      * Creates a new task.
      *

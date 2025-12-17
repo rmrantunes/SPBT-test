@@ -8,13 +8,13 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class TaskEventsApplicationServiceTests {
+class TaskEventsServiceTests {
     @Nested
     @DisplayName("Create new notification for a task")
     inner class CreateTaskNotification {
         @Test
         fun `not implemented`() {
-            val service = TaskEventsApplicationService()
+            val service = TaskEventsService()
 
             // create new notification & notification objects
             // after identifying the receivers -> owner only or any viewer

@@ -1,6 +1,6 @@
 package co.bondspot.spbttest.springweb.service
 
-import co.bondspot.spbttest.application.service.TaskApplicationService
+import co.bondspot.spbttest.application.service.TaskService
 import co.bondspot.spbttest.domain.contract.IAccountRepository
 import co.bondspot.spbttest.domain.contract.IEventPublisher
 import co.bondspot.spbttest.domain.contract.IFgaProvider
@@ -15,4 +15,4 @@ class TaskService(
     fga: IFgaProvider,
     fts: IFullTextSearchProvider,
     eventPub: IEventPublisher
-) : TaskApplicationService(taskRepo, accountRepo, fga, fts, eventPub)
+) : TaskService(taskRepo, accountRepo, fga, fts, eventPub)

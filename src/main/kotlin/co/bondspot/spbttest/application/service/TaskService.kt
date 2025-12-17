@@ -6,7 +6,7 @@ import co.bondspot.spbttest.domain.contract.IAccountRepository
 import co.bondspot.spbttest.domain.contract.IEventPublisher
 import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
-import co.bondspot.spbttest.domain.contract.ITaskApplicationService
+import co.bondspot.spbttest.domain.contract.ITaskService
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
@@ -14,13 +14,13 @@ import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.domain.event.UpdatedDetailsTaskEvent
 import co.bondspot.spbttest.domain.event.UpdatedStatusTaskEvent
 
-open class TaskApplicationService(
+open class TaskService(
     private val taskRepo: ITaskRepository,
     private val accountRepo: IAccountRepository,
     private val fga: IFgaProvider,
     private val fts: IFullTextSearchProvider,
     private val eventPub: IEventPublisher,
-) : ITaskApplicationService {
+) : ITaskService {
     private val relationsToBeShared = setOf(Task.FgaRelations.WRITER, Task.FgaRelations.VIEWER)
 
     override fun create(task: Task, reqAccount: Account): Task {

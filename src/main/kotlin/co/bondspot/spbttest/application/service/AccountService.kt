@@ -1,7 +1,7 @@
 package co.bondspot.spbttest.application.service
 
 import co.bondspot.spbttest.application.exception.ApplicationServiceException
-import co.bondspot.spbttest.domain.contract.IAccountApplicationService
+import co.bondspot.spbttest.domain.contract.IAccountService
 import co.bondspot.spbttest.domain.contract.IAccountRepository
 import co.bondspot.spbttest.domain.contract.IIAMProvider
 import co.bondspot.spbttest.domain.entity.Account
@@ -9,10 +9,10 @@ import co.bondspot.spbttest.domain.entity.IAMAccount
 import co.bondspot.spbttest.domain.entity.IAMAuthenticatedToken
 import co.bondspot.spbttest.domain.exception.IAMProviderException
 
-open class AccountApplicationService(
+open class AccountService(
     private val accountRepository: IAccountRepository,
     private val iamProvider: IIAMProvider,
-) : IAccountApplicationService {
+) : IAccountService {
     override fun register(account: Account, password: String) {
         val errorMessage = "Account already exists"
 
