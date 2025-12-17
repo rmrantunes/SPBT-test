@@ -11,6 +11,7 @@ import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.FtsSearchResponse
 import co.bondspot.spbttest.domain.entity.Task
+import co.bondspot.spbttest.domain.event.TaskNewEvent
 import co.bondspot.spbttest.domain.event.UpdatedDetailsTaskEvent
 import co.bondspot.spbttest.domain.event.UpdatedStatusTaskEvent
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
@@ -81,19 +82,9 @@ class TaskServiceTests {
             assertThat(result).isEqualTo(createdTask)
 
             verify(exactly = 1) {
-                fga invoke
-                    "writeRelationship" withArguments
-                    listOf(
-                        FgaRelTuple(
-                            Account.ENTITY_NAME to reqAccount.id!!,
-                            Task.FgaRelations.OWNER,
-                            Task.ENTITY_NAME to createdTask.id!!,
-                        )
-                    )
-            }
-
-            verify(exactly = 1) {
-                fts invoke "index" withArguments listOf(Task.ENTITY_NAME, listOf(createdTask))
+                eventPub invoke
+                    "publishEvent" withArguments
+                    listOf(TaskNewEvent(createdTask, createdTask.createdById!!))
             }
         }
     }

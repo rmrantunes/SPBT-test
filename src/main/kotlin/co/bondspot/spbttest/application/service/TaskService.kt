@@ -6,11 +6,12 @@ import co.bondspot.spbttest.domain.contract.IAccountRepository
 import co.bondspot.spbttest.domain.contract.IEventPublisher
 import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
-import co.bondspot.spbttest.domain.contract.ITaskService
 import co.bondspot.spbttest.domain.contract.ITaskRepository
+import co.bondspot.spbttest.domain.contract.ITaskService
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
+import co.bondspot.spbttest.domain.event.TaskNewEvent
 import co.bondspot.spbttest.domain.event.UpdatedDetailsTaskEvent
 import co.bondspot.spbttest.domain.event.UpdatedStatusTaskEvent
 
@@ -27,20 +28,7 @@ open class TaskService(
         // We're considering the user exists in the Api DB. Right approach? Prolly no lol
 
         return taskRepo.create(task.copy(createdById = reqAccount.id)).also {
-            // TODO if error thrown in this block, remove created task, since no action could be
-            //  done from any account.
-            // TODO Consider adding a listener handler (including this block) to react to task
-            //  creation event and optimize this service.
-            fga.writeRelationship(
-                FgaRelTuple(
-                    Account.ENTITY_NAME to reqAccount.id!!,
-                    Task.FgaRelations.OWNER,
-                    Task.ENTITY_NAME to it.id!!,
-                )
-            )
-
-            // TODO normalize errors FtsProviderException
-            fts.index(Task.ENTITY_NAME, listOf(it))
+            eventPub.publishEvent(TaskNewEvent(it, it.createdById!!))
         }
     }
 

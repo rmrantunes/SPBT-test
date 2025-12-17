@@ -14,5 +14,5 @@ class TaskService(
     accountRepo: IAccountRepository,
     fga: IFgaProvider,
     fts: IFullTextSearchProvider,
-    eventPub: IEventPublisher
+    eventPub: IEventPublisher,
 ) : TaskService(taskRepo, accountRepo, fga, fts, eventPub)
