@@ -8,7 +8,7 @@ import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.domain.event.TaskNewEvent
 
-class TaskEventsService(private val fga: IFgaProvider, private val fts: IFullTextSearchProvider) :
+open class TaskEventsService(private val fga: IFgaProvider, private val fts: IFullTextSearchProvider) :
     ITaskEventsService {
     override fun handleTaskNewEvent(e: TaskNewEvent) {
         // TODO if error thrown in this block, remove created task, since no action could be

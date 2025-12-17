@@ -1,5 +1,6 @@
 package co.bondspot.spbttest.springweb.controller
 
+import co.bondspot.spbttest.domain.contract.IEventPublisher
 import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.ITaskRepository
@@ -62,6 +63,8 @@ class TaskControllerTests {
 
     @SpykBean private lateinit var fts: IFullTextSearchProvider
 
+    @SpykBean private lateinit var eventPub: IEventPublisher
+
     @BeforeEach
     fun beforeEach() {
         mockMvc =
@@ -112,9 +115,7 @@ class TaskControllerTests {
                         it.response.getHeaderValue("Location").toString().startsWith("/task")
                     }
 
-                    verify { fga.writeRelationship(any()) }
-
-                    verify { fts.index(Task.ENTITY_NAME, any()) }
+                    verify { eventPub.publishEvent(any()) }
                 }
         }
 
