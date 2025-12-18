@@ -10,7 +10,7 @@ import co.bondspot.spbttest.domain.entity.Notification
 import co.bondspot.spbttest.domain.entity.NotificationObject
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.domain.event.TaskNewEvent
-import co.bondspot.spbttest.domain.event.TaskUpdatedStatusEvent
+import co.bondspot.spbttest.domain.event.TaskStatusUpdatedEvent
 import io.mockk.every
 import io.mockk.spyk
 import io.mockk.verify
@@ -72,8 +72,8 @@ class TaskEventsServiceTests {
     }
 
     @Nested
-    @DisplayName("TaskUpdatedStatusEvent")
-    inner class TaskUpdatedStatusEventTests {
+    @DisplayName("TaskStatusUpdatedEvent")
+    inner class TaskStatusUpdatedEventTests {
         val accountId = UUID.randomUUID().toString()
         val task =
             Task(
@@ -117,7 +117,7 @@ class TaskEventsServiceTests {
 
             every { notifObjectRepo.createMany(notifObjectsInput) } returns notifObjectsCreated
 
-            service.handleTaskUpdatedStatusEvent(TaskUpdatedStatusEvent(task, accountId))
+            service.handleTaskUpdatedStatusEvent(TaskStatusUpdatedEvent(task, accountId))
 
             verify(exactly = 1) { notifRepo invoke "create" withArguments listOf(notifInput) }
 

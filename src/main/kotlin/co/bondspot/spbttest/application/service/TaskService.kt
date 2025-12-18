@@ -12,8 +12,8 @@ import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.domain.event.TaskNewEvent
-import co.bondspot.spbttest.domain.event.TaskUpdatedDetailsEvent
-import co.bondspot.spbttest.domain.event.TaskUpdatedStatusEvent
+import co.bondspot.spbttest.domain.event.TaskDetailsUpdatedEvent
+import co.bondspot.spbttest.domain.event.TaskStatusUpdatedEvent
 
 open class TaskService(
     private val taskRepo: ITaskRepository,
@@ -80,7 +80,7 @@ open class TaskService(
         // TODO normalize errors FtsProviderException
         fts.index(Task.ENTITY_NAME, listOf(updated))
 
-        eventPub.publishEvent(TaskUpdatedDetailsEvent(updated, reqAccount.id))
+        eventPub.publishEvent(TaskDetailsUpdatedEvent(updated, reqAccount.id))
 
         return true
     }
@@ -110,7 +110,7 @@ open class TaskService(
         // TODO normalize errors FtsProviderException
         fts.index(Task.ENTITY_NAME, listOf(updated))
 
-        eventPub.publishEvent(TaskUpdatedStatusEvent(updated, reqAccount.id))
+        eventPub.publishEvent(TaskStatusUpdatedEvent(updated, reqAccount.id))
 
         return true
     }

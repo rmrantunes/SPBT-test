@@ -11,7 +11,7 @@ import co.bondspot.spbttest.domain.entity.Notification
 import co.bondspot.spbttest.domain.entity.NotificationObject
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.domain.event.TaskNewEvent
-import co.bondspot.spbttest.domain.event.TaskUpdatedStatusEvent
+import co.bondspot.spbttest.domain.event.TaskStatusUpdatedEvent
 
 open class TaskEventsService(
     private val fga: IFgaProvider,
@@ -34,7 +34,7 @@ open class TaskEventsService(
         fts.index(Task.ENTITY_NAME, listOf(e.task))
     }
 
-    override fun handleTaskUpdatedStatusEvent(e: TaskUpdatedStatusEvent) {
+    override fun handleTaskUpdatedStatusEvent(e: TaskStatusUpdatedEvent) {
         // TODO implement resilience strategy to retry if DB is down
 
         val notifRoot =

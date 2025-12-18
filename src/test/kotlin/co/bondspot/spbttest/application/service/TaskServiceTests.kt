@@ -12,8 +12,8 @@ import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.FtsSearchResponse
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.domain.event.TaskNewEvent
-import co.bondspot.spbttest.domain.event.TaskUpdatedDetailsEvent
-import co.bondspot.spbttest.domain.event.TaskUpdatedStatusEvent
+import co.bondspot.spbttest.domain.event.TaskDetailsUpdatedEvent
+import co.bondspot.spbttest.domain.event.TaskStatusUpdatedEvent
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import co.bondspot.spbttest.testutils.KSelect
 import io.mockk.every
@@ -186,7 +186,7 @@ class TaskServiceTests {
             verify(exactly = 1) {
                 eventPub invoke
                     "publishEvent" withArguments
-                    listOf(TaskUpdatedStatusEvent(updated, accountId))
+                    listOf(TaskStatusUpdatedEvent(updated, accountId))
             }
         }
     }
@@ -255,7 +255,7 @@ class TaskServiceTests {
             verify(exactly = 1) {
                 eventPub invoke
                     "publishEvent" withArguments
-                    listOf(TaskUpdatedDetailsEvent(updated, accountId))
+                    listOf(TaskDetailsUpdatedEvent(updated, accountId))
             }
         }
     }
