@@ -1,8 +1,12 @@
 package co.bondspot.spbttest.springweb.configuration
 
 import co.bondspot.spbttest.domain.contract.IAccountRepository
+import co.bondspot.spbttest.domain.contract.INotificationObjectRepository
+import co.bondspot.spbttest.domain.contract.INotificationRepository
 import co.bondspot.spbttest.domain.contract.ITaskRepository
 import co.bondspot.spbttest.domain.entity.Account
+import co.bondspot.spbttest.domain.entity.Notification
+import co.bondspot.spbttest.domain.entity.NotificationObject
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.springweb.persistence.AccountEntity
 import co.bondspot.spbttest.springweb.persistence.AccountRepository
@@ -59,5 +63,23 @@ class RepositoryBeanConfig(
 
             override fun listByIds(ids: List<String>) =
                 accountRepository.findAllById(ids).map { it.toDomain() }
+        }
+
+    @Bean
+    fun getNotificationRepository(): INotificationRepository =
+        object : INotificationRepository {
+            override fun create(notification: Notification): Notification {
+                TODO("Not yet implemented")
+            }
+        }
+
+    @Bean
+    fun getNotificationObjectRepository(): INotificationObjectRepository =
+        object : INotificationObjectRepository {
+            override fun createMany(
+                notifObject: List<NotificationObject>
+            ): List<NotificationObject> {
+                TODO("Not yet implemented")
+            }
         }
 }

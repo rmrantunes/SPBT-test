@@ -5,11 +5,12 @@ package co.bondspot.spbttest.domain.entity
  * */
 data class NotificationObject(
     val type: Type,
+    val entity: Entity,
     /** notification listed to the receiver */
     val reached: Boolean = false,
     /** notification details expanded by the receiver */
     val expanded: Boolean = false,
-    val notificationId: String? = null,
+    val notificationId: String,
     val accountId: String? = null,
     val taskId: String? = null,
     val id: String? = null,
@@ -18,5 +19,10 @@ data class NotificationObject(
         TRIGGER,
         RECEIVER,
         SUBJECT
+    }
+
+    enum class Entity {
+        ACCOUNT,
+        TASK
     }
 }
