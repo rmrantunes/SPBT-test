@@ -85,7 +85,12 @@ class TaskEventsServiceTests {
 
         @Test
         fun `call inner methods successfully`() {
-            val notifInput = Notification(Notification.Type.TASK_STATUS_UPDATED, accountId)
+            val notifInput =
+                Notification(
+                    Notification.Type.TASK_STATUS_UPDATED,
+                    accountId,
+                    mapOf("newStatus" to task.status, "taskTitle" to task.title),
+                )
 
             val notifCreated = notifInput.copy(id = UUID.randomUUID().toString())
 
@@ -114,16 +119,11 @@ class TaskEventsServiceTests {
 
             service.handleTaskUpdatedStatusEvent(TaskUpdatedStatusEvent(task, accountId))
 
-            verify(exactly = 1) {
-                notifRepo invoke
-                        "create" withArguments
-                        listOf(Notification(Notification.Type.TASK_STATUS_UPDATED, accountId))
-            }
+            verify(exactly = 1) { notifRepo invoke "create" withArguments listOf(notifInput) }
 
             verify(exactly = 1) {
                 notifObjectRepo invoke "createMany" withArguments listOf(notifObjectsInput)
             }
-
         }
     }
 }

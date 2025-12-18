@@ -39,7 +39,11 @@ open class TaskEventsService(
 
         val notifRoot =
             notifRepo.create(
-                Notification(Notification.Type.TASK_STATUS_UPDATED, e.triggerAccountId)
+                Notification(
+                    Notification.Type.TASK_STATUS_UPDATED,
+                    e.triggerAccountId,
+                    mapOf("newStatus" to e.task.status, "taskTitle" to e.task.title),
+                )
             )
 
         if (notifRoot.id != null) {
