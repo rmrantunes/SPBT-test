@@ -6,11 +6,9 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
-import org.springframework.scheduling.annotation.EnableAsync
 
 @Configuration
-@EnableAsync
-@Profile("!test")
+@Profile("test")
 class EventConfig {
     @Autowired private lateinit var applicationEventPublisher: ApplicationEventPublisher
 
