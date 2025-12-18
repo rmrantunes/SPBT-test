@@ -124,6 +124,11 @@ class TaskEventsServiceTests {
             verify(exactly = 1) {
                 notifObjectRepo invoke "createMany" withArguments listOf(notifObjectsInput)
             }
+
+            // TODO register notification to new async job/queue, to:
+            //  - get the notifications receivers
+            //  - register NotificationObject type RECEIVER (to future control of reach/view status)
+            //  - and forward to effective sending queue
         }
     }
 }
