@@ -11,6 +11,7 @@ import co.bondspot.spbttest.domain.entity.Notification
 import co.bondspot.spbttest.domain.entity.NotificationObject
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.domain.event.TaskNewEvent
+import co.bondspot.spbttest.domain.event.TaskSharedEvent
 import co.bondspot.spbttest.domain.event.TaskStatusUpdatedEvent
 import io.mockk.every
 import io.mockk.spyk
@@ -134,6 +135,26 @@ class TaskEventsServiceTests {
             //  - get the notifications receivers
             //  - register NotificationObject type RECEIVER (to future control of reach/view status)
             //  - and forward to effective sending queue
+        }
+    }
+
+    @Nested
+    @DisplayName("TaskStatusUpdatedEvent")
+    inner class TaskSharedEventTests {
+        val accountId = UUID.randomUUID().toString()
+        val accountIdToShareWith = UUID.randomUUID().toString()
+        val task =
+            Task(
+                "title",
+                description = "desc",
+                id = UUID.randomUUID().toString(),
+                status = Task.Status.IN_PROGRESS,
+            )
+
+        @Test
+        fun `call inner methods successfully`() {
+            service.handleTaskSharedEvent(TaskSharedEvent(task, accountIdToShareWith, accountId))
+            verify(exactly = 1) { notifSubService.create(any()) }
         }
     }
 }

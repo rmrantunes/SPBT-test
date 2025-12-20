@@ -2,6 +2,7 @@ package co.bondspot.spbttest.springweb.event
 
 import co.bondspot.spbttest.domain.contract.ITaskEventsService
 import co.bondspot.spbttest.domain.event.TaskNewEvent
+import co.bondspot.spbttest.domain.event.TaskSharedEvent
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
@@ -15,5 +16,11 @@ class TaskListeners {
     @Async
     fun handleTaskNewEvent(event: TaskNewEvent) {
         taskEventsService.handleTaskNewEvent(event)
+    }
+
+    @EventListener
+    @Async
+    fun handleTaskSharedEvent(event: TaskSharedEvent) {
+        taskEventsService.handleTaskSharedEvent(event)
     }
 }

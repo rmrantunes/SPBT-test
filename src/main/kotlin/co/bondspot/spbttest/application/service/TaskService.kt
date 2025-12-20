@@ -11,8 +11,10 @@ import co.bondspot.spbttest.domain.contract.ITaskService
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Task
-import co.bondspot.spbttest.domain.event.TaskNewEvent
 import co.bondspot.spbttest.domain.event.TaskDetailsUpdatedEvent
+import co.bondspot.spbttest.domain.event.TaskNewEvent
+import co.bondspot.spbttest.domain.event.TaskSharedEvent
+import co.bondspot.spbttest.domain.event.TaskSharingRevokedEvent
 import co.bondspot.spbttest.domain.event.TaskStatusUpdatedEvent
 
 open class TaskService(
@@ -182,6 +184,8 @@ open class TaskService(
             )
         )
 
+        eventPub.publishEvent(TaskSharedEvent(task, accountIdToShareWith, reqAccount.id))
+
         return true
     }
 
@@ -224,6 +228,8 @@ open class TaskService(
                 fga.deleteRelationship(tuple)
             }
         }
+
+        eventPub.publishEvent(TaskSharingRevokedEvent(task, accountIdToRevokeFrom, reqAccount.id))
 
         return true
     }

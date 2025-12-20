@@ -14,6 +14,8 @@ import co.bondspot.spbttest.domain.entity.NotificationSubscription
 import co.bondspot.spbttest.domain.entity.RevalRule
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.domain.event.TaskNewEvent
+import co.bondspot.spbttest.domain.event.TaskSharedEvent
+import co.bondspot.spbttest.domain.event.TaskSharingRevokedEvent
 import co.bondspot.spbttest.domain.event.TaskStatusUpdatedEvent
 
 open class TaskEventsService(
@@ -46,7 +48,7 @@ open class TaskEventsService(
                 events = listOf("*"),
                 entityUid = entity,
                 revalLevel = NotificationSubscription.RevalidationLevel.HIGH,
-                revalRules = listOf(RevalRule("fga", mapOf("relation" to "OWNER"))),
+                revalRules = listOf(RevalRule("fga", mapOf("relation" to "owner"))),
             )
         )
     }
@@ -83,5 +85,24 @@ open class TaskEventsService(
 
             // TODO forward (async) NotificationNewEvent
         }
+    }
+
+    override fun handleTaskSharedEvent(e: TaskSharedEvent) {
+        val entityUid = "${Task.ENTITY_NAME}:${e.task.id}"
+
+        notifSubService.create(
+            NotificationSubscription(
+                accountId = e.accountIdToShareWith,
+                type = NotificationSubscription.Type.ENTITY_EVENTS,
+                events = listOf(Notification.Type.TASK_STATUS_UPDATED).map { it.toString() },
+                entityUid = entityUid,
+                revalLevel = NotificationSubscription.RevalidationLevel.HIGH,
+                revalRules = listOf(RevalRule("fga", mapOf("relation" to Task.FgaRelations.VIEWER))),
+            )
+        )
+    }
+
+    override fun handleTaskSharingRevokedEvent(e: TaskSharingRevokedEvent) {
+        TODO("Not yet implemented")
     }
 }

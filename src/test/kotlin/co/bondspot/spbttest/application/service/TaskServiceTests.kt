@@ -11,8 +11,10 @@ import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.FtsSearchResponse
 import co.bondspot.spbttest.domain.entity.Task
-import co.bondspot.spbttest.domain.event.TaskNewEvent
 import co.bondspot.spbttest.domain.event.TaskDetailsUpdatedEvent
+import co.bondspot.spbttest.domain.event.TaskNewEvent
+import co.bondspot.spbttest.domain.event.TaskSharedEvent
+import co.bondspot.spbttest.domain.event.TaskSharingRevokedEvent
 import co.bondspot.spbttest.domain.event.TaskStatusUpdatedEvent
 import co.bondspot.spbttest.shared.enumeration.HttpStatusCode
 import co.bondspot.spbttest.testutils.KSelect
@@ -381,6 +383,11 @@ class TaskServiceTests {
                             Task.ENTITY_NAME to id,
                         )
                     )
+            }
+            verify(exactly = 1) {
+                eventPub invoke
+                    "publishEvent" withArguments
+                    listOf(TaskSharedEvent(existing, accountId2, accountId))
             }
         }
     }
@@ -759,6 +766,12 @@ class TaskServiceTests {
                             Task.ENTITY_NAME to id,
                         )
                     )
+            }
+
+            verify(exactly = 1) {
+                eventPub invoke
+                    "publishEvent" withArguments
+                    listOf(TaskSharingRevokedEvent(existing, accountIdToRevokeFrom, accountId))
             }
         }
     }
