@@ -4,6 +4,7 @@ import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.INotificationObjectRepository
 import co.bondspot.spbttest.domain.contract.INotificationRepository
+import co.bondspot.spbttest.domain.contract.INotificationSubscriptionService
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Notification
@@ -32,6 +33,7 @@ class TaskEventsServiceTests {
     private lateinit var fga: IFgaProvider
     private lateinit var notifRepo: INotificationRepository
     private lateinit var notifObjectRepo: INotificationObjectRepository
+    private lateinit var notifSubService: INotificationSubscriptionService
 
     @BeforeEach
     fun setup() {
@@ -39,8 +41,9 @@ class TaskEventsServiceTests {
         fga = spyk<IFgaProvider>()
         notifRepo = spyk<INotificationRepository>()
         notifObjectRepo = spyk<INotificationObjectRepository>()
+        notifSubService = spyk<INotificationSubscriptionService>()
 
-        service = TaskEventsService(fga, fts, notifRepo, notifObjectRepo)
+        service = TaskEventsService(fga, fts, notifSubService, notifRepo, notifObjectRepo)
     }
 
     @Nested
@@ -68,6 +71,8 @@ class TaskEventsServiceTests {
             verify(exactly = 1) {
                 fts invoke "index" withArguments listOf(Task.ENTITY_NAME, listOf(task))
             }
+
+            verify(exactly = 1) { notifSubService.create(any()) }
         }
     }
 

@@ -70,11 +70,8 @@ data class NotificationSubscription(
             RevalidationLevel.VERY_LOW -> LocalDateTime.now().plusHours(48L).toString()
             RevalidationLevel.NEVER -> null
         }
-}
 
-// "id" to "${e.triggerAccountId}_${entity}".replace(":", "_"),
-// "type" to "ENTITY_EVENTS",
-// "accountId" to e.triggerAccountId,
-// "entityPath" to entity,
-// "events" to listOf("*"),
-// "createdAt" to LocalDateTime.now().toString(),
+    companion object {
+        const val ENTITY_NAME = "notif_sub"
+    }
+}

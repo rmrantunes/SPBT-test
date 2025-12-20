@@ -4,11 +4,14 @@ import co.bondspot.spbttest.domain.contract.IFgaProvider
 import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.INotificationObjectRepository
 import co.bondspot.spbttest.domain.contract.INotificationRepository
+import co.bondspot.spbttest.domain.contract.INotificationSubscriptionService
 import co.bondspot.spbttest.domain.contract.ITaskEventsService
 import co.bondspot.spbttest.domain.entity.Account
 import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Notification
 import co.bondspot.spbttest.domain.entity.NotificationObject
+import co.bondspot.spbttest.domain.entity.NotificationSubscription
+import co.bondspot.spbttest.domain.entity.RevalRule
 import co.bondspot.spbttest.domain.entity.Task
 import co.bondspot.spbttest.domain.event.TaskNewEvent
 import co.bondspot.spbttest.domain.event.TaskStatusUpdatedEvent
@@ -16,6 +19,7 @@ import co.bondspot.spbttest.domain.event.TaskStatusUpdatedEvent
 open class TaskEventsService(
     private val fga: IFgaProvider,
     private val fts: IFullTextSearchProvider,
+    private val notifSubService: INotificationSubscriptionService,
     private val notifRepo: INotificationRepository,
     private val notifObjectRepo: INotificationObjectRepository,
 ) : ITaskEventsService {
@@ -32,6 +36,19 @@ open class TaskEventsService(
         )
 
         fts.index(Task.ENTITY_NAME, listOf(e.task))
+
+        val entity = "${Task.ENTITY_NAME}:${e.task.id}"
+
+        notifSubService.create(
+            NotificationSubscription(
+                accountId = e.triggerAccountId,
+                type = NotificationSubscription.Type.ENTITY_EVENTS,
+                events = listOf("*"),
+                entityUid = entity,
+                revalLevel = NotificationSubscription.RevalidationLevel.HIGH,
+                revalRules = listOf(RevalRule("fga", mapOf("relation" to "OWNER"))),
+            )
+        )
     }
 
     override fun handleTaskUpdatedStatusEvent(e: TaskStatusUpdatedEvent) {
