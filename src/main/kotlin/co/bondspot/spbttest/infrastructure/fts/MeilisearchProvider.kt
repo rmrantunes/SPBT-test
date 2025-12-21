@@ -34,13 +34,15 @@ class MeilisearchProvider : IFullTextSearchProvider {
                 contextParams = contextParams,
             )
         } else {
-            MeilisearchProviderException(
-                "Something wrong with Meilisearch API call." +
-                    (ex.message ?: "") +
-                    " See context params for details.",
-                ex,
-                contextParams = contextParams,
-            )
+            val message =
+                listOf(
+                        "Something wrong with Meilisearch API call.",
+                        ex.message,
+                        "See context params for details.",
+                    )
+                    .filterNotNull()
+                    .joinToString(" ")
+            MeilisearchProviderException(message, ex, contextParams = contextParams)
         }
     }
 
@@ -90,7 +92,17 @@ class MeilisearchProvider : IFullTextSearchProvider {
     }
 
     override fun delete(indexUid: String, id: String) {
-        TODO("Not yet implemented")
+        val uri = "/indexes/$indexUid/documents/$id"
+        try {
+            require(id.isNotEmpty()) { "Please inform a non-empty 'id' argument." }
+
+            restClient.delete().uri(uri).retrieve().toBodilessEntity()
+        } catch (ex: Exception) {
+            throw handleException(
+                ex,
+                mapOf("baseUrl" to baseUrl, "uri" to uri, "indexUid" to indexUid, "id" to id),
+            )
+        }
     }
 
     /** Wipes all documents from a Meilisearch Index. Be careful. */

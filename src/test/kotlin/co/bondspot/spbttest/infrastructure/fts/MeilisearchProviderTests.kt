@@ -55,7 +55,9 @@ class MeillisearchProviderTests {
         @Test
         fun `throw a certain API exception with MeilisearchProviderException`() {
             val ex =
-                assertThrows<MeilisearchProviderException> { meilisearch.index("aha", listOf("invalid_structure")) }
+                assertThrows<MeilisearchProviderException> {
+                    meilisearch.index("aha", listOf("invalid_structure"))
+                }
             assertThat(ex).isExactlyInstanceOf(MeilisearchProviderException::class.java)
             assertThat(ex.message)
                 .startsWith("Meilisearch API responded with error status code 500")
@@ -112,13 +114,53 @@ class MeillisearchProviderTests {
 
     @Test
     fun `throw a certain API exception with MeilisearchProviderException`() {
-        val ex =
-            assertThrows<MeilisearchProviderException> { meilisearch.search("aha", "") }
+        val ex = assertThrows<MeilisearchProviderException> { meilisearch.search("aha", "") }
         assertThat(ex).isExactlyInstanceOf(MeilisearchProviderException::class.java)
-        assertThat(ex.message)
-            .startsWith("Meilisearch API responded with error status code 404")
+        assertThat(ex.message).startsWith("Meilisearch API responded with error status code 404")
         assertThat(ex.contextParams["indexUid"]).isEqualTo("aha")
         assertThat(ex.contextParams["query"]).isEqualTo("")
         assertThat(ex.contextParams["ids"]).isEqualTo(null)
+    }
+
+    @Nested
+    @DisplayName("when deleting a document...")
+    inner class DeleteDocument {
+        @Test
+        fun `delete successfully a document with given id`() {
+            val foo = generateFoo()
+            meilisearch.index(Foo.ENTITY_NAME, listOf(foo))
+
+            Thread.sleep(300L)
+
+            val result = meilisearch.search(Foo.ENTITY_NAME, "", listOf(foo.id))
+
+            assertThat(result).isInstanceOf(FtsSearchResponse::class.java)
+            assertThat(result.hits).hasSize(1)
+
+            meilisearch.delete(Foo.ENTITY_NAME, foo.id)
+
+            Thread.sleep(300L)
+
+            val result2 = meilisearch.search(Foo.ENTITY_NAME, "", listOf(foo.id))
+            assertThat(result2).isInstanceOf(FtsSearchResponse::class.java)
+            assertThat(result2.hits).hasSize(0)
+        }
+
+        @Test
+        fun `prevent empty strings because can lead to full wipe`() {
+            val ex =
+                assertThrows<MeilisearchProviderException> {
+                    meilisearch.delete(Foo.ENTITY_NAME, "")
+                }
+
+            assertThat(ex.cause).isExactlyInstanceOf(IllegalArgumentException::class.java)
+            assertThat(ex.message)
+                .isEqualTo(
+                    "Something wrong with Meilisearch API call. Please inform a non-empty 'id' argument. See context params for details."
+                )
+
+            assertThat(ex.contextParams["indexUid"]).isEqualTo(Foo.ENTITY_NAME)
+            assertThat(ex.contextParams["id"]).isEqualTo("")
+        }
     }
 }
