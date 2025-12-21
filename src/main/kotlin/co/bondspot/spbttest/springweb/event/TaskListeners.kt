@@ -15,12 +15,12 @@ class TaskListeners {
     @EventListener
     @Async
     fun handleTaskNewEvent(event: TaskNewEvent) {
-        taskEventsService.handleTaskNewEvent(event)
+        taskEventsService.handle(event)
     }
 
     @EventListener
     @Async
     fun handleTaskSharedEvent(event: TaskSharedEvent) {
-        taskEventsService.handleTaskSharedEvent(event)
+        taskEventsService.handle(event)
     }
 }

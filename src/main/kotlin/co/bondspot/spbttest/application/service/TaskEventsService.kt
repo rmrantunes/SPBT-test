@@ -25,7 +25,7 @@ open class TaskEventsService(
     private val notifRepo: INotificationRepository,
     private val notifObjectRepo: INotificationObjectRepository,
 ) : ITaskEventsService {
-    override fun handleTaskNewEvent(e: TaskNewEvent) {
+    override fun handle(e: TaskNewEvent) {
         // TODO if error thrown in this block, remove created task, since no action could be
         //  done from any account.
 
@@ -53,7 +53,7 @@ open class TaskEventsService(
         )
     }
 
-    override fun handleTaskUpdatedStatusEvent(e: TaskStatusUpdatedEvent) {
+    override fun handle(e: TaskStatusUpdatedEvent) {
         // TODO implement resilience strategy to retry if DB is down
 
         val notifRoot =
@@ -87,7 +87,7 @@ open class TaskEventsService(
         }
     }
 
-    override fun handleTaskSharedEvent(e: TaskSharedEvent) {
+    override fun handle(e: TaskSharedEvent) {
         val entityUid = "${Task.ENTITY_NAME}:${e.task.id}"
 
         notifSubService.create(
@@ -102,7 +102,7 @@ open class TaskEventsService(
         )
     }
 
-    override fun handleTaskSharingRevokedEvent(e: TaskSharingRevokedEvent) {
+    override fun handle(e: TaskSharingRevokedEvent) {
         val id = "${e.accountIdToRevokeFrom}_${Task.ENTITY_NAME}_${e.task.id}"
         notifSubService.delete(id)
     }

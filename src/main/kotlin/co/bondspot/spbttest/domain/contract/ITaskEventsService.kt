@@ -6,11 +6,11 @@ import co.bondspot.spbttest.domain.event.TaskSharingRevokedEvent
 import co.bondspot.spbttest.domain.event.TaskStatusUpdatedEvent
 
 interface ITaskEventsService {
-    fun handleTaskNewEvent(e: TaskNewEvent)
+    fun handle(e: TaskNewEvent)
 
-    fun handleTaskUpdatedStatusEvent(e: TaskStatusUpdatedEvent)
+    fun handle(e: TaskStatusUpdatedEvent)
 
-    fun handleTaskSharedEvent(e: TaskSharedEvent)
+    fun handle(e: TaskSharedEvent)
 
-    fun handleTaskSharingRevokedEvent(e: TaskSharingRevokedEvent)
+    fun handle(e: TaskSharingRevokedEvent)
 }

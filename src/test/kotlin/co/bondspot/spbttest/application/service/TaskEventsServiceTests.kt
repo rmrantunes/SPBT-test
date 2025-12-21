@@ -56,7 +56,7 @@ class TaskEventsServiceTests {
             val accountId = UUID.randomUUID().toString()
             val task = Task("title", description = "desc", id = UUID.randomUUID().toString())
 
-            service.handleTaskNewEvent(TaskNewEvent(task, accountId))
+            service.handle(TaskNewEvent(task, accountId))
 
             verify(exactly = 1) {
                 fga invoke
@@ -124,7 +124,7 @@ class TaskEventsServiceTests {
 
             every { notifObjectRepo.createMany(notifObjectsInput) } returns notifObjectsCreated
 
-            service.handleTaskUpdatedStatusEvent(TaskStatusUpdatedEvent(task, accountId))
+            service.handle(TaskStatusUpdatedEvent(task, accountId))
 
             verify(exactly = 1) { notifRepo invoke "create" withArguments listOf(notifInput) }
 
@@ -154,7 +154,7 @@ class TaskEventsServiceTests {
 
         @Test
         fun `call inner methods successfully`() {
-            service.handleTaskSharedEvent(TaskSharedEvent(task, accountIdToShareWith, accountId))
+            service.handle(TaskSharedEvent(task, accountIdToShareWith, accountId))
             verify(exactly = 1) { notifSubService.create(any()) }
         }
     }
@@ -174,7 +174,7 @@ class TaskEventsServiceTests {
 
         @Test
         fun `call inner methods successfully`() {
-            service.handleTaskSharingRevokedEvent(
+            service.handle(
                 TaskSharingRevokedEvent(task, accountIdToShareWith, accountId)
             )
             verify(exactly = 1) {
