@@ -79,14 +79,14 @@ class TaskControllerTests {
     @AfterEach
     fun afterEach() {
         jpaTaskRepository.deleteAll()
-        MeilisearchProvider().dangerouslyDeleteAllDocuments(Task.ENTITY_NAME)
+//        MeilisearchProvider().dangerouslyDeleteAllDocuments(Task.ENTITY_NAME)
     }
 
     companion object {
         @JvmStatic
         @BeforeAll
         fun beforeAll() {
-            MeilisearchProvider().dangerouslyDeleteAllDocuments(Task.ENTITY_NAME)
+//            MeilisearchProvider().dangerouslyDeleteAllDocuments(Task.ENTITY_NAME)
         }
     }
 

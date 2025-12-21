@@ -103,6 +103,7 @@ open class TaskEventsService(
     }
 
     override fun handleTaskSharingRevokedEvent(e: TaskSharingRevokedEvent) {
-        TODO("Not yet implemented")
+        val id = "${e.accountIdToRevokeFrom}_${Task.ENTITY_NAME}_${e.task.id}"
+        notifSubService.delete(id)
     }
 }

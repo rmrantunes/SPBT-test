@@ -4,4 +4,6 @@ import co.bondspot.spbttest.domain.entity.NotificationSubscription
 
 interface INotificationSubscriptionService {
     fun create(sub: NotificationSubscription)
+
+    fun delete (id: String)
 }

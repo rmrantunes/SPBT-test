@@ -9,4 +9,8 @@ open class NotificationSubscriptionService(private val fts: IFullTextSearchProvi
     override fun create(sub: NotificationSubscription) {
         fts.index(NotificationSubscription.ENTITY_NAME, listOf(sub))
     }
+
+    override fun delete(id: String) {
+        TODO("Not yet implemented")
+    }
 }
