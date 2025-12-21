@@ -45,4 +45,32 @@ class NotificationSubscriptionServiceTests {
             }
         }
     }
+
+    @Nested
+    inner class Delete {
+        @Test
+        fun `invoke correct functions`() {
+            val entityUid = "task:${UUID.randomUUID()}"
+            val sub =
+                NotificationSubscription(
+                    accountId = accountId,
+                    type = NotificationSubscription.Type.ENTITY_EVENTS,
+                    events = listOf("*"),
+                    entityUid = entityUid,
+                    revalLevel = NotificationSubscription.RevalidationLevel.HIGH,
+                    revalRules = listOf(RevalRule("fga", mapOf("relation" to "OWNER"))),
+                )
+
+            service.create(sub)
+
+            val id = "${accountId}_$entityUid".replace(":", "_")
+            service.delete(id)
+
+            verify {
+                fts invoke
+                    "delete" withArguments
+                    listOf(NotificationSubscription.ENTITY_NAME, id)
+            }
+        }
+    }
 }

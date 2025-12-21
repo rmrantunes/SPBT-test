@@ -89,6 +89,10 @@ class MeilisearchProvider : IFullTextSearchProvider {
         }
     }
 
+    override fun delete(indexUid: String, id: String) {
+        TODO("Not yet implemented")
+    }
+
     /** Wipes all documents from a Meilisearch Index. Be careful. */
     fun dangerouslyDeleteAllDocuments(index: String) {
         restClient.delete().uri("/indexes/$index/documents").retrieve().toBodilessEntity()

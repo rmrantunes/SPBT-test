@@ -11,6 +11,6 @@ open class NotificationSubscriptionService(private val fts: IFullTextSearchProvi
     }
 
     override fun delete(id: String) {
-        TODO("Not yet implemented")
+        fts.delete(NotificationSubscription.ENTITY_NAME, id)
     }
 }
