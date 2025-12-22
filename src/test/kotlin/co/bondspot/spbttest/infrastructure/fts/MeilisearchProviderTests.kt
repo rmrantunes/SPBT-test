@@ -88,6 +88,35 @@ class MeillisearchProviderTests {
             assertThat(result).isInstanceOf(FtsSearchResponse::class.java)
             assertThat(result.hits).hasSize(4)
         }
+
+        @Test
+        fun `search paginated`() {
+            val foo = generateFoo()
+            val items = buildList {
+                repeat(10) {
+                    add(foo.copy(name = "${foo.name} #$it", id = UUID.randomUUID().toString()))
+                }
+            }
+
+            meilisearch.index(Foo.ENTITY_NAME, items)
+
+            val meilisearchTaskTimeoutMillis = 1000L
+            Thread.sleep(meilisearchTaskTimeoutMillis)
+
+            val result = meilisearch.search(Foo.ENTITY_NAME, foo.name, hitsPerPage = 2)
+            assertThat(result).isInstanceOf(FtsSearchResponse::class.java)
+            assertThat(result.hits).hasSize(2)
+            assertThat(result.totalHits).isEqualTo(10)
+            assertThat(result.totalPages).isEqualTo(5)
+
+            val result2 = meilisearch.search(Foo.ENTITY_NAME, foo.name, page = 2, hitsPerPage = 2)
+            assertThat(result2.hits).hasSize(2)
+            assertThat(result2.totalHits).isEqualTo(10)
+            assertThat(result2.totalPages).isEqualTo(5)
+            assertThat(result2.page).isEqualTo(2)
+            assertThat(result2.hits.mapNotNull { it["id"] })
+                .doesNotContainAnyElementsOf(result.hits.mapNotNull { it["id"] })
+        }
     }
 
     @Test

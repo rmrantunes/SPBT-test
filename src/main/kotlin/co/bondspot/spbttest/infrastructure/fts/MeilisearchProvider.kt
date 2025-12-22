@@ -62,11 +62,16 @@ class MeilisearchProvider : IFullTextSearchProvider {
         query: String,
         ids: List<String>?,
         filter: List<Any>?,
+        page: Int,
+        hitsPerPage: Int,
     ): FtsSearchResponse {
         val uri = "/indexes/$indexUid/search"
         try {
             val body = buildMap {
                 set("q", query)
+                set("page", page)
+                set("hitsPerPage", hitsPerPage)
+
                 val filterValue = mutableListOf<Any>()
 
                 if (ids != null && ids.isNotEmpty()) {
