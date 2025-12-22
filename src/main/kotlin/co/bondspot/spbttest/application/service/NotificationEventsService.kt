@@ -1,25 +1,23 @@
 package co.bondspot.spbttest.application.service
 
-import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.INotificationEventsService
 import co.bondspot.spbttest.domain.contract.INotificationObjectRepository
+import co.bondspot.spbttest.domain.contract.INotificationSubscriptionService
 import co.bondspot.spbttest.domain.entity.NotificationObject
 import co.bondspot.spbttest.domain.event.NotificationNewEvent
 
 class NotificationEventsService(
     val notifObjectRepo: INotificationObjectRepository,
-    val fts: IFullTextSearchProvider,
+    val notifSubService: INotificationSubscriptionService,
 ) : INotificationEventsService {
     override fun handle(e: NotificationNewEvent) {
         val subject = e.notifObjects.find { it.type == NotificationObject.Type.SUBJECT }
 
         if (subject != null) {
-            val ftsResult =
-                fts.search(subject.entity.toString().lowercase(), "", listOf(subject.taskId!!))
+            val ftsResult = notifSubService.findAccounts(getEntityUid(subject))
 
             val notifObjects =
-                ftsResult.hits.mapNotNull {
-                    val accountId = it["accountId"] as? String ?: return@mapNotNull null
+                ftsResult.accountsIds.mapNotNull { accountId ->
                     if (accountId == e.notification.actionTriggerAccountId) return@mapNotNull null
 
                     NotificationObject(
@@ -31,6 +29,13 @@ class NotificationEventsService(
                 }
 
             notifObjectRepo.createMany(notifObjects)
+        }
+    }
+
+    private fun getEntityUid(notifObj: NotificationObject): String {
+        return when (val entity = notifObj.entity) {
+            NotificationObject.Entity.ACCOUNT -> "${entity}_${notifObj.accountId}"
+            NotificationObject.Entity.TASK -> "${entity}_${notifObj.taskId}"
         }
     }
 }

@@ -1,10 +1,10 @@
 package co.bondspot.spbttest.application.service
 
-import co.bondspot.spbttest.domain.contract.IFullTextSearchProvider
 import co.bondspot.spbttest.domain.contract.INotificationObjectRepository
-import co.bondspot.spbttest.domain.entity.FtsSearchResponse
+import co.bondspot.spbttest.domain.contract.INotificationSubscriptionService
 import co.bondspot.spbttest.domain.entity.Notification
 import co.bondspot.spbttest.domain.entity.NotificationObject
+import co.bondspot.spbttest.domain.entity.NotificationSubscriptionFindAccounts
 import co.bondspot.spbttest.domain.event.NotificationNewEvent
 import io.mockk.every
 import io.mockk.spyk
@@ -16,25 +16,27 @@ import org.junit.jupiter.api.Test
 
 class NotificationEventsServiceTests {
     lateinit var service: NotificationEventsService
-    lateinit var fts: IFullTextSearchProvider
+    lateinit var notifSubService: INotificationSubscriptionService
     lateinit var notifObjectRepo: INotificationObjectRepository
 
     @BeforeEach
     fun setup() {
-        fts = spyk<IFullTextSearchProvider>(recordPrivateCalls = true)
+        notifSubService = spyk<INotificationSubscriptionService>(recordPrivateCalls = true)
         notifObjectRepo = spyk<INotificationObjectRepository>(recordPrivateCalls = true)
 
-        service = NotificationEventsService(notifObjectRepo, fts)
+        service = NotificationEventsService(notifObjectRepo, notifSubService)
     }
-
-
 
     val accountId = UUID.randomUUID().toString()
     val accountId2 = UUID.randomUUID().toString()
     val taskId = UUID.randomUUID().toString()
 
     val notification =
-        Notification(Notification.Type.TASK_STATUS_UPDATED, actionTriggerAccountId = accountId, id = UUID.randomUUID().toString())
+        Notification(
+            Notification.Type.TASK_STATUS_UPDATED,
+            actionTriggerAccountId = accountId,
+            id = UUID.randomUUID().toString(),
+        )
     val objects =
         listOf(
             NotificationObject(
@@ -56,7 +58,9 @@ class NotificationEventsServiceTests {
         @Test
         fun `should handle notification new`() {
             val hits = listOf(mapOf("accountId" to accountId), mapOf("accountId" to accountId2))
-            every { fts.search("task", "", ids = listOf(taskId)) } returns FtsSearchResponse(hits)
+            val sub = objects.find { it.type == NotificationObject.Type.SUBJECT }!!
+            every { notifSubService.findAccounts("${sub.entity}_${sub.taskId}") } returns
+                NotificationSubscriptionFindAccounts(hits.flatMap { it.values })
 
             service.handle(NotificationNewEvent(notification, objects))
 
