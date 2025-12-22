@@ -36,10 +36,10 @@ class MeilisearchProvider : IFullTextSearchProvider {
         } else {
             val message =
                 listOfNotNull(
-                    "Something wrong with Meilisearch API call.",
-                    ex.message,
-                    "See context params for details.",
-                )
+                        "Something wrong with Meilisearch API call.",
+                        ex.message,
+                        "See context params for details.",
+                    )
                     .joinToString(" ")
             MeilisearchProviderException(message, ex, contextParams = contextParams)
         }
@@ -57,14 +57,27 @@ class MeilisearchProvider : IFullTextSearchProvider {
         }
     }
 
-    override fun search(indexUid: String, query: String, ids: List<String>?): FtsSearchResponse {
+    override fun search(
+        indexUid: String,
+        query: String,
+        ids: List<String>?,
+        filter: List<Any>?,
+    ): FtsSearchResponse {
         val uri = "/indexes/$indexUid/search"
         try {
             val body = buildMap {
                 set("q", query)
+                val filterValue = mutableListOf<Any>()
+
                 if (ids != null && ids.isNotEmpty()) {
-                    set("filter", listOf(ids.map { "id = $it" }))
+                    filterValue.add(ids.map { "id = $it" })
                 }
+
+                if (filter != null && filter.isNotEmpty()) {
+                    filterValue.add(filter)
+                }
+
+                set("filter", filterValue)
             }
 
             val response =

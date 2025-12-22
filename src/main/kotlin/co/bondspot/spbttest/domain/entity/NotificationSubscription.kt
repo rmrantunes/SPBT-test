@@ -75,3 +75,7 @@ data class NotificationSubscription(
         const val ENTITY_NAME = "notif_sub"
     }
 }
+
+data class NotificationSubscriptionFindAccounts(
+    val accountsIds: List<String>,
+)
