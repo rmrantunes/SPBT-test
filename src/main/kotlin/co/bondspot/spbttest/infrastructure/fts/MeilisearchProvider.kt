@@ -35,12 +35,11 @@ class MeilisearchProvider : IFullTextSearchProvider {
             )
         } else {
             val message =
-                listOf(
-                        "Something wrong with Meilisearch API call.",
-                        ex.message,
-                        "See context params for details.",
-                    )
-                    .filterNotNull()
+                listOfNotNull(
+                    "Something wrong with Meilisearch API call.",
+                    ex.message,
+                    "See context params for details.",
+                )
                     .joinToString(" ")
             MeilisearchProviderException(message, ex, contextParams = contextParams)
         }
