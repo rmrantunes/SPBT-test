@@ -257,7 +257,7 @@ class TaskServiceTests {
             verify(exactly = 1) {
                 eventPub invoke
                     "publishEvent" withArguments
-                    listOf(TaskDetailsUpdatedEvent(updated, accountId))
+                    listOf(TaskDetailsUpdatedEvent(updated, existing, accountId))
             }
         }
     }

@@ -82,7 +82,7 @@ open class TaskService(
         // TODO normalize errors FtsProviderException
         fts.index(Task.ENTITY_NAME, listOf(updated))
 
-        eventPub.publishEvent(TaskDetailsUpdatedEvent(updated, reqAccount.id))
+        eventPub.publishEvent(TaskDetailsUpdatedEvent(updated, existing, reqAccount.id))
 
         return true
     }

@@ -10,6 +10,7 @@ import co.bondspot.spbttest.domain.entity.FgaRelTuple
 import co.bondspot.spbttest.domain.entity.Notification
 import co.bondspot.spbttest.domain.entity.NotificationObject
 import co.bondspot.spbttest.domain.entity.Task
+import co.bondspot.spbttest.domain.event.TaskDetailsUpdatedEvent
 import co.bondspot.spbttest.domain.event.TaskNewEvent
 import co.bondspot.spbttest.domain.event.TaskSharedEvent
 import co.bondspot.spbttest.domain.event.TaskSharingRevokedEvent
@@ -140,7 +141,70 @@ class TaskEventsServiceTests {
     }
 
     @Nested
-    @DisplayName("TaskStatusUpdatedEvent")
+    @DisplayName("TaskDetailsUpdatedEvent")
+    inner class TaskDetailsUpdatedEventTests {
+        val accountId = UUID.randomUUID().toString()
+        val oldTask =
+            Task(
+                "title",
+                description = "desc",
+                id = UUID.randomUUID().toString(),
+                status = Task.Status.IN_PROGRESS,
+            )
+
+        val newTask = oldTask.copy(title = "Novo título", description = "Nova desc")
+
+        @Test
+        fun `call inner methods successfully`() {
+            val notifInput =
+                Notification(
+                    Notification.Type.TASK_DETAILS_UPDATED,
+                    accountId,
+                    mapOf(
+                        "oldTitle" to oldTask.title,
+                        "oldDescription" to oldTask.description,
+                        "newTitle" to newTask.title,
+                        "newDescription" to newTask.description,
+                    ),
+                )
+
+            val notifCreated = notifInput.copy(id = UUID.randomUUID().toString())
+
+            every { notifRepo.create(notifInput) } returns notifCreated
+
+            val notifObjectsInput =
+                listOf(
+                    NotificationObject(
+                        NotificationObject.Type.TRIGGER,
+                        NotificationObject.Entity.ACCOUNT,
+                        notificationId = notifCreated.id!!,
+                        accountId = accountId,
+                    ),
+                    NotificationObject(
+                        NotificationObject.Type.SUBJECT,
+                        NotificationObject.Entity.TASK,
+                        notificationId = notifCreated.id,
+                        taskId = oldTask.id,
+                    ),
+                )
+
+            val notifObjectsCreated =
+                notifObjectsInput.map { it.copy(id = UUID.randomUUID().toString()) }
+
+            every { notifObjectRepo.createMany(notifObjectsInput) } returns notifObjectsCreated
+
+            service.handle(TaskDetailsUpdatedEvent(newTask, oldTask, accountId))
+
+            verify(exactly = 1) { notifRepo invoke "create" withArguments listOf(notifInput) }
+
+            verify(exactly = 1) {
+                notifObjectRepo invoke "createMany" withArguments listOf(notifObjectsInput)
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("TaskSharedEvent")
     inner class TaskSharedEventTests {
         val accountId = UUID.randomUUID().toString()
         val accountIdToShareWith = UUID.randomUUID().toString()
@@ -174,9 +238,7 @@ class TaskEventsServiceTests {
 
         @Test
         fun `call inner methods successfully`() {
-            service.handle(
-                TaskSharingRevokedEvent(task, accountIdToShareWith, accountId)
-            )
+            service.handle(TaskSharingRevokedEvent(task, accountIdToShareWith, accountId))
             verify(exactly = 1) {
                 notifSubService.delete("${accountIdToShareWith}_task_${task.id}")
             }

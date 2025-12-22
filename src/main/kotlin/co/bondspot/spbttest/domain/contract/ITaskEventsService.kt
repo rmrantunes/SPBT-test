@@ -1,5 +1,6 @@
 package co.bondspot.spbttest.domain.contract
 
+import co.bondspot.spbttest.domain.event.TaskDetailsUpdatedEvent
 import co.bondspot.spbttest.domain.event.TaskNewEvent
 import co.bondspot.spbttest.domain.event.TaskSharedEvent
 import co.bondspot.spbttest.domain.event.TaskSharingRevokedEvent
@@ -9,6 +10,8 @@ interface ITaskEventsService {
     fun handle(e: TaskNewEvent)
 
     fun handle(e: TaskStatusUpdatedEvent)
+
+    fun handle(e: TaskDetailsUpdatedEvent)
 
     fun handle(e: TaskSharedEvent)
 

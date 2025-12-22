@@ -13,6 +13,7 @@ import co.bondspot.spbttest.domain.entity.NotificationObject
 import co.bondspot.spbttest.domain.entity.NotificationSubscription
 import co.bondspot.spbttest.domain.entity.RevalRule
 import co.bondspot.spbttest.domain.entity.Task
+import co.bondspot.spbttest.domain.event.TaskDetailsUpdatedEvent
 import co.bondspot.spbttest.domain.event.TaskNewEvent
 import co.bondspot.spbttest.domain.event.TaskSharedEvent
 import co.bondspot.spbttest.domain.event.TaskSharingRevokedEvent
@@ -79,6 +80,43 @@ open class TaskEventsService(
                         entity = NotificationObject.Entity.TASK,
                         notificationId = notifRoot.id,
                         taskId = e.task.id,
+                    ),
+                )
+            )
+
+            // TODO forward (async) NotificationNewEvent
+        }
+    }
+
+    override fun handle(e: TaskDetailsUpdatedEvent) {
+        val notifRoot =
+            notifRepo.create(
+                Notification(
+                    Notification.Type.TASK_DETAILS_UPDATED,
+                    e.triggerAccountId,
+                    mapOf(
+                        "newTitle" to e.newTask.title,
+                        "newDescription" to e.newTask.description,
+                        "oldTitle" to e.oldTask.title,
+                        "oldDescription" to e.oldTask.description,
+                    ),
+                )
+            )
+
+        if (notifRoot.id != null) {
+            notifObjectRepo.createMany(
+                listOf(
+                    NotificationObject(
+                        type = NotificationObject.Type.TRIGGER,
+                        entity = NotificationObject.Entity.ACCOUNT,
+                        notificationId = notifRoot.id,
+                        accountId = e.triggerAccountId,
+                    ),
+                    NotificationObject(
+                        type = NotificationObject.Type.SUBJECT,
+                        entity = NotificationObject.Entity.TASK,
+                        notificationId = notifRoot.id,
+                        taskId = e.newTask.id,
                     ),
                 )
             )

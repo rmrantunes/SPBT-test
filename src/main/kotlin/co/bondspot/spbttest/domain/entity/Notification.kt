@@ -9,6 +9,7 @@ data class Notification(
     val id: String? = null,
 ) {
     enum class Type {
-        TASK_STATUS_UPDATED
+        TASK_STATUS_UPDATED,
+        TASK_DETAILS_UPDATED,
     }
 }
