@@ -5,7 +5,7 @@ data class Notification(
     val actionTriggerAccountId: String? = null,
     val params: Map<String, Any?>? = emptyMap(),
     val isActionUndone: Boolean = false,
-    val isAutomaticAction: Boolean = false,
+    val isAutomaticAction: Boolean = actionTriggerAccountId == null,
     val id: String? = null,
 ) {
     enum class Type {
