@@ -12,5 +12,7 @@ interface INotificationSubscriptionService {
         entityUid: String? = null,
         topics: List<String>? = null,
         events: List<String>? = listOf("*"),
+        page: Int = 1,
+        pageSize: Int = 20,
     ): NotificationSubscriptionFindAccounts
 }

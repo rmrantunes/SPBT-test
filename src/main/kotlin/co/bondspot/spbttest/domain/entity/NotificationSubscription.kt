@@ -78,4 +78,6 @@ data class NotificationSubscription(
 
 data class NotificationSubscriptionFindAccounts(
     val accountsIds: List<String>,
+    val possibleTotalAccounts: Int? = null,
+    val possibleTotalPages: Int? = null,
 )

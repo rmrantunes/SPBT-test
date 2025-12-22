@@ -19,6 +19,8 @@ open class NotificationSubscriptionService(private val fts: IFullTextSearchProvi
         entityUid: String?,
         topics: List<String>?,
         events: List<String>?,
+        page: Int,
+        pageSize: Int,
     ): NotificationSubscriptionFindAccounts {
         val filter = buildList {
             if (entityUid != null) add("entityUid = \"$entityUid\"")
@@ -29,8 +31,19 @@ open class NotificationSubscriptionService(private val fts: IFullTextSearchProvi
         //  So we can add a pagination + some coroutines (and as well stream the http response to
         //  not load all objects at once)
         //  All that with retry.
-        val result = fts.search(NotificationSubscription.ENTITY_NAME, "", filter = filter)
+        val result =
+            fts.search(
+                NotificationSubscription.ENTITY_NAME,
+                "",
+                filter = filter,
+                page = page,
+                hitsPerPage = pageSize,
+            )
 
-        return NotificationSubscriptionFindAccounts(result.hits.mapNotNull { hit -> hit["accountId"] as? String })
+        return NotificationSubscriptionFindAccounts(
+            result.hits.mapNotNull { hit -> hit["accountId"] as? String },
+            possibleTotalAccounts = result.totalHits,
+            possibleTotalPages = result.totalPages,
+        )
     }
 }
