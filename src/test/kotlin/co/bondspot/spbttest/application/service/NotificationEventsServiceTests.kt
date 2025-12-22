@@ -59,7 +59,8 @@ class NotificationEventsServiceTests {
         fun `should handle notification new`() {
             val hits = listOf(mapOf("accountId" to accountId), mapOf("accountId" to accountId2))
             val sub = objects.find { it.type == NotificationObject.Type.SUBJECT }!!
-            every { notifSubService.findAccounts("${sub.entity}_${sub.taskId}") } returns
+
+            every { notifSubService.findAccounts("${sub.entity.toString().lowercase()}_${sub.taskId}") } returns
                 NotificationSubscriptionFindAccounts(hits.flatMap { it.values })
 
             service.handle(NotificationNewEvent(notification, objects))

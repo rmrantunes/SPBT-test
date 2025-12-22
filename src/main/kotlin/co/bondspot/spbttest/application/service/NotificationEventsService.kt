@@ -34,8 +34,8 @@ class NotificationEventsService(
 
     private fun getEntityUid(notifObj: NotificationObject): String {
         return when (val entity = notifObj.entity) {
-            NotificationObject.Entity.ACCOUNT -> "${entity}_${notifObj.accountId}"
-            NotificationObject.Entity.TASK -> "${entity}_${notifObj.taskId}"
+            NotificationObject.Entity.ACCOUNT -> "${entity.toString().lowercase()}_${notifObj.accountId}"
+            NotificationObject.Entity.TASK -> "${entity.toString().lowercase()}_${notifObj.taskId}"
         }
     }
 }
